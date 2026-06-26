@@ -16,7 +16,6 @@ export default function MenuDrawer() {
         {/* Encabezado del Menú */}
         <div style={styles.header}>
           <div style={styles.logoGroup}>
-            <Sparkles size={18} color="var(--accent-start)" />
             <h3 style={styles.logoText}>GLOSS</h3>
           </div>
           <button style={styles.closeButton} onClick={() => setIsMenuOpen(false)}>
