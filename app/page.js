@@ -9,7 +9,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
-  const { selectedCategory, searchQuery } = useCart();
+  const { selectedCategory, searchQuery, selectedBrand } = useCart();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +27,7 @@ export default function HomePage() {
         const queryParams = new URLSearchParams();
         if (selectedCategory) queryParams.append('category', selectedCategory);
         if (searchQuery.trim() !== '') queryParams.append('q', searchQuery.trim());
+        if (selectedBrand) queryParams.append('brand', selectedBrand);
         
         console.log(`[Frontend] Fetching products with: ${queryParams.toString()}`);
         const res = await fetch(`/api/products/search?${queryParams.toString()}`);
@@ -49,10 +50,11 @@ export default function HomePage() {
           // Fallback a mocks locales ante caídas para asegurar que la web siga activa
           const localFallback = MOCK_PRODUCTS.filter(p => {
             const matchesCat = selectedCategory === 'Trending' || p.category === selectedCategory;
+            const matchesBrand = !selectedBrand || p.brand.toLowerCase() === selectedBrand.toLowerCase();
             const matchesQuery = searchQuery.trim() === '' || 
               p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
               p.brand.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCat && matchesQuery;
+            return matchesCat && matchesBrand && matchesQuery;
           });
           setProducts(localFallback.map(p => ({ ...p, isMock: true })));
           setIsOffline(true);
@@ -66,7 +68,7 @@ export default function HomePage() {
     return () => {
       active = false;
     };
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, selectedBrand]);
 
   return (
     <div style={styles.container}>
@@ -88,7 +90,7 @@ export default function HomePage() {
       {/* Título de Sección */}
       <div style={styles.sectionHeader}>
         <h3 style={styles.sectionTitle}>
-          {selectedCategory === 'Trending' ? 'Productos Destacados' : selectedCategory}
+          {selectedBrand ? `Marca: ${selectedBrand}` : (selectedCategory === 'Trending' ? 'Productos Destacados' : selectedCategory)}
         </h3>
         {!isLoading && (
           <span style={styles.sectionCount}>{products.length} productos</span>

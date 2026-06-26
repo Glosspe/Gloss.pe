@@ -10,6 +10,7 @@ export function CartProvider({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Trending');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
   const [favorites, setFavorites] = useState([]);
 
   // Cargar carrito y favoritos desde localStorage al iniciar
@@ -91,6 +92,8 @@ export function CartProvider({ children }) {
         setSelectedCategory,
         searchQuery,
         setSearchQuery,
+        selectedBrand,
+        setSelectedBrand,
         favorites,
         toggleFavorite,
         addToCart,

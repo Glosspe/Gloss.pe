@@ -60,6 +60,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || '';
     const category = searchParams.get('category') || 'Trending';
+    const brand = searchParams.get('brand') || '';
     
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
     // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
@@ -69,7 +70,7 @@ export async function GET(request) {
       console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search`);
       try {
         const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}`;
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },
@@ -141,6 +142,10 @@ export async function GET(request) {
           productsList = productsList.filter(p => mapSubfamilyToWebCategory(p.categoryCode, p.categoryName) === category);
         }
       }
+      
+      if (brand && brand.trim() !== '') {
+        productsList = productsList.filter(p => p.brand && p.brand.toLowerCase() === brand.toLowerCase());
+      }
     } else {
       // Consultar directo a la base de datos Navasoft por ZeroTier
       const warehouse = process.env.ERP_DEFAULT_WAREHOUSE || '01';
@@ -148,6 +153,12 @@ export async function GET(request) {
       const prdTable = getStockTableName(warehouse);
       
       const sqlRequest = pool.request();
+      
+      let brandFilter = "";
+      if (brand && brand.trim() !== '') {
+        sqlRequest.input('brandFilterName', sql.VarChar, brand);
+        brandFilter = ` AND LTRIM(RTRIM(p01.marc)) = @brandFilterName`;
+      }
       
       let queryFilter = "";
       if (query.trim() !== '') {
@@ -186,7 +197,7 @@ export async function GET(request) {
             RTRIM(s.nomsub) as categoryName
           FROM prd0101 p01 WITH(nolock)
           LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
-          WHERE p01.estado = 1 ${categoryFilter} ${queryFilter}
+          WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
           ORDER BY p01.descr ASC
         `;
       } else {
@@ -210,7 +221,7 @@ export async function GET(request) {
               FROM ${prdTable} p02 WITH(nolock)
               INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = p02.codi
               LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
-              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter}
+              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
               ORDER BY p01.descr ASC
             END
           ELSE
@@ -228,7 +239,7 @@ export async function GET(request) {
                 RTRIM(s.nomsub) as categoryName
               FROM prd0101 p01 WITH(nolock)
               LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
-              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter}
+              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
               ORDER BY p01.descr ASC
             END
         `;
