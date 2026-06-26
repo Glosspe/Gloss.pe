@@ -137,6 +137,7 @@ export async function GET(request) {
             RTRIM(p01.umed) as unit, 
             p01.pvns as price, 
             p01.stoc as stock,
+            RTRIM(p01.obse) as observations,
             RTRIM(s.codsub) as categoryCode,
             RTRIM(s.nomsub) as categoryName
           FROM prd0101 p01 WITH(nolock)
@@ -159,6 +160,7 @@ export async function GET(request) {
                 RTRIM(p01.umed) as unit, 
                 CASE WHEN ISNULL(p02.pvns, 0) = 0 THEN p01.pvns ELSE p02.pvns END as price, 
                 ISNULL(p02.stoc, 0) as stock, 
+                RTRIM(p01.obse) as observations,
                 RTRIM(s.codsub) as categoryCode,
                 RTRIM(s.nomsub) as categoryName
               FROM ${prdTable} p02 WITH(nolock)
@@ -177,6 +179,7 @@ export async function GET(request) {
                 RTRIM(p01.umed) as unit, 
                 p01.pvns as price, 
                 ISNULL(p01.${stockField}, 0) as stock, 
+                RTRIM(p01.obse) as observations,
                 RTRIM(s.codsub) as categoryCode,
                 RTRIM(s.nomsub) as categoryName
               FROM prd0101 p01 WITH(nolock)
@@ -254,7 +257,7 @@ export async function GET(request) {
         category: finalCategory,
         image: mainImage,
         images: imagesArray,
-        description: enrichment.descripcionEnriquecida || p.name,
+        description: enrichment.descripcionEnriquecida || p.observations?.trim() || p.name,
         destacado: !!enrichment.destacado,
         isMock: useFallback
       };
