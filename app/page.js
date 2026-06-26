@@ -13,6 +13,7 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
 
   // Fetch dinámico de productos desde la API híbrida de la tienda
   useEffect(() => {
@@ -38,6 +39,8 @@ export default function HomePage() {
         
         if (active) {
           setProducts(data);
+          const isMockData = data.length > 0 && data[0].isMock;
+          setIsOffline(!!isMockData);
           setIsLoading(false);
         }
       } catch (err) {
@@ -51,7 +54,8 @@ export default function HomePage() {
               p.brand.toLowerCase().includes(searchQuery.toLowerCase());
             return matchesCat && matchesQuery;
           });
-          setProducts(localFallback);
+          setProducts(localFallback.map(p => ({ ...p, isMock: true })));
+          setIsOffline(true);
           setIsLoading(false);
         }
       }
@@ -71,6 +75,15 @@ export default function HomePage() {
 
       {/* Selector de Categorías */}
       <CategorySlider />
+
+      {/* Banner de Sincronización / Catálogo de respaldo */}
+      {isOffline && (
+        <div style={styles.offlineBanner}>
+          <span style={styles.offlineText}>
+            Sincronización en curso con el almacén. Mostrando nuestro catálogo de respaldo.
+          </span>
+        </div>
+      )}
 
       {/* Título de Sección */}
       <div style={styles.sectionHeader}>
@@ -125,6 +138,25 @@ const styles = {
     fontWeight: '700',
     color: 'var(--text-primary)',
     letterSpacing: '0.02em',
+  },
+  offlineBanner: {
+    width: 'calc(100% - 40px)',
+    maxWidth: '800px',
+    margin: '8px auto 16px auto',
+    padding: '12px 16px',
+    backgroundColor: 'var(--accent-soft)',
+    borderRadius: '16px',
+    border: '1px dashed rgba(255, 46, 147, 0.25)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  offlineText: {
+    fontSize: '0.8rem',
+    color: 'var(--accent-end)',
+    fontWeight: '600',
+    fontFamily: 'var(--font-body)',
   },
   sectionCount: {
     fontSize: '0.8rem',

@@ -265,7 +265,8 @@ export async function GET(request) {
         image: mainImage,
         images: imagesArray,
         description: enrichment.descripcionEnriquecida || p.name,
-        destacado: !!enrichment.destacado
+        destacado: !!enrichment.destacado,
+        isMock: useFallback
       };
     });
 
