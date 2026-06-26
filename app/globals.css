@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Paleta Clean Beauty / Glow */
-  --bg-primary: #F7F6F9;
+  /* Paleta Clean Beauty / Fondo Blanco y Tonos Suaves */
+  --bg-primary: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-card-rgb: 255, 255, 255;
-  --text-primary: #1C2A38;
-  --text-secondary: #8E9AA7;
-  --text-tertiary: #A5B1C2;
+  --text-primary: #1C2B38;
+  --text-secondary: #7F8C8D;
+  --text-tertiary: #BDC3C7;
   
-  /* Acento Coral / Naranja Soft */
-  --accent-start: #FFA07A;
-  --accent-end: #FF8C69;
+  /* Acento Coral / Melocotón Pastel Suave y Agradable */
+  --accent-start: #FFB89E;
+  --accent-end: #FFA080;
   --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  --accent-shadow: rgba(255, 140, 105, 0.4);
+  --accent-shadow: rgba(255, 160, 128, 0.25);
   
-  /* Sombras Neumórficas / Soft UI */
-  --soft-shadow-outer: 0 16px 36px rgba(142, 154, 167, 0.12), 0 4px 12px rgba(142, 154, 167, 0.04);
-  --soft-shadow-inner: inset 2px 2px 5px rgba(142, 154, 167, 0.1), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
-  --button-shadow: 0 10px 25px var(--accent-shadow);
+  /* Sombras Neumórficas Ultra-Suaves (Optimizado para fondo blanco) */
+  --soft-shadow-outer: 0 12px 30px rgba(165, 177, 194, 0.08), 0 3px 8px rgba(165, 177, 194, 0.03);
+  --soft-shadow-inner: inset 1px 1px 4px rgba(165, 177, 194, 0.06);
+  --button-shadow: 0 8px 20px var(--accent-shadow);
   
   --font-title: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
