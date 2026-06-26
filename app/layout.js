@@ -1,6 +1,7 @@
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import Cart from "@/components/Cart";
+import MenuDrawer from "@/components/MenuDrawer";
 import BottomBar from "@/components/BottomBar";
 
 export const metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
             
             {/* Componentes globales */}
             <Cart />
+            <MenuDrawer />
             <BottomBar />
           </div>
         </CartProvider>

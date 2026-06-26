@@ -7,6 +7,7 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Trending');
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState([]);
@@ -84,6 +85,8 @@ export function CartProvider({ children }) {
         cart,
         isCartOpen,
         setIsCartOpen,
+        isMenuOpen,
+        setIsMenuOpen,
         selectedCategory,
         setSelectedCategory,
         searchQuery,

@@ -1,36 +1,32 @@
 'use client';
 
 import React from 'react';
-import { Search, SlidersHorizontal, ShoppingBag, Bell } from 'lucide-react';
+import { Search, SlidersHorizontal, ShoppingBag, Menu } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function Header() {
-  const { searchQuery, setSearchQuery, cartCount, setIsCartOpen } = useCart();
+  const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen } = useCart();
 
   return (
     <header style={styles.header}>
-      {/* Fila Superior: Perfil, Logo e Iconos */}
+      {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
       <div style={styles.topRow}>
-        <div style={styles.profileContainer}>
-          <div style={styles.avatar}>
-            {/* Imagen del logo de Gloss o un avatar circular por defecto */}
-            <span style={styles.avatarText}>G</span>
-          </div>
-          <div style={styles.greeting}>
-            <span style={styles.helloText}>Hola,</span>
-            <h2 style={styles.nameText}>Tienda Gloss</h2>
-          </div>
+        <div style={styles.logoContainer}>
+          <h2 style={styles.logoText}>Tienda Gloss</h2>
         </div>
         
         <div style={styles.actions}>
+          {/* Botón Bolsa (Carrito) */}
           <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
             <ShoppingBag size={22} color="var(--text-primary)" />
             {cartCount > 0 && (
               <span style={styles.badge}>{cartCount}</span>
             )}
           </button>
-          <button style={styles.iconButton}>
-            <Bell size={22} color="var(--text-primary)" />
+          
+          {/* Botón Menú Desplegable */}
+          <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
+            <Menu size={22} color="var(--text-primary)" />
           </button>
         </div>
       </div>
@@ -72,40 +68,16 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  profileContainer: {
+  logoContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
   },
-  avatar: {
-    width: '48px',
-    height: '48px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #FFE4E1, #FFC0CB)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 8px 16px rgba(142, 154, 167, 0.1)',
-  },
-  avatarText: {
+  logoText: {
     fontFamily: 'var(--font-title)',
+    fontSize: '1.45rem',
     fontWeight: '700',
-    color: '#FF8C69',
-    fontSize: '1.3rem',
-  },
-  greeting: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  helloText: {
-    fontSize: '0.85rem',
-    color: 'var(--text-secondary)',
-    fontWeight: '500',
-  },
-  nameText: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    marginTop: '-2px',
+    color: 'var(--text-primary)',
+    letterSpacing: '-0.5px',
   },
   actions: {
     display: 'flex',
