@@ -266,7 +266,7 @@ export default function ProductDetailPage({ params }) {
 
               <div style={styles.specsTable}>
                 <div style={styles.specRow}>
-                  <span style={styles.specKey}>Código ERP</span>
+                  <span style={styles.specKey}>Código de producto</span>
                   <span style={styles.specValue}>{product.id}</span>
                 </div>
                 <div style={styles.specRow}>
@@ -284,7 +284,7 @@ export default function ProductDetailPage({ params }) {
             <div style={styles.kitHeader}>
               <h2 style={styles.kitTitle}>Arma tu Kit de Rutina</h2>
               <p style={styles.kitSubtitle}>
-                Combina este producto con sus complementos recomendados del ERP para maximizar tus resultados de belleza.
+                Combina este producto con sus complementos recomendados para maximizar tus resultados de belleza.
               </p>
             </div>
 

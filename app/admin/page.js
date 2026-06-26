@@ -66,7 +66,7 @@ export default function AdminDashboard() {
         const data = await response.json();
         setProducts(data);
       } else {
-        setMessage({ type: 'error', text: 'Error al obtener productos del ERP.' });
+        setMessage({ type: 'error', text: 'Error al obtener productos del catálogo.' });
       }
     } catch (err) {
       setMessage({ type: 'error', text: 'Error de red al consultar productos.' });
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
           <div style={s.leftPanel}>
             <div style={s.panelCard} className="soft-card">
               <div style={s.panelHeader}>
-                <h3 style={s.panelTitle}>Catálogo ERP</h3>
+                <h3 style={s.panelTitle}>Catálogo Base</h3>
                 <button onClick={() => loadProducts(searchQuery)} style={s.refreshBtn}>
                   <RefreshCw size={16} />
                 </button>
@@ -482,23 +482,23 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* Ficha ERP */}
-                <div style={s.erpGrid}>
-                  <div style={s.erpItem}>
-                    <span style={s.erpLabel}>Código ERP</span>
-                    <span style={s.erpVal}>{selectedProduct.id}</span>
+                {/* Ficha de Origen */}
+                <div style={s.sourceGrid}>
+                  <div style={s.sourceItem}>
+                    <span style={s.sourceLabel}>Código de sistema</span>
+                    <span style={s.sourceVal}>{selectedProduct.id}</span>
                   </div>
-                  <div style={s.erpItem}>
-                    <span style={s.erpLabel}>Nombre ERP</span>
-                    <span style={s.erpVal}>{selectedProduct.name}</span>
+                  <div style={s.sourceItem}>
+                    <span style={s.sourceLabel}>Nombre en catálogo</span>
+                    <span style={s.sourceVal}>{selectedProduct.name}</span>
                   </div>
-                  <div style={s.erpItem}>
-                    <span style={s.erpLabel}>Marca / Stock</span>
-                    <span style={s.erpVal}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
+                  <div style={s.sourceItem}>
+                    <span style={s.sourceLabel}>Marca / Stock</span>
+                    <span style={s.sourceVal}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
                   </div>
-                  <div style={s.erpItem}>
-                    <span style={s.erpLabel}>Precio ERP</span>
-                    <span style={s.erpVal}>S/ {selectedProduct.price}</span>
+                  <div style={s.sourceItem}>
+                    <span style={s.sourceLabel}>Precio base</span>
+                    <span style={s.sourceVal}>S/ {selectedProduct.price}</span>
                   </div>
                 </div>
 
@@ -721,7 +721,7 @@ export default function AdminDashboard() {
         <div style={s.catContainer}>
           <div style={s.catCard} className="soft-card">
             <h3 style={s.panelTitle}>Gestión de Sedes (Almacenes)</h3>
-            <p style={s.panelSub}>Activa o desactiva las sedes del ERP que sumarán stock en la tienda online.</p>
+            <p style={s.panelSub}>Activa o desactiva las sedes de almacén que sumarán stock en la tienda online.</p>
 
             {whMessage.text && (
               <div style={{
@@ -864,11 +864,11 @@ const s = {
   // Alert
   alert: { display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid', padding: '10px 14px', borderRadius: '12px', marginBottom: '12px' },
 
-  // ERP summary
-  erpGrid: { backgroundColor: '#F8F9FA', borderRadius: '14px', padding: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' },
-  erpItem: { display: 'flex', flexDirection: 'column' },
-  erpLabel: { fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.04em' },
-  erpVal: { fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  // Source summary
+  sourceGrid: { backgroundColor: '#F8F9FA', borderRadius: '14px', padding: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' },
+  sourceItem: { display: 'flex', flexDirection: 'column' },
+  sourceLabel: { fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  sourceVal: { fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
 
   // Editor form
   editorForm: { display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto', paddingRight: '4px' },
