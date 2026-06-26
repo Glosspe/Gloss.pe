@@ -9,10 +9,12 @@ export async function GET() {
     const localApiUrl = process.env.LOCAL_API_URL;
 
     if (localApiUrl) {
+      const cleanApiUrl = localApiUrl.replace(/\/$/, '');
+
+      // --- INTENTO 1: Proxy directo a /api/products/categories ---
       try {
-        const cleanApiUrl = localApiUrl.replace(/\/$/, '');
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000); // 5s max para proxy
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8s max
 
         const res = await fetch(`${cleanApiUrl}/api/products/categories`, {
           headers: { 'Content-Type': 'application/json' },
@@ -23,18 +25,75 @@ export async function GET() {
 
         if (res.ok) {
           const data = await res.json();
-          return NextResponse.json(data);
+          if (Array.isArray(data) && data.length > 0) {
+            return NextResponse.json(data);
+          }
         }
       } catch (proxyErr) {
-        console.warn('[API Categories - PROXY] Proxy no disponible, usando fallback PostgreSQL:', proxyErr.message);
+        console.warn('[API Categories - PROXY] Proxy de categorías no disponible:', proxyErr.message);
+      }
+
+      // --- INTENTO 2: Derivar categorías desde el proxy de búsqueda ---
+      // El proxy de búsqueda (search) SÍ funciona. Pedimos todos los productos
+      // y extraemos las categorías únicas que realmente tienen productos.
+      try {
+        console.log('[API Categories] Derivando categorías desde proxy de búsqueda...');
+        const searchRes = await fetch(`${cleanApiUrl}/api/products/search?category=Todos`, {
+          headers: { 'Content-Type': 'application/json' },
+          next: { revalidate: 300 }
+        });
+
+        if (searchRes.ok) {
+          const products = await searchRes.json();
+          if (Array.isArray(products) && products.length > 0) {
+            // Extraer categorías únicas con conteo de productos
+            const catCount = new Map();
+            products.forEach(p => {
+              const cat = p.category;
+              if (cat && cat !== 'Trending' && cat !== 'Otros') {
+                catCount.set(cat, (catCount.get(cat) || 0) + 1);
+              }
+            });
+
+            // Ordenar por cantidad de productos (más populares primero)
+            const derivedCategories = Array.from(catCount.entries())
+              .sort((a, b) => b[1] - a[1])
+              .map(([name]) => ({ id: name, name }));
+
+            if (derivedCategories.length > 0) {
+              console.log(`[API Categories] Derivadas ${derivedCategories.length} categorías desde productos:`, derivedCategories.map(c => c.name).join(', '));
+              
+              // Cruzar con PostgreSQL para respetar visibilidad del admin
+              try {
+                const catConfigs = await prisma.webCategoriaConfig.findMany();
+                if (catConfigs.length > 0) {
+                  const configMap = {};
+                  catConfigs.forEach(c => { configMap[c.categoria] = c; });
+
+                  const filtered = derivedCategories.filter(cat => {
+                    const config = configMap[cat.id] || configMap[cat.name];
+                    if (!config) return true;
+                    return config.visible !== false;
+                  });
+
+                  if (filtered.length > 0) {
+                    return NextResponse.json(filtered);
+                  }
+                }
+              } catch (pgErr) {
+                console.warn('[API Categories] No se pudo cruzar con PostgreSQL:', pgErr.message);
+              }
+
+              return NextResponse.json(derivedCategories);
+            }
+          }
+        }
+      } catch (searchErr) {
+        console.warn('[API Categories] Error derivando desde búsqueda:', searchErr.message);
       }
     }
 
-    // --- INTENTO DIRECTO AL ERP (solo si NO estamos en modo proxy) ---
-    // Si estamos en modo proxy y falló, NO intentamos ERP directo (tomaría 90s en timeout).
-    // En su lugar, vamos directo al fallback de PostgreSQL.
-    let erpCategories = null;
-
+    // --- MODO LOCAL (sin proxy): Consulta directa al ERP ---
     if (!localApiUrl) {
       try {
         const pool = await getErpConnection();
@@ -63,52 +122,47 @@ export async function GET() {
         }
 
         if (result.recordset.length > 0) {
-          erpCategories = result.recordset;
+          let visibleCategories = result.recordset;
+
+          // Cruzar con PostgreSQL para respetar visibilidad
+          try {
+            const catConfigs = await prisma.webCategoriaConfig.findMany();
+            if (catConfigs.length > 0) {
+              const configMap = {};
+              catConfigs.forEach(c => { configMap[c.categoria] = c; });
+
+              visibleCategories = result.recordset.filter(cat => {
+                const config = configMap[cat.id] || configMap[cat.name];
+                if (!config) return true;
+                return config.visible !== false;
+              });
+
+              visibleCategories.sort((a, b) => {
+                const orderA = (configMap[a.id] || configMap[a.name])?.orden ?? 999;
+                const orderB = (configMap[b.id] || configMap[b.name])?.orden ?? 999;
+                if (orderA !== orderB) return orderA - orderB;
+                return a.name.localeCompare(b.name);
+              });
+            }
+          } catch (pgErr) {
+            console.warn('[API Categories] PostgreSQL no accesible para visibilidad:', pgErr.message);
+          }
+
+          return NextResponse.json(visibleCategories);
         }
       } catch (dbErr) {
         console.warn('[API Categories] ERP no accesible:', dbErr.message);
       }
     }
 
-    // Si obtuvimos categorías del ERP, cruzar con PostgreSQL para visibilidad
-    if (erpCategories && erpCategories.length > 0) {
-      let visibleCategories = erpCategories;
-      try {
-        const catConfigs = await prisma.webCategoriaConfig.findMany();
-        if (catConfigs.length > 0) {
-          const configMap = {};
-          catConfigs.forEach(c => { configMap[c.categoria] = c; });
-
-          visibleCategories = erpCategories.filter(cat => {
-            const config = configMap[cat.id] || configMap[cat.name];
-            if (!config) return true;
-            return config.visible !== false;
-          });
-
-          visibleCategories.sort((a, b) => {
-            const orderA = (configMap[a.id] || configMap[a.name])?.orden ?? 999;
-            const orderB = (configMap[b.id] || configMap[b.name])?.orden ?? 999;
-            if (orderA !== orderB) return orderA - orderB;
-            return a.name.localeCompare(b.name);
-          });
-        }
-      } catch (pgErr) {
-        console.warn('[API Categories] PostgreSQL no accesible para visibilidad:', pgErr.message);
-      }
-
-      return NextResponse.json(visibleCategories);
-    }
-
-    // --- FALLBACK: Usar categorías de PostgreSQL (mismo origen que el admin) ---
-    // Esto garantiza respuesta instantánea en Railway cuando el ERP no está accesible.
-    console.log('[API Categories] Usando categorías de PostgreSQL como fallback');
+    // --- ÚLTIMO FALLBACK: PostgreSQL ---
+    console.log('[API Categories] Usando categorías de PostgreSQL como último fallback');
     try {
-      let pgCategories = await prisma.webCategoriaConfig.findMany({
+      const pgCategories = await prisma.webCategoriaConfig.findMany({
         where: { visible: true },
         orderBy: { orden: 'asc' }
       });
 
-      // Formatear al mismo shape que las categorías del ERP: { id, name }
       const formatted = pgCategories.map(c => ({
         id: c.categoria,
         name: c.categoria
@@ -121,7 +175,7 @@ export async function GET() {
       console.warn('[API Categories] PostgreSQL fallback también falló:', pgErr.message);
     }
 
-    // Último recurso: categorías hardcodeadas
+    // Hardcoded de emergencia
     return NextResponse.json([
       { id: 'UÑAS', name: 'UÑAS' },
       { id: 'PESTAÑAS', name: 'PESTAÑAS' },
