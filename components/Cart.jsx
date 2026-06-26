@@ -59,6 +59,11 @@ export default function Cart() {
                     </button>
                   </div>
                   <span style={styles.itemBrand}>{item.brand}</span>
+                  {item.stock <= 10 && item.stock > 0 && (
+                    <span style={styles.lowStockText}>
+                      ¡Solo quedan {item.stock} unidades!
+                    </span>
+                  )}
                   
                   {/* Fila de precio e incrementos */}
                   <div style={styles.itemControlRow}>
@@ -72,8 +77,13 @@ export default function Cart() {
                       </button>
                       <span style={styles.qtyValue}>{item.quantity}</span>
                       <button 
-                        style={styles.qtyButton} 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        style={{
+                          ...styles.qtyButton,
+                          opacity: item.quantity >= (item.stock ?? 9999) ? 0.3 : 1,
+                          cursor: item.quantity >= (item.stock ?? 9999) ? 'not-allowed' : 'pointer'
+                        }} 
+                        onClick={() => item.quantity < (item.stock ?? 9999) && updateQuantity(item.id, item.quantity + 1)}
+                        disabled={item.quantity >= (item.stock ?? 9999)}
                       >
                         <Plus size={14} color="var(--text-primary)" />
                       </button>
@@ -246,6 +256,12 @@ const styles = {
   itemBrand: {
     fontSize: '0.75rem',
     color: 'var(--text-secondary)',
+    marginTop: '2px',
+  },
+  lowStockText: {
+    fontSize: '0.7rem',
+    color: '#F59E0B',
+    fontWeight: '600',
     marginTop: '2px',
   },
   itemControlRow: {

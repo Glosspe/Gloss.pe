@@ -35,14 +35,21 @@ export function CartProvider({ children }) {
   const addToCart = (product, quantity = 1) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + quantity;
+
+      // Si el stock está definido, limitamos al stock disponible
+      const maxStock = typeof product.stock === 'number' ? product.stock : 9999;
+      const finalQty = Math.max(0, Math.min(newQty, maxStock));
+
       if (existingItem) {
         return prevCart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: finalQty }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity }];
+      return [...prevCart, { ...product, quantity: finalQty }];
     });
   };
 
@@ -56,9 +63,14 @@ export function CartProvider({ children }) {
       return;
     }
     setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      prevCart.map((item) => {
+        if (item.id === productId) {
+          const maxStock = typeof item.stock === 'number' ? item.stock : 9999;
+          const finalQty = Math.max(0, Math.min(quantity, maxStock));
+          return { ...item, quantity: finalQty };
+        }
+        return item;
+      })
     );
   };
 

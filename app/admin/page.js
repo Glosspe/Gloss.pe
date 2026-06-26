@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   LogOut, Search, Save, CheckCircle, AlertCircle, Loader2,
   Sparkles, RefreshCw, Upload, X, Eye, EyeOff, Package,
-  LayoutGrid, Trash2, Star, ImagePlus
+  LayoutGrid, Trash2, Star, ImagePlus, Store
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -36,6 +36,12 @@ export default function AdminDashboard() {
   const [isCatSaving, setIsCatSaving] = useState(false);
   const [catMessage, setCatMessage] = useState({ type: '', text: '' });
 
+  // ── Sedes (Almacenes) ──
+  const [warehouses, setWarehouses] = useState([]);
+  const [isWhLoading, setIsWhLoading] = useState(false);
+  const [isWhSaving, setIsWhSaving] = useState(false);
+  const [whMessage, setWhMessage] = useState({ type: '', text: '' });
+
   // ═══ Autenticación ═══
   useEffect(() => {
     const token = localStorage.getItem('gloss_admin_token');
@@ -46,6 +52,7 @@ export default function AdminDashboard() {
       setAdminUser(user ? JSON.parse(user) : { nombre: 'Administrador' });
       loadProducts('');
       loadCategories();
+      loadWarehouses();
     }
   }, [router]);
 
@@ -252,6 +259,57 @@ export default function AdminDashboard() {
     }
   };
 
+  // ═══ Sedes: Cargar ═══
+  const loadWarehouses = async () => {
+    setIsWhLoading(true);
+    const token = localStorage.getItem('gloss_admin_token');
+    try {
+      const res = await fetch('/api/admin/warehouses', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWarehouses(data.warehouses || []);
+      }
+    } catch (err) {
+      console.error('Error cargando sedes:', err);
+    } finally {
+      setIsWhLoading(false);
+    }
+  };
+
+  // ═══ Sedes: Toggle visibilidad ═══
+  const toggleWarehouseVisibility = (codalm) => {
+    setWarehouses(prev => prev.map(w =>
+      w.codalm === codalm ? { ...w, visible: !w.visible } : w
+    ));
+  };
+
+  // ═══ Sedes: Guardar ═══
+  const saveWarehouses = async () => {
+    setIsWhSaving(true);
+    setWhMessage({ type: '', text: '' });
+    const token = localStorage.getItem('gloss_admin_token');
+
+    try {
+      const res = await fetch('/api/admin/warehouses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ warehouses })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setWhMessage({ type: 'success', text: 'Configuración de sedes actualizada correctamente.' });
+      } else {
+        setWhMessage({ type: 'error', text: data.error || 'Error al guardar configuración de sedes.' });
+      }
+    } catch (err) {
+      setWhMessage({ type: 'error', text: 'Error de red.' });
+    } finally {
+      setIsWhSaving(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('gloss_admin_token');
     localStorage.removeItem('gloss_admin_user');
@@ -315,6 +373,12 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('categories')}
         >
           <LayoutGrid size={16} /> Categorías
+        </button>
+        <button
+          style={{ ...s.tab, ...(activeTab === 'warehouses' ? s.tabActive : {}) }}
+          onClick={() => setActiveTab('warehouses')}
+        >
+          <Store size={16} /> Sedes
         </button>
       </div>
 
@@ -644,6 +708,80 @@ export default function AdminDashboard() {
                 <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
               ) : (
                 <><Save size={18} /> Guardar Configuración de Categorías</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════ */}
+      {/* ═══ TAB: SEDES (ALMACENES) ═══ */}
+      {/* ══════════════════════════════════════════ */}
+      {activeTab === 'warehouses' && (
+        <div style={s.catContainer}>
+          <div style={s.catCard} className="soft-card">
+            <h3 style={s.panelTitle}>Gestión de Sedes (Almacenes)</h3>
+            <p style={s.panelSub}>Activa o desactiva las sedes del ERP que sumarán stock en la tienda online.</p>
+
+            {whMessage.text && (
+              <div style={{
+                ...s.alert,
+                backgroundColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                borderColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+              }}>
+                {whMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                <span style={{ fontSize: '0.82rem', fontWeight: '600', color: whMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>
+                  {whMessage.text}
+                </span>
+              </div>
+            )}
+
+            {isWhLoading ? (
+              <div style={s.centerState}>
+                <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+              </div>
+            ) : (
+              <div style={s.catList}>
+                {warehouses.map((wh) => (
+                  <div key={wh.codalm} style={{
+                    ...s.catItem,
+                    opacity: wh.visible ? 1 : 0.5,
+                    borderColor: wh.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)',
+                  }}>
+                    <div style={s.catIcon}>🏢</div>
+                    <div style={s.catInfo}>
+                      <div style={s.catName}>{wh.nomalm}</div>
+                      <div style={s.catStatus}>
+                        Código Sede: <strong>{wh.codalm}</strong> | {wh.visible ? '✅ Activa para la web' : '🚫 Inactiva'}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        ...s.toggleTrack,
+                        backgroundColor: wh.visible ? '#22C55E' : '#D1D5DB',
+                      }}
+                      onClick={() => toggleWarehouseVisibility(wh.codalm)}
+                    >
+                      <div style={{
+                        ...s.toggleThumb,
+                        transform: wh.visible ? 'translateX(20px)' : 'translateX(2px)',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={saveWarehouses}
+              disabled={isWhSaving}
+              style={s.saveCatBtn}
+              className="soft-button"
+            >
+              {isWhSaving ? (
+                <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+              ) : (
+                <><Save size={18} /> Guardar Configuración de Sedes</>
               )}
             </button>
           </div>

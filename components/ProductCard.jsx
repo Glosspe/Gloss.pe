@@ -4,12 +4,39 @@ import React, { useState } from 'react';
 import { Heart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
+const getStockBadge = (stock) => {
+  const qty = parseFloat(stock || 0);
+  if (qty <= 0) {
+    return {
+      label: 'Agotado',
+      color: '#EF4444',
+      bg: '#FEF2F2',
+      dotColor: '#EF4444'
+    };
+  } else if (qty <= 10) {
+    return {
+      label: `Poco stock (${qty})`,
+      color: '#F59E0B',
+      bg: '#FEF3C7',
+      dotColor: '#F59E0B'
+    };
+  } else {
+    return {
+      label: 'Disponible',
+      color: '#10B981',
+      bg: '#ECFDF5',
+      dotColor: '#10B981'
+    };
+  }
+};
+
 export default function ProductCard({ product }) {
   const { addToCart, toggleFavorite, favorites } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
   const isFavorite = favorites.some((fav) => fav.id === product.id);
+  const stockBadge = getStockBadge(product.stock);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -64,10 +91,23 @@ export default function ProductCard({ product }) {
 
       {/* ═══ ZONA DE INFORMACIÓN ═══ */}
       <div style={styles.infoZone}>
-        {/* Marca en mayúsculas, ultra ligero */}
-        <span style={styles.brandLabel}>
-          {product.brand || 'Gloss Beauty'}
-        </span>
+        {/* Fila de Marca y Badge de Stock */}
+        <div style={styles.metaRow}>
+          <span style={styles.brandLabel}>
+            {product.brand || 'Gloss Beauty'}
+          </span>
+          <div style={{
+            ...styles.stockBadge,
+            backgroundColor: stockBadge.bg,
+            color: stockBadge.color
+          }}>
+            <span style={{
+              ...styles.stockDot,
+              backgroundColor: stockBadge.dotColor
+            }} />
+            {stockBadge.label}
+          </div>
+        </div>
 
         {/* Nombre del producto con tipografía serif editorial */}
         <h3 style={styles.productName}>
@@ -98,8 +138,10 @@ export default function ProductCard({ product }) {
             <button
               className={`product-add-to-cart-btn ${justAdded ? 'success' : ''}`}
               onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+              disabled={product.stock <= 0}
+              style={product.stock <= 0 ? styles.disabledAddToCartBtn : {}}
             >
-              {justAdded ? '¡Agregado! ✓' : 'Agregar al carrito'}
+              {product.stock <= 0 ? 'Agotado' : (justAdded ? '¡Agregado! ✓' : 'Agregar al carrito')}
             </button>
 
             {/* Botón de Favorito (Corazón con borde de marca) */}
@@ -204,6 +246,37 @@ const styles = {
     flexDirection: 'column',
     gap: '4px',
     flex: 1,
+  },
+  metaRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '2px',
+    gap: '8px',
+  },
+  stockBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '3px 8px',
+    borderRadius: '12px',
+    fontSize: '0.62rem',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  stockDot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    display: 'inline-block',
+  },
+  disabledAddToCartBtn: {
+    backgroundColor: '#E5E7EB',
+    color: '#9CA3AF',
+    cursor: 'not-allowed',
+    boxShadow: 'none',
+    transform: 'none',
   },
   brandLabel: {
     fontFamily: 'var(--font-body), sans-serif',

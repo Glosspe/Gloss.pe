@@ -152,10 +152,39 @@ export async function GET(request) {
       }
     } else {
       // Consultar directo a la base de datos Navasoft por ZeroTier
-      const warehouse = process.env.ERP_DEFAULT_WAREHOUSE || '01';
-      const stockField = getStockColumnName(warehouse);
-      const prdTable = getStockTableName(warehouse);
-      
+      // Obtener las sedes activas desde Postgres
+      let activeWarehouses = [];
+      try {
+        const dbAlmacenes = await prisma.webAlmacenConfig.findMany({
+          where: { visible: true }
+        });
+        activeWarehouses = dbAlmacenes.map(a => a.codalm);
+      } catch (err) {
+        console.warn('[API Products Search] Error fetching active warehouses from Postgres, falling back to 01:', err.message);
+      }
+
+      // Si por alguna razón no hay almacenes activos configurados, usar por defecto '01'
+      if (activeWarehouses.length === 0) {
+        activeWarehouses = ['01'];
+      }
+
+      // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
+      let selectStockParts = [];
+      let joinParts = [];
+
+      activeWarehouses.forEach(wh => {
+        const alias = `p${wh}`;
+        if (wh === '01') {
+          selectStockParts.push(`ISNULL(p01.stoc, 0)`);
+        } else {
+          selectStockParts.push(`ISNULL(${alias}.stoc, 0)`);
+          joinParts.push(`LEFT JOIN prd01${wh} ${alias} WITH(nolock) ON p01.codi = ${alias}.codi`);
+        }
+      });
+
+      const stockExpression = `(${selectStockParts.join(' + ')})`;
+      const joinsSql = joinParts.join('\n          ');
+
       const sqlRequest = pool.request();
       
       let brandFilter = "";
@@ -189,69 +218,24 @@ export async function GET(request) {
         }
       }
 
-      let sqlQuery = "";
-      if (warehouse === '01') {
-        sqlQuery = `
-          SELECT TOP 100 
-            RTRIM(p01.codi) as id, 
-            RTRIM(p01.codf) as userCode, 
-            RTRIM(p01.descr) as name, 
-            RTRIM(p01.marc) as brand, 
-            RTRIM(p01.umed) as unit, 
-            p01.pvns as price, 
-            p01.stoc as stock,
-            RTRIM(p01.obse) as observations,
-            RTRIM(s.codsub) as categoryCode,
-            RTRIM(s.nomsub) as categoryName
-          FROM prd0101 p01 WITH(nolock)
-          LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
-          WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
-          ORDER BY p01.descr ASC
-        `;
-      } else {
-        sqlQuery = `
-          DECLARE @table_exists INT;
-          SELECT @table_exists = COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '${prdTable}';
-
-          IF @table_exists > 0
-            BEGIN
-              SELECT TOP 100 
-                RTRIM(p01.codi) as id, 
-                RTRIM(p01.codf) as userCode, 
-                RTRIM(p01.descr) as name, 
-                RTRIM(p01.marc) as brand, 
-                RTRIM(p01.umed) as unit, 
-                CASE WHEN ISNULL(p02.pvns, 0) = 0 THEN p01.pvns ELSE p02.pvns END as price, 
-                ISNULL(p02.stoc, 0) as stock, 
-                RTRIM(p01.obse) as observations,
-                RTRIM(s.codsub) as categoryCode,
-                RTRIM(s.nomsub) as categoryName
-              FROM ${prdTable} p02 WITH(nolock)
-              INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = p02.codi
-              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
-              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
-              ORDER BY p01.descr ASC
-            END
-          ELSE
-            BEGIN
-              SELECT TOP 100 
-                RTRIM(p01.codi) as id, 
-                RTRIM(p01.codf) as userCode, 
-                RTRIM(p01.descr) as name, 
-                RTRIM(p01.marc) as brand, 
-                RTRIM(p01.umed) as unit, 
-                p01.pvns as price, 
-                ISNULL(p01.${stockField}, 0) as stock, 
-                RTRIM(p01.obse) as observations,
-                RTRIM(s.codsub) as categoryCode,
-                RTRIM(s.nomsub) as categoryName
-              FROM prd0101 p01 WITH(nolock)
-              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
-              WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
-              ORDER BY p01.descr ASC
-            END
-        `;
-      }
+      const sqlQuery = `
+        SELECT TOP 100 
+          RTRIM(p01.codi) as id, 
+          RTRIM(p01.codf) as userCode, 
+          RTRIM(p01.descr) as name, 
+          RTRIM(p01.marc) as brand, 
+          RTRIM(p01.umed) as unit, 
+          p01.pvns as price, 
+          ${stockExpression} as stock,
+          RTRIM(p01.obse) as observations,
+          RTRIM(s.codsub) as categoryCode,
+          RTRIM(s.nomsub) as categoryName
+        FROM prd0101 p01 WITH(nolock)
+        ${joinsSql}
+        LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
+        WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
+        ORDER BY p01.descr ASC
+      `;
 
       const result = await sqlRequest.query(sqlQuery);
       productsList = result.recordset;
