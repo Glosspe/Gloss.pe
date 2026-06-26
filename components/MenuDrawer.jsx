@@ -49,14 +49,6 @@ export default function MenuDrawer() {
             <span style={styles.linkLabel}>Mi Cuenta</span>
           </Link>
 
-          {/* Enlace Administración */}
-          <Link href="/admin" onClick={() => setIsMenuOpen(false)} style={styles.menuLink}>
-            <div style={styles.iconBox}>
-              <Settings size={20} color="var(--accent-start)" />
-            </div>
-            <span style={styles.linkLabel}>Administrar Tienda</span>
-          </Link>
-
           {/* Línea divisoria */}
           <div style={styles.divider} />
 
