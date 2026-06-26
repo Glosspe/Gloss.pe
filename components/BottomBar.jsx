@@ -11,6 +11,8 @@ export default function BottomBar() {
   const pathname = usePathname();
 
   const isHomeActive = pathname === '/';
+  const isFavActive = pathname === '/favorites';
+  const isProfileActive = pathname === '/profile';
   const favCount = favorites.length;
 
   return (
@@ -44,21 +46,35 @@ export default function BottomBar() {
 
         {/* Botón Favoritos */}
         <Link href="/favorites" style={styles.navItem}>
-          <div style={styles.iconWrapper}>
-            <Heart size={20} color="var(--text-secondary)" />
+          <div style={{
+            ...styles.iconWrapper,
+            ...(isFavActive ? styles.activeIcon : {})
+          }}>
+            <Heart size={20} color={isFavActive ? '#FFFFFF' : 'var(--text-secondary)'} />
             {favCount > 0 && (
               <span style={styles.badge}>{favCount}</span>
             )}
           </div>
-          <span style={styles.label}>Favoritos</span>
+          <span style={{
+            ...styles.label,
+            color: isFavActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: isFavActive ? '700' : '500'
+          }}>Favoritos</span>
         </Link>
 
         {/* Botón Perfil */}
         <Link href="/profile" style={styles.navItem}>
-          <div style={styles.iconWrapper}>
-            <User size={20} color="var(--text-secondary)" />
+          <div style={{
+            ...styles.iconWrapper,
+            ...(isProfileActive ? styles.activeIcon : {})
+          }}>
+            <User size={20} color={isProfileActive ? '#FFFFFF' : 'var(--text-secondary)'} />
           </div>
-          <span style={styles.label}>Mi Cuenta</span>
+          <span style={{
+            ...styles.label,
+            color: isProfileActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: isProfileActive ? '700' : '500'
+          }}>Mi Cuenta</span>
         </Link>
       </nav>
     </div>

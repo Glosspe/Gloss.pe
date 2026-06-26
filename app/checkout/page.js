@@ -30,6 +30,23 @@ export default function CheckoutPage() {
     }
   }, [cart, router, isSubmitting]);
 
+  // Cargar perfil guardado localmente en el dispositivo
+  useEffect(() => {
+    try {
+      const savedProfile = localStorage.getItem('gloss_profile');
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        if (profile.phone) setPhone(profile.phone);
+        if (profile.docType) setDocType(profile.docType);
+        if (profile.docNumber) setDocNumber(profile.docNumber);
+        if (profile.name) setName(profile.name);
+        if (profile.address) setAddress(profile.address);
+      }
+    } catch (e) {
+      console.warn('Error al cargar perfil desde localStorage:', e);
+    }
+  }, []);
+
   // Validar DNI/RUC automáticamente al cambiar longitud
   useEffect(() => {
     const num = docNumber.trim();
@@ -133,7 +150,34 @@ ${formattedItems}
       const encodedText = encodeURIComponent(whatsappMessage);
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodedText}`;
 
-      // 4. Limpiar el carrito
+      // 4. Guardar datos de perfil e historial de pedidos localmente
+      try {
+        const profile = { phone, docType, docNumber, name, address };
+        localStorage.setItem('gloss_profile', JSON.stringify(profile));
+
+        const newOrder = {
+          nroPedido: data.nroPedido,
+          date: new Date().toISOString(),
+          name,
+          address,
+          phone,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand,
+            price: item.price,
+            quantity: item.quantity
+          })),
+          total: cartTotal,
+          whatsappUrl // Guardamos el enlace directo por si necesita reabrirlo
+        };
+        const existingOrders = JSON.parse(localStorage.getItem('gloss_orders') || '[]');
+        localStorage.setItem('gloss_orders', JSON.stringify([newOrder, ...existingOrders]));
+      } catch (storageErr) {
+        console.warn('Error al guardar historial de compra:', storageErr);
+      }
+
+      // 5. Limpiar el carrito
       clearCart();
 
       // 5. Redireccionar al cliente a WhatsApp
