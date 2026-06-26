@@ -127,7 +127,7 @@ const styles = {
     position: 'absolute',
     top: '4px',
     right: '4px',
-    backgroundColor: '#FF8C69',
+    backgroundColor: 'var(--accent-start)',
     color: '#FFFFFF',
     fontSize: '0.65rem',
     fontWeight: '700',

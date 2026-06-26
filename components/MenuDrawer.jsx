@@ -16,8 +16,8 @@ export default function MenuDrawer() {
         {/* Encabezado del Menú */}
         <div style={styles.header}>
           <div style={styles.logoGroup}>
-            <Sparkles size={18} color="#FF8C69" />
-            <h3 style={styles.logoText}>Tienda Gloss</h3>
+            <Sparkles size={18} color="var(--accent-start)" />
+            <h3 style={styles.logoText}>GLOSS</h3>
           </div>
           <button style={styles.closeButton} onClick={() => setIsMenuOpen(false)}>
             <X size={20} color="var(--text-primary)" />
@@ -29,7 +29,7 @@ export default function MenuDrawer() {
           {/* Enlace Inicio */}
           <Link href="/" onClick={() => setIsMenuOpen(false)} style={styles.menuLink}>
             <div style={styles.iconBox}>
-              <Home size={20} color="#FF8C69" />
+              <Home size={20} color="var(--accent-start)" />
             </div>
             <span style={styles.linkLabel}>Inicio / Catálogo</span>
           </Link>
@@ -37,7 +37,7 @@ export default function MenuDrawer() {
           {/* Enlace Favoritos */}
           <Link href="/favorites" onClick={() => setIsMenuOpen(false)} style={styles.menuLink}>
             <div style={styles.iconBox}>
-              <Heart size={20} color="#FF8C69" />
+              <Heart size={20} color="var(--accent-start)" />
             </div>
             <span style={styles.linkLabel}>Mis Favoritos</span>
           </Link>
@@ -45,7 +45,7 @@ export default function MenuDrawer() {
           {/* Enlace Mi Cuenta */}
           <Link href="/profile" onClick={() => setIsMenuOpen(false)} style={styles.menuLink}>
             <div style={styles.iconBox}>
-              <User size={20} color="#FF8C69" />
+              <User size={20} color="var(--accent-start)" />
             </div>
             <span style={styles.linkLabel}>Mi Cuenta</span>
           </Link>
@@ -53,7 +53,7 @@ export default function MenuDrawer() {
           {/* Enlace Administración */}
           <Link href="/admin" onClick={() => setIsMenuOpen(false)} style={styles.menuLink}>
             <div style={styles.iconBox}>
-              <Settings size={20} color="#FF8C69" />
+              <Settings size={20} color="var(--accent-start)" />
             </div>
             <span style={styles.linkLabel}>Administrar Tienda</span>
           </Link>
@@ -70,7 +70,7 @@ export default function MenuDrawer() {
             style={styles.menuLink}
           >
             <div style={styles.iconBox}>
-              <Phone size={20} color="#FF8C69" />
+              <Phone size={20} color="var(--accent-start)" />
             </div>
             <span style={styles.linkLabel}>Contacto WhatsApp</span>
           </a>
@@ -122,10 +122,12 @@ const styles = {
     gap: '8px',
   },
   logoText: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-logo)',
+    fontSize: '1.4rem',
+    fontWeight: '800',
+    color: 'var(--accent-start)',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
   },
   closeButton: {
     background: 'none',

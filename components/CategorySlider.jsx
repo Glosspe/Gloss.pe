@@ -88,7 +88,7 @@ const styles = {
     width: '6px',
     height: '6px',
     borderRadius: '50%',
-    backgroundColor: '#FF8C69',
-    boxShadow: '0 0 8px rgba(255, 140, 105, 0.6)',
+    backgroundColor: 'var(--accent-start)',
+    boxShadow: '0 0 8px var(--accent-shadow)',
   },
 };

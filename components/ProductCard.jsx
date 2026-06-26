@@ -18,8 +18,8 @@ export default function ProductCard({ product }) {
       >
         <Heart 
           size={18} 
-          color={isFavorite ? '#FF8C69' : 'var(--text-secondary)'} 
-          fill={isFavorite ? '#FF8C69' : 'none'} 
+          color={isFavorite ? 'var(--accent-start)' : 'var(--text-secondary)'} 
+          fill={isFavorite ? 'var(--accent-start)' : 'none'} 
         />
       </button>
 

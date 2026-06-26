@@ -12,7 +12,7 @@ export default function Header() {
       {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
       <div style={styles.topRow}>
         <div style={styles.logoContainer}>
-          <h2 style={styles.logoText}>Tienda Gloss</h2>
+          <h2 style={styles.logoText}>GLOSS</h2>
         </div>
         
         <div style={styles.actions}>
@@ -30,7 +30,7 @@ export default function Header() {
           </button>
         </div>
       </div>
-
+      
       {/* Fila Inferior: Buscador e Icono de Filtro */}
       <div style={styles.searchRow}>
         <div style={styles.searchBar}>
@@ -73,11 +73,12 @@ const styles = {
     alignItems: 'center',
   },
   logoText: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '1.45rem',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-    letterSpacing: '-0.5px',
+    fontFamily: 'var(--font-logo)',
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: 'var(--accent-start)',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
   },
   actions: {
     display: 'flex',
@@ -101,7 +102,7 @@ const styles = {
     position: 'absolute',
     top: '-2px',
     right: '-2px',
-    backgroundColor: '#FF8C69',
+    backgroundColor: 'var(--accent-start)',
     color: '#FFFFFF',
     fontSize: '0.7rem',
     fontWeight: '700',

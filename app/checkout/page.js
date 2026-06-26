@@ -334,7 +334,7 @@ ${formattedItems}
                 </div>
                 <div style={styles.totalRow}>
                   <span style={styles.totalLabel}>Envío</span>
-                  <span style={{ ...styles.totalValue, color: '#FF8C69', fontWeight: '600' }}>Coordinar en chat</span>
+                  <span style={{ ...styles.totalValue, color: 'var(--accent-start)', fontWeight: '600' }}>Coordinar en chat</span>
                 </div>
                 <div style={{ ...styles.totalRow, ...styles.grandTotalRow }}>
                   <span style={styles.grandTotalLabel}>Total</span>
@@ -446,7 +446,7 @@ const styles = {
   inputSpinner: {
     position: 'absolute',
     right: '16px',
-    color: '#FF8C69',
+    color: 'var(--accent-start)',
   },
   row: {
     display: 'flex',

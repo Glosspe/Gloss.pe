@@ -152,7 +152,7 @@ export default function AdminDashboard() {
       <header style={styles.header} className="glass-menu">
         <div style={styles.headerContent}>
           <div style={styles.logoGroup}>
-            <Sparkles size={20} color="#FF8C69" />
+            <Sparkles size={20} color="var(--accent-start)" />
             <h1 style={styles.logo}>Gloss Admin</h1>
             <span style={styles.badge}>Moda & Belleza</span>
           </div>
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
             <div style={styles.productsList}>
               {isLoading ? (
                 <div style={styles.loadingState}>
-                  <Loader2 size={32} className="spinner" color="#FF8C69" />
+                  <Loader2 size={32} className="spinner" color="var(--accent-start)" />
                   <p style={styles.loadingText}>Cargando productos de Navasoft...</p>
                 </div>
               ) : products.length === 0 ? (
@@ -216,8 +216,8 @@ export default function AdminDashboard() {
                       onClick={() => handleSelectProduct(prod)}
                       style={{
                         ...styles.productItem,
-                        backgroundColor: isSelected ? 'rgba(255, 140, 105, 0.05)' : 'transparent',
-                        borderColor: isSelected ? '#FF8C69' : 'rgba(142, 154, 167, 0.08)'
+                        backgroundColor: isSelected ? 'var(--accent-soft)' : 'transparent',
+                        borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.08)'
                       }}
                     >
                       <div style={styles.prodListImageContainer}>
@@ -415,8 +415,8 @@ const styles = {
   badge: {
     fontSize: '0.7rem',
     fontWeight: '700',
-    color: '#FF8C69',
-    backgroundColor: 'rgba(255, 160, 122, 0.15)',
+    color: 'var(--accent-start)',
+    backgroundColor: 'var(--accent-soft)',
     padding: '4px 8px',
     borderRadius: '8px',
   },
@@ -606,8 +606,8 @@ const styles = {
     fontSize: '0.65rem',
   },
   trendingBadge: {
-    backgroundColor: 'rgba(255, 140, 105, 0.1)',
-    color: '#FF8C69',
+    backgroundColor: 'var(--accent-soft)',
+    color: 'var(--accent-start)',
     padding: '2px 6px',
     borderRadius: '6px',
     fontWeight: '700',
@@ -662,16 +662,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: 'rgba(255, 140, 105, 0.05)',
+    backgroundColor: 'var(--accent-soft)',
     padding: '12px 16px',
     borderRadius: '16px',
-    border: '1px solid rgba(255, 140, 105, 0.15)',
+    border: '1px solid rgba(216, 27, 96, 0.15)',
   },
   checkbox: {
     width: '18px',
     height: '18px',
     cursor: 'pointer',
-    accentColor: '#FF8C69',
+    accentColor: 'var(--accent-start)',
   },
   checkboxLabel: {
     fontSize: '0.85rem',
