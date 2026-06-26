@@ -259,7 +259,90 @@ a {
   opacity: 0.8;
 }
 
+/* ═══ Animaciones de tarjeta de producto ═══ */
 
+/* Shimmer / brillo que recorre la imagen */
+.gloss-product-card:hover .card-shimmer {
+  animation: shimmerSlide 1.2s ease-in-out;
+}
 
+@keyframes shimmerSlide {
+  0% { left: -100%; opacity: 0; }
+  20% { opacity: 1; }
+  100% { left: 130%; opacity: 0; }
+}
 
+/* Glow sutil en hover de la tarjeta */
+.gloss-product-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 21px;
+  background: linear-gradient(135deg, rgba(255, 46, 147, 0.15), rgba(216, 27, 96, 0.08), transparent);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.gloss-product-card:hover::after {
+  opacity: 1;
+}
+
+/* Animación de entrada escalonada */
+.product-grid .gloss-product-card {
+  animation: cardFadeUp 0.5s ease both;
+}
+
+.product-grid .gloss-product-card:nth-child(1) { animation-delay: 0ms; }
+.product-grid .gloss-product-card:nth-child(2) { animation-delay: 60ms; }
+.product-grid .gloss-product-card:nth-child(3) { animation-delay: 120ms; }
+.product-grid .gloss-product-card:nth-child(4) { animation-delay: 180ms; }
+.product-grid .gloss-product-card:nth-child(5) { animation-delay: 240ms; }
+.product-grid .gloss-product-card:nth-child(6) { animation-delay: 300ms; }
+.product-grid .gloss-product-card:nth-child(7) { animation-delay: 360ms; }
+.product-grid .gloss-product-card:nth-child(8) { animation-delay: 420ms; }
+.product-grid .gloss-product-card:nth-child(n+9) { animation-delay: 480ms; }
+
+@keyframes cardFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner de carga */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Animación de entrada del carrito lateral */
+@keyframes slideIn {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+
+/* Botón de añadir al carrito - micro-interacción */
+.gloss-product-card button[title="Añadir a la bolsa"]:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(255, 46, 147, 0.35) !important;
+}
+
+.gloss-product-card button[title="Añadir a la bolsa"]:active {
+  transform: scale(0.95);
+}
+
+/* Corazón de favorito - pulso */
+.gloss-product-card button[title="Favorito"]:hover {
+  transform: scale(1.12);
+}
+
+.gloss-product-card button[title="Favorito"]:active {
+  transform: scale(0.9);
+}
 
