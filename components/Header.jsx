@@ -1,14 +1,55 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, ShoppingBag, Menu } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function Header() {
   const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen } = useCart();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY <= 10) {
+        setIsCollapsed(false);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsCollapsed(true);
+      } else if (currentScrollY < lastScrollY) {
+        setIsCollapsed(false);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const headerStyle = {
+    ...styles.header,
+    padding: isCollapsed ? '10px 20px 10px 20px' : '14px 20px 12px 20px',
+    gap: isCollapsed ? '0px' : '12px',
+    transition: 'padding 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), gap 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+  };
+
+  const searchRowStyle = {
+    ...styles.searchRow,
+    maxHeight: isCollapsed ? '0px' : '80px',
+    opacity: isCollapsed ? 0 : 1,
+    transform: isCollapsed ? 'translateY(-15px)' : 'translateY(0)',
+    pointerEvents: isCollapsed ? 'none' : 'auto',
+    transition: 'max-height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.25s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    overflow: 'hidden',
+  };
 
   return (
-    <header style={styles.header}>
+    <header style={headerStyle}>
       {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
       <div style={styles.topRow}>
         <div style={styles.logoContainer}>
@@ -32,7 +73,7 @@ export default function Header() {
       </div>
       
       {/* Fila Inferior: Buscador Expandido */}
-      <div style={styles.searchRow}>
+      <div style={searchRowStyle}>
         <div style={styles.searchBar}>
           <Search size={22} color="var(--accent-start)" style={styles.searchIcon} />
           <input
