@@ -6,7 +6,7 @@ import { useCart } from '@/context/CartContext';
 export default function CategorySlider() {
   const { selectedCategory, setSelectedCategory, setSelectedCategoryLabel, setSelectedBrand } = useCart();
   const [familyTabs, setFamilyTabs] = useState([
-    { id: 'Trending', name: 'Trending', isSystem: true },
+    { id: 'Trending', name: 'Destacados', isSystem: true },
     { id: 'Todos', name: 'Todos', isSystem: true },
   ]);
 
@@ -19,7 +19,7 @@ export default function CategorySlider() {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             const tabs = [
-              { id: 'Trending', name: 'Trending', isSystem: true },
+              { id: 'Trending', name: 'Destacados', isSystem: true },
               { id: 'Todos', name: 'Todos', isSystem: true },
               ...data.map(fam => ({
                 id: `FAM:${fam.id}`,       // ej: FAM:05
@@ -40,7 +40,7 @@ export default function CategorySlider() {
   // Formatear label para UI (Title Case)
   function formatLabel(name) {
     if (!name) return '';
-    if (name === 'Trending' || name === 'Todos') return name;
+    if (name === 'Trending' || name === 'Todos' || name === 'Destacados') return name;
     const connectors = ['de', 'con', 'y', 'para', 'la', 'el', 'los', 'las', 'en'];
     return name
       .toLowerCase()

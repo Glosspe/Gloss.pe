@@ -534,7 +534,7 @@ export default function AdminDashboard() {
                       <Star size={18} color={isTrending ? 'var(--accent-start)' : 'var(--text-secondary)'} fill={isTrending ? 'var(--accent-start)' : 'none'} />
                       <div>
                         <div style={s.switchTitle}>Producto Destacado</div>
-                        <div style={s.switchDesc}>Aparece en la sección "Trending"</div>
+                        <div style={s.switchDesc}>Aparece en la sección "Destacados"</div>
                       </div>
                       <div style={{
                         ...s.toggleTrack,
