@@ -170,8 +170,15 @@ html, body {
 }
 
 /* Ajustes tipográficos */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-title);
+h1, h2, h3 {
+  font-family: var(--font-logo); /* Bodoni Moda Serif de alta costura */
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+h4, h5, h6 {
+  font-family: var(--font-title); /* Outfit Sans-serif moderna */
   color: var(--text-primary);
   font-weight: 600;
 }

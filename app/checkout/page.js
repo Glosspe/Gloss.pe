@@ -375,10 +375,12 @@ const styles = {
     color: 'var(--text-primary)',
   },
   logo: {
-    fontFamily: 'var(--font-title)',
+    fontFamily: 'var(--font-logo)',
     fontWeight: '700',
     fontSize: '1.4rem',
     color: 'var(--text-primary)',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
   },
   layout: {
     display: 'flex',

@@ -120,10 +120,11 @@ const styles = {
     alignItems: 'center',
   },
   sectionTitle: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '1.2rem',
+    fontFamily: 'var(--font-logo)',
+    fontSize: '1.4rem', // Ligeramente mayor para el estilo Serif elegante
     fontWeight: '700',
     color: 'var(--text-primary)',
+    letterSpacing: '0.02em',
   },
   sectionCount: {
     fontSize: '0.8rem',
