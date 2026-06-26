@@ -51,8 +51,10 @@ export default function Header() {
 
 const styles = {
   header: {
-    position: 'sticky',
+    position: 'fixed',
     top: 0,
+    left: '50%',
+    transform: 'translateX(-50%)',
     zIndex: 1000,
     padding: '14px 20px 12px 20px',
     backgroundColor: 'rgba(255, 255, 255, 0.96)',
@@ -64,7 +66,6 @@ const styles = {
     gap: '12px',
     width: '100%',
     maxWidth: '800px',
-    margin: '0 auto',
   },
   topRow: {
     display: 'flex',

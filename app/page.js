@@ -123,6 +123,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
+    paddingTop: '144px',
     paddingBottom: '20px',
   },
   sectionHeader: {
