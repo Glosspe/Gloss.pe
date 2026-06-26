@@ -11,6 +11,50 @@ export function mapSubfamilyToWebCategory(codsub, categoryName) {
   return 'Otros';
 }
 
+// Helper para formatear nombres de productos del ERP (todo mayúsculas a formato premium de mayúsculas y minúsculas)
+export function formatProductName(name) {
+  if (!name) return '';
+  
+  const cleaned = name.trim().replace(/\s+/g, ' ');
+  const lower = cleaned.toLowerCase();
+  const words = lower.split(' ');
+  const connectors = ['de', 'con', 'y', 'el', 'la', 'para', 'en', 'al', 'del', 'los', 'las', 'un', 'una'];
+  const uppercaseUnits = ['ml', 'gr', 'kg', 'fps', 'uv', '3d', 'pz', 'pza', 'pzas'];
+  
+  const formattedWords = words.map((word, index) => {
+    if (!word) return '';
+    
+    // Conectores en minúsculas (a menos que sea la primera palabra)
+    if (connectors.includes(word) && index !== 0) {
+      return word;
+    }
+    
+    // Unidades de medida en mayúsculas
+    if (uppercaseUnits.includes(word)) {
+      return word.toUpperCase();
+    }
+    
+    // Números compuestos con unidades (ej: 30ml -> 30ML, fps50 -> 50FPS)
+    if (/^\d+(ml|gr|g|kg|oz|pz|pza|pzas|fps)$/i.test(word)) {
+      const numberPart = word.match(/^\d+/)[0];
+      const unitPart = word.match(/[a-z]+$/i)[0].toUpperCase();
+      return numberPart + unitPart;
+    }
+    
+    // Guiones (ej: anti-arrugas -> Anti-Arrugas)
+    if (word.includes('-')) {
+      return word.split('-')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('-');
+    }
+    
+    // Capitalizar por defecto
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  });
+  
+  return formattedWords.join(' ');
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -249,7 +293,7 @@ export async function GET(request) {
       return {
         id: p.id,
         userCode: p.userCode,
-        name: p.name,
+        name: formatProductName(p.name),
         brand: p.brand?.trim() || 'Importado',
         unit: p.unit?.trim() || 'UND',
         price: parseFloat(p.price || 0),
