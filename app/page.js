@@ -9,7 +9,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
-  const { selectedCategory, searchQuery, selectedBrand } = useCart();
+  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel } = useCart();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,6 +70,15 @@ export default function HomePage() {
     };
   }, [selectedCategory, searchQuery, selectedBrand]);
 
+  // Generar título de sección inteligente
+  const getSectionTitle = () => {
+    if (selectedBrand) return `Marca: ${selectedBrand}`;
+    if (selectedCategoryLabel) return selectedCategoryLabel;
+    if (selectedCategory === 'Trending') return 'Productos Destacados';
+    if (selectedCategory === 'Todos') return 'Todos los Productos';
+    return selectedCategory; // Fallback al ID crudo
+  };
+
   return (
     <div style={styles.container}>
       {/* Cabecera Principal */}
@@ -90,7 +99,7 @@ export default function HomePage() {
       {/* Título de Sección */}
       <div style={styles.sectionHeader}>
         <h3 style={styles.sectionTitle}>
-          {selectedBrand ? `Marca: ${selectedBrand}` : (selectedCategory === 'Trending' ? 'Productos Destacados' : selectedCategory)}
+          {getSectionTitle()}
         </h3>
         {!isLoading && (
           <span style={styles.sectionCount}>{products.length} productos</span>

@@ -3,66 +3,87 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 
-// Fallback mínimo si la API no responde
-const FALLBACK_CATEGORIES = [
-  { id: 'Trending', name: 'Trending', isSystem: true },
-  { id: 'Todos', name: 'Todos', isSystem: true },
-];
-
 export default function CategorySlider() {
-  const { selectedCategory, setSelectedCategory } = useCart();
-  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+  const { selectedCategory, setSelectedCategory, setSelectedCategoryLabel, setSelectedBrand } = useCart();
+  const [familyTabs, setFamilyTabs] = useState([
+    { id: 'Trending', name: 'Trending', isSystem: true },
+    { id: 'Todos', name: 'Todos', isSystem: true },
+  ]);
 
-  // Cargar categorías reales desde el ERP vía /api/products/categories
+  // Cargar familias reales desde el ERP vía /api/products/categories-tree
   useEffect(() => {
-    async function loadCategories() {
+    async function loadFamilies() {
       try {
-        const res = await fetch('/api/products/categories');
+        const res = await fetch('/api/products/categories-tree');
         if (res.ok) {
           const data = await res.json();
-          // data es un array de { id: codsub, name: nomsub } directo del ERP
           if (Array.isArray(data) && data.length > 0) {
-            const apiCats = [
+            const tabs = [
               { id: 'Trending', name: 'Trending', isSystem: true },
               { id: 'Todos', name: 'Todos', isSystem: true },
-              ...data.map(c => ({
-                id: c.id,       // codsub del ERP (ej: '01-03')
-                name: c.name,   // nomsub del ERP (ej: 'UÑAS')
+              ...data.map(fam => ({
+                id: `FAM:${fam.id}`,       // ej: FAM:05
+                name: fam.name,             // ej: CABELLO
+                familyId: fam.id,
               }))
             ];
-            setCategories(apiCats);
+            setFamilyTabs(tabs);
           }
         }
       } catch (err) {
-        console.warn('[CategorySlider] No se pudieron cargar categorías desde API, usando fallback');
+        console.warn('[CategorySlider] No se pudieron cargar familias desde API, usando fallback');
       }
     }
-    loadCategories();
+    loadFamilies();
   }, []);
 
-  // Formatear label para mostrar en UI (capitalizar primera letra)
+  // Formatear label para UI (Title Case)
   function formatLabel(name) {
     if (!name) return '';
     if (name === 'Trending' || name === 'Todos') return name;
-    // Capitalizar solo la primera letra, el resto en minúsculas
-    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    const connectors = ['de', 'con', 'y', 'para', 'la', 'el', 'los', 'las', 'en'];
+    return name
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word, index) => {
+        if (index > 0 && connectors.includes(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(' ');
   }
+
+  const handleSelectTab = (tab) => {
+    setSelectedCategory(tab.id);
+    setSelectedCategoryLabel(tab.isSystem ? '' : formatLabel(tab.name));
+    setSelectedBrand(''); // Limpiar marca al cambiar de tab
+  };
+
+  // Determinar cuál tab está activo (coincidencia exacta o por familia)
+  const isTabActive = (tabId) => {
+    if (selectedCategory === tabId) return true;
+    // Si hay una subcategoría seleccionada (ej: 05-01), resaltar el tab de la familia correspondiente (FAM:05)
+    if (tabId.startsWith('FAM:') && /^\d{2}-\d{2,}$/.test(selectedCategory)) {
+      const famCode = tabId.replace('FAM:', '');
+      return selectedCategory.startsWith(famCode + '-');
+    }
+    return false;
+  };
 
   return (
     <div style={styles.container}>
       <div style={styles.slider}>
-        {categories.map((cat) => {
-          const isActive = selectedCategory === cat.id;
+        {familyTabs.map((tab) => {
+          const isActive = isTabActive(tab.id);
           return (
-            <div key={cat.id} style={styles.tabContainer}>
+            <div key={tab.id} style={styles.tabContainer}>
               <button
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => handleSelectTab(tab)}
                 style={{
                   ...styles.tabButton,
                   ...(isActive ? styles.tabActive : styles.tabInactive)
                 }}
               >
-                {formatLabel(cat.name)}
+                {formatLabel(tab.name)}
               </button>
               {isActive && <div style={styles.activeDot} />}
             </div>
@@ -127,3 +148,4 @@ const styles = {
     boxShadow: '0 0 8px var(--accent-shadow)',
   },
 };
+

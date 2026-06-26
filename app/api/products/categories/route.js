@@ -115,7 +115,7 @@ export async function GET() {
               LTRIM(RTRIM(s.codsub)) as id, 
               LTRIM(RTRIM(s.nomsub)) as name 
             FROM tbl01sbf s
-            INNER JOIN prd0101 p ON LTRIM(RTRIM(s.codsub)) = LEFT(p.codi, 2) + '-' + LTRIM(RTRIM(p.codcat))
+            INNER JOIN prd0101 p ON LTRIM(RTRIM(s.codsub)) = LEFT(p.codi, 2) + '-' + SUBSTRING(p.codi, 3, 2)
             WHERE p.estado = 1
             ORDER BY name ASC
           `);

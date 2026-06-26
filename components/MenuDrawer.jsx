@@ -12,7 +12,8 @@ export default function MenuDrawer() {
     setSelectedCategory,
     selectedBrand,
     setSelectedBrand,
-    setSearchQuery
+    setSearchQuery,
+    setSelectedCategoryLabel
   } = useCart();
 
   const [categoriesTree, setCategoriesTree] = useState([]);
@@ -79,11 +80,13 @@ export default function MenuDrawer() {
     setSelectedCategory('Trending');
     setSelectedBrand('');
     setSearchQuery('');
+    setSelectedCategoryLabel('');
     setIsMenuOpen(false);
   };
 
-  const handleSelectSubcategory = (subId) => {
+  const handleSelectSubcategory = (subId, subName) => {
     setSelectedCategory(subId);
+    setSelectedCategoryLabel(formatLabel(subName));
     setSelectedBrand(''); // Limpiar marca al elegir categoría
     setSearchQuery(''); // Limpiar buscador
     setIsMenuOpen(false); // Cerrar sidebar
@@ -92,6 +95,7 @@ export default function MenuDrawer() {
   const handleSelectBrand = (brandName) => {
     setSelectedBrand(brandName);
     setSelectedCategory('Todos'); // Resetear a 'Todos' para ver todos los productos de esa marca
+    setSelectedCategoryLabel('');
     setSearchQuery(''); // Limpiar buscador
     setIsMenuOpen(false); // Cerrar sidebar
   };
@@ -176,7 +180,7 @@ export default function MenuDrawer() {
                                       color: isSubActive ? 'var(--accent-start)' : 'var(--text-primary)',
                                       fontWeight: isSubActive ? '700' : '500'
                                     }}
-                                    onClick={() => handleSelectSubcategory(sub.id)}
+                                    onClick={() => handleSelectSubcategory(sub.id, sub.name)}
                                   >
                                     <div style={{
                                       ...styles.bulletDot,

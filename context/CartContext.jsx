@@ -11,6 +11,7 @@ export function CartProvider({ children }) {
   const [selectedCategory, setSelectedCategory] = useState('Trending');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState('');
   const [favorites, setFavorites] = useState([]);
 
   // Cargar carrito y favoritos desde localStorage al iniciar
@@ -94,6 +95,8 @@ export function CartProvider({ children }) {
         setSearchQuery,
         selectedBrand,
         setSelectedBrand,
+        selectedCategoryLabel,
+        setSelectedCategoryLabel,
         favorites,
         toggleFavorite,
         addToCart,

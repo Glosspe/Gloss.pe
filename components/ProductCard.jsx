@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Heart, Sparkles } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function ProductCard({ product }) {
@@ -92,41 +92,28 @@ export default function ProductCard({ product }) {
             </div>
           </div>
 
-          {/* Zona de Botones de Acción Responsiva */}
+          {/* Zona de Botones de Acción */}
           <div className="product-card-actions-zone">
-            {/* Botón de Favorito (Corazón) */}
+            {/* Botón Agregar al Carrito (Verde) */}
             <button
-              className="product-favorite-btn"
+              className={`product-add-to-cart-btn ${justAdded ? 'success' : ''}`}
+              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+            >
+              {justAdded ? '¡Agregado! ✓' : 'Agregar al carrito'}
+            </button>
+
+            {/* Botón de Favorito (Corazón con borde verde) */}
+            <button
+              className={`product-favorite-btn ${isFavorite ? 'active' : ''}`}
               onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
               title="Favorito"
             >
               <Heart
                 size={18}
-                color={isFavorite ? '#FF4A75' : '#9CA3AF'}
-                fill={isFavorite ? '#FF4A75' : 'none'}
-                strokeWidth={isFavorite ? 0 : 2}
+                color={isFavorite ? '#FFFFFF' : '#16A34A'}
+                fill={isFavorite ? '#FFFFFF' : 'none'}
+                strokeWidth={2}
               />
-            </button>
-
-            {/* Botón Agregar al Contado (Versión Textual Móvil) */}
-            <button
-              className={`product-add-to-cart-text-btn ${justAdded ? 'success' : ''}`}
-              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
-            >
-              {justAdded ? '¡Agregado! ✓' : 'Agregar al Contado'}
-            </button>
-
-            {/* Botón Agregar Circular (+ Desktop) */}
-            <button
-              className={`product-add-to-cart-circle-btn ${justAdded ? 'success' : ''}`}
-              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
-              title="Añadir a la bolsa"
-            >
-              {justAdded ? (
-                <span style={styles.addedText}>✓</span>
-              ) : (
-                <Plus size={16} color="#1F2937" strokeWidth={2} />
-              )}
             </button>
           </div>
         </div>

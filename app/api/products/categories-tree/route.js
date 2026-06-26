@@ -45,7 +45,7 @@ export async function GET() {
           FROM tbl01fam f WITH(nolock)
           INNER JOIN tbl01sbf s WITH(nolock) ON f.codfam = s.codfam
           WHERE s.codsub IN (
-            SELECT DISTINCT LEFT(p.codi, 2) + '-' + LTRIM(RTRIM(p.codcat))
+            SELECT DISTINCT LEFT(p.codi, 2) + '-' + SUBSTRING(p.codi, 3, 2)
             FROM prd0101 p WITH(nolock)
             WHERE p.estado = 1
           )

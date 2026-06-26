@@ -135,7 +135,11 @@ export async function GET(request) {
       }
 
       if (category && category !== 'Trending' && category !== 'Todos') {
-        if (/^\d{2}-\d{2,}$/.test(category)) {
+        if (category.startsWith('FAM:')) {
+          // Filtrar por familia completa en mocks
+          const famCode = category.replace('FAM:', '');
+          productsList = productsList.filter(p => p.categoryCode && p.categoryCode.startsWith(famCode + '-'));
+        } else if (/^\d{2}-\d{2,}$/.test(category)) {
           // Filtrar por codsub del mock
           productsList = productsList.filter(p => p.categoryCode === category);
         } else {
@@ -168,12 +172,16 @@ export async function GET(request) {
 
       let categoryFilter = "";
       if (category && category !== 'Trending' && category !== 'Todos') {
-        // Detectar si es un ID de subfamilia (formato XX-YY como '01-03') o un nombre
-        if (/^\d{2}-\d{2,}$/.test(category)) {
+        if (category.startsWith('FAM:')) {
+          // Filter by entire family (e.g., FAM:05 = all products in CABELLO)
+          const familyCode = category.replace('FAM:', '');
+          sqlRequest.input('familyCode', sql.VarChar, familyCode);
+          categoryFilter = ` AND LEFT(p01.codi, 2) = @familyCode`;
+        } else if (/^\d{2}-\d{2,}$/.test(category)) {
           // Filtrar por codsub (mismo patrón que el POS Syscom.click)
           sqlRequest.input('catRight', sql.VarChar, category.split('-')[1]);
           sqlRequest.input('catLeft', sql.VarChar, category.split('-')[0]);
-          categoryFilter = ` AND LTRIM(RTRIM(p01.codcat)) = @catRight AND LEFT(p01.codi, 2) = @catLeft`;
+          categoryFilter = ` AND SUBSTRING(p01.codi, 3, 2) = @catRight AND LEFT(p01.codi, 2) = @catLeft`;
         } else {
           // Filtrar por nombre de subfamilia (legacy/fallback)
           sqlRequest.input('categoryFilterName', sql.VarChar, category);
@@ -196,7 +204,7 @@ export async function GET(request) {
             RTRIM(s.codsub) as categoryCode,
             RTRIM(s.nomsub) as categoryName
           FROM prd0101 p01 WITH(nolock)
-          LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
+          LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
           WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
           ORDER BY p01.descr ASC
         `;
@@ -220,7 +228,7 @@ export async function GET(request) {
                 RTRIM(s.nomsub) as categoryName
               FROM ${prdTable} p02 WITH(nolock)
               INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = p02.codi
-              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
+              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
               WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
               ORDER BY p01.descr ASC
             END
@@ -238,7 +246,7 @@ export async function GET(request) {
                 RTRIM(s.codsub) as categoryCode,
                 RTRIM(s.nomsub) as categoryName
               FROM prd0101 p01 WITH(nolock)
-              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat)) = s.codsub
+              LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
               WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
               ORDER BY p01.descr ASC
             END
