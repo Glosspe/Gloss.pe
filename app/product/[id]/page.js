@@ -339,8 +339,9 @@ export default function ProductDetailPage({ params }) {
                             onClick={() => handleAddEquivalentToCart(item)}
                             style={{
                               ...styles.kitItemAddBtn,
-                              backgroundColor: isAdded ? '#22C55E' : 'rgba(255, 46, 147, 0.05)',
-                              color: isAdded ? '#FFFFFF' : 'var(--accent-start)',
+                              backgroundColor: isAdded ? '#22C55E' : 'rgba(0, 0, 0, 0.03)',
+                              color: isAdded ? '#FFFFFF' : 'var(--text-primary)',
+                              border: '1px solid rgba(0, 0, 0, 0.08)'
                             }}
                           >
                             {isAdded ? '✓ Agregado' : 'Añadir al Kit'}
@@ -667,10 +668,10 @@ const styles = {
     flexDirection: 'column',
     gap: '8px',
     marginTop: '12px',
-    backgroundColor: 'var(--accent-soft)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     padding: '12px 16px',
     borderRadius: '18px',
-    border: '1px solid rgba(255, 46, 147, 0.03)',
+    border: '1px solid rgba(0, 0, 0, 0.04)',
   },
   specRow: {
     display: 'flex',
@@ -834,8 +835,8 @@ const styles = {
     alignSelf: 'center',
   },
   kitSummaryCard: {
-    backgroundColor: 'var(--accent-soft)',
-    border: '1px solid rgba(255, 46, 147, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    border: '1px solid rgba(0, 0, 0, 0.06)',
     borderRadius: '24px',
     padding: '18px 24px',
     display: 'flex',
@@ -857,7 +858,7 @@ const styles = {
   kitSummaryLabel: {
     fontSize: '0.85rem',
     fontWeight: '700',
-    color: 'var(--accent-start)',
+    color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
   },

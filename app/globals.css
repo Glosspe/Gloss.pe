@@ -447,13 +447,13 @@ a {
   box-shadow: 0 0 0 4px rgba(255, 46, 147, 0.15) !important;
 }
 
-/* Botón 'Completa tu rutina' de la tarjeta de producto */
+/* Botón 'Ver Kit' de la tarjeta de producto */
 .equivalents-pill-btn {
-  background: rgba(255, 46, 147, 0.04) !important;
-  border: 1px solid rgba(255, 46, 147, 0.18) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
   border-radius: 30px !important;
   padding: 6px 14px !important;
-  color: var(--accent-start) !important;
+  color: var(--text-primary) !important;
   font-family: var(--font-body), sans-serif !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
@@ -471,9 +471,9 @@ a {
 }
 
 .equivalents-pill-btn:hover {
-  background: var(--accent-gradient) !important;
+  background: var(--text-primary) !important;
   color: #FFFFFF !important;
-  border-color: transparent !important;
+  border-color: var(--text-primary) !important;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
   transform: translateY(-1px) !important;
 }

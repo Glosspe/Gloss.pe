@@ -75,7 +75,7 @@ export default function Header() {
       {/* Fila Inferior: Buscador Expandido */}
       <div style={searchRowStyle}>
         <div style={styles.searchBar}>
-          <Search size={22} color="var(--accent-start)" style={styles.searchIcon} />
+          <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos, marcas, cosméticos..."
@@ -169,10 +169,10 @@ const styles = {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'var(--accent-soft)',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
     borderRadius: '30px',
     padding: '0 20px',
-    boxShadow: '0 8px 24px rgba(216, 27, 96, 0.03)',
+    boxShadow: 'inset 1px 1px 4px rgba(0, 0, 0, 0.01)',
     border: 'none',
     height: '60px',
   },
