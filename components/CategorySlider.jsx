@@ -5,17 +5,26 @@ import { useCart } from '@/context/CartContext';
 
 const FALLBACK_CATEGORIES = [
   { id: 'Trending', label: 'Trending', isSystem: true },
-  { id: 'Capilar', label: 'Cuidado Capilar' },
-  { id: 'Facial', label: 'Cuidado Facial' },
-  { id: 'Cosmeticos', label: 'Cosméticos' },
-  { id: 'Corporal', label: 'Cuidado Corporal' }
+  { id: 'Todos', label: 'Todos', isSystem: true },
+  { id: 'UÑAS', label: 'Uñas' },
+  { id: 'PESTAÑAS', label: 'Pestañas' },
+  { id: 'DECOLORADOR', label: 'Decoloradores' },
+  { id: 'ACCESORIOS', label: 'Accesorios' },
+  { id: 'HIDRATANTE', label: 'Hidratantes' },
+  { id: 'ELECTRONICOS', label: 'Electrónicos' }
 ];
 
 const CATEGORY_LABELS = {
-  'Capilar': 'Cuidado Capilar',
-  'Facial': 'Cuidado Facial',
-  'Cosmeticos': 'Cosméticos',
-  'Corporal': 'Cuidado Corporal',
+  'UÑAS': 'Uñas',
+  'PESTAÑAS': 'Pestañas',
+  'DECOLORADOR': 'Decoloradores',
+  'ACCESORIOS': 'Accesorios',
+  'HIDRATANTE': 'Hidratantes',
+  'ELECTRONICOS': 'Electrónicos',
+  'PIES': 'Pies',
+  'PERFUME': 'Perfumes',
+  'FIJADOR': 'Fijadores',
+  'PARCHES': 'Parches'
 };
 
 export default function CategorySlider() {
@@ -32,6 +41,7 @@ export default function CategorySlider() {
           if (data.success && data.categories.length > 0) {
             const apiCats = [
               { id: 'Trending', label: 'Trending', isSystem: true },
+              { id: 'Todos', label: 'Todos', isSystem: true },
               ...data.categories.map(c => ({
                 id: c.categoria,
                 label: CATEGORY_LABELS[c.categoria] || c.categoria

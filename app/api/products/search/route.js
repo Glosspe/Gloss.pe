@@ -5,34 +5,10 @@ import { MOCK_PRODUCTS } from '@/lib/mocks';
 import sql from 'mssql';
 import { getStockColumnName, getStockTableName } from '@/lib/erp-utils';
 
-// Helper de mapeo de subfamilias de Navasoft a categorías de la tienda virtual
-export function mapSubfamilyToWebCategory(codsub) {
-  if (!codsub) return 'Otros';
-  
-  const capilarCodes = ['05-01', '05-02', '05-03', '05-04', '05-05', '01-01'];
-  const facialCodes = ['03-01', '04-04'];
-  const cosmeticosCodes = ['02-01', '02-02', '04-01', '04-02', '04-03', '09-01', '07-01', '10-01'];
-  const corporalCodes = ['06-01', '06-02', '06-03', '08-01'];
-
-  if (capilarCodes.includes(codsub)) return 'Capilar';
-  if (facialCodes.includes(codsub)) return 'Facial';
-  if (cosmeticosCodes.includes(codsub)) return 'Cosmeticos';
-  if (corporalCodes.includes(codsub)) return 'Corporal';
-  
-  if (codsub.startsWith('05')) return 'Capilar';
-  if (codsub.startsWith('02')) return 'Cosmeticos';
-  if (codsub.startsWith('06')) return 'Corporal';
-  
+// Helper para retornar el nombre de categoría web del producto (nombre de subfamilia del ERP)
+export function mapSubfamilyToWebCategory(codsub, categoryName) {
+  if (categoryName) return categoryName.trim();
   return 'Otros';
-}
-
-// Obtener los códigos de subfamilia SQL correspondientes a una categoría web
-function getSubfamilyCodesForCategory(category) {
-  if (category === 'Capilar') return ["'05-01'", "'05-02'", "'05-03'", "'05-04'", "'05-05'", "'01-01'"];
-  if (category === 'Facial') return ["'03-01'", "'04-04'"];
-  if (category === 'Cosmeticos') return ["'02-01'", "'02-02'", "'04-01'", "'04-02'", "'04-03'", "'09-01'", "'07-01'", "'10-01'"];
-  if (category === 'Corporal') return ["'06-01'", "'06-02'", "'06-03'", "'08-01'"];
-  return [];
 }
 
 export async function GET(request) {
@@ -132,12 +108,8 @@ export async function GET(request) {
 
       let categoryFilter = "";
       if (category && category !== 'Trending' && category !== 'Todos') {
-        const subfamilies = getSubfamilyCodesForCategory(category);
-        if (subfamilies.length > 0) {
-          categoryFilter = ` AND s.codsub IN (${subfamilies.join(',')})`;
-        } else {
-          categoryFilter = " AND 1=0";
-        }
+        sqlRequest.input('categoryFilterName', sql.VarChar, category);
+        categoryFilter = ` AND s.nomsub = @categoryFilterName`;
       }
 
       let sqlQuery = "";
@@ -236,21 +208,17 @@ export async function GET(request) {
       console.warn('[API Products Search - LOCAL MODE] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
     }
 
-    // Formatear la lista
+    const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="100%" height="100%" fill="%23FFF2F6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="600" fill="%23FF2E93">GLOSS</text></svg>';
+
     const formattedProducts = productsList.map(p => {
       const enrichment = enrichedMap[p.id] || {};
       
-      let defaultImage = 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=80';
-      const webCat = mapSubfamilyToWebCategory(p.categoryCode);
+      let defaultImage = PLACEHOLDER_IMAGE;
+      const webCat = mapSubfamilyToWebCategory(p.categoryCode, p.categoryName);
       
       if (useFallback) {
         const originalMock = MOCK_PRODUCTS.find(m => m.id === p.id);
-        defaultImage = originalMock ? originalMock.image : defaultImage;
-      } else {
-        if (webCat === 'Capilar') defaultImage = 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&auto=format&fit=crop&q=80';
-        else if (webCat === 'Facial') defaultImage = 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&auto=format&fit=crop&q=80';
-        else if (webCat === 'Cosmeticos') defaultImage = 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&auto=format&fit=crop&q=80';
-        else if (webCat === 'Corporal') defaultImage = 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&auto=format&fit=crop&q=80';
+        defaultImage = originalMock ? originalMock.image : PLACEHOLDER_IMAGE;
       }
 
       const imagesArray = enrichment.imagenes || [];

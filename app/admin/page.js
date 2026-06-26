@@ -258,8 +258,30 @@ export default function AdminDashboard() {
     router.push('/admin/login');
   };
 
-  const CATEGORY_ICONS = { 'Capilar': '💇‍♀️', 'Facial': '🧴', 'Cosmeticos': '💄', 'Corporal': '🧖‍♀️' };
-  const CATEGORY_LABELS = { 'Capilar': 'Cuidado Capilar', 'Facial': 'Cuidado Facial', 'Cosmeticos': 'Cosméticos', 'Corporal': 'Cuidado Corporal' };
+  const CATEGORY_ICONS = { 
+    'UÑAS': '💅', 
+    'PESTAÑAS': '👁️', 
+    'DECOLORADOR': '🧪', 
+    'ACCESORIOS': '🛍️', 
+    'HIDRATANTE': '🧴', 
+    'ELECTRONICOS': '🔌', 
+    'PIES': '🦶', 
+    'PERFUME': '✨', 
+    'FIJADOR': '💨', 
+    'PARCHES': '🩹' 
+  };
+  const CATEGORY_LABELS = { 
+    'UÑAS': 'Uñas', 
+    'PESTAÑAS': 'Pestañas', 
+    'DECOLORADOR': 'Decoloradores', 
+    'ACCESORIOS': 'Accesorios', 
+    'HIDRATANTE': 'Hidratantes', 
+    'ELECTRONICOS': 'Electrónicos', 
+    'PIES': 'Pies', 
+    'PERFUME': 'Perfumes', 
+    'FIJADOR': 'Fijadores', 
+    'PARCHES': 'Parches' 
+  };
 
   // ═══ RENDER ═══
   return (
