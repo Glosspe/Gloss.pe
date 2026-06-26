@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Heart, ShoppingBag, Sparkles } from 'lucide-react';
+import { Plus, Heart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function ProductCard({ product }) {
@@ -17,18 +17,6 @@ export default function ProductCard({ product }) {
     setTimeout(() => setJustAdded(false), 1200);
   };
 
-  // Determinar color de acento del backdrop según categoría
-  const getCategoryAccent = () => {
-    const cat = product.category;
-    if (cat === 'Capilar') return { bg: 'rgba(255, 182, 217, 0.15)', glow: 'rgba(255, 105, 180, 0.08)' };
-    if (cat === 'Facial') return { bg: 'rgba(200, 220, 255, 0.15)', glow: 'rgba(100, 149, 237, 0.08)' };
-    if (cat === 'Cosmeticos') return { bg: 'rgba(255, 200, 200, 0.18)', glow: 'rgba(255, 46, 147, 0.1)' };
-    if (cat === 'Corporal') return { bg: 'rgba(220, 240, 220, 0.15)', glow: 'rgba(120, 200, 150, 0.08)' };
-    return { bg: 'rgba(255, 220, 240, 0.12)', glow: 'rgba(255, 46, 147, 0.06)' };
-  };
-
-  const accent = getCategoryAccent();
-
   return (
     <div
       className="gloss-product-card"
@@ -38,18 +26,12 @@ export default function ProductCard({ product }) {
         ...styles.card,
         transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
         boxShadow: isHovered 
-          ? '0 20px 50px rgba(216, 27, 96, 0.1), 0 8px 20px rgba(0,0,0,0.04)' 
-          : '0 4px 20px rgba(216, 27, 96, 0.04), 0 1px 6px rgba(0,0,0,0.02)',
+          ? '0 20px 40px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.02)' 
+          : '0 8px 24px rgba(0,0,0,0.02), 0 1px 4px rgba(0,0,0,0.01)',
       }}
     >
-      {/* ═══ ZONA DE IMAGEN CON BACKDROP ORGÁNICO ═══ */}
+      {/* ═══ ZONA DE IMAGEN CON ALFOMBRA LIMPIA ═══ */}
       <div style={styles.imageZone}>
-        {/* Fondo orgánico degradado */}
-        <div style={{
-          ...styles.organicBackdrop,
-          background: `radial-gradient(ellipse at 50% 60%, ${accent.bg} 0%, transparent 70%)`,
-        }} />
-        
         {/* Shimmer / Brillo sutil animado */}
         <div style={styles.shimmer} className="card-shimmer" />
 
@@ -68,24 +50,6 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Botón de Favorito flotante */}
-        <button
-          style={{
-            ...styles.heartButton,
-            backgroundColor: isFavorite ? 'var(--accent-start)' : 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(8px)',
-          }}
-          onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
-          title="Favorito"
-        >
-          <Heart
-            size={14}
-            color={isFavorite ? '#FFFFFF' : 'var(--accent-start)'}
-            fill={isFavorite ? '#FFFFFF' : 'none'}
-            strokeWidth={2.5}
-          />
-        </button>
-
         {/* Imagen del Producto */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -97,9 +61,6 @@ export default function ProductCard({ product }) {
           }}
         />
       </div>
-
-      {/* ═══ LÍNEA DE ACENTO GRADIENTE ═══ */}
-      <div style={styles.accentLine} />
 
       {/* ═══ ZONA DE INFORMACIÓN ═══ */}
       <div style={styles.infoZone}>
@@ -113,27 +74,56 @@ export default function ProductCard({ product }) {
           {product.name}
         </h3>
 
-        {/* Fila de precio + botón de acción */}
+        {/* Descripción / Observaciones del ERP */}
+        <p style={styles.descriptionLabel}>
+          {product.description || 'Cuidado de belleza de alta calidad para consentirte todos los días.'}
+        </p>
+
+        {/* Fila inferior: precio a la izquierda, botones de acción a la derecha */}
         <div style={styles.bottomRow}>
+          {/* Bloque de Precio */}
           <div style={styles.priceBlock}>
-            <span style={styles.currency}>S/</span>
-            <span style={styles.priceValue}>{parseFloat(product.price || 0).toFixed(2)}</span>
+            <span style={styles.priceLabel}>Precio</span>
+            <div style={styles.priceValueBlock}>
+              <span style={styles.currency}>S/</span>
+              <span style={styles.priceValue}>{parseFloat(product.price || 0).toFixed(2)}</span>
+            </div>
           </div>
 
-          <button
-            style={{
-              ...styles.addButton,
-              ...(justAdded ? styles.addButtonSuccess : {}),
-            }}
-            onClick={handleAddToCart}
-            title="Añadir a la bolsa"
-          >
-            {justAdded ? (
-              <span style={styles.addedText}>✓</span>
-            ) : (
-              <ShoppingBag size={15} color="#FFFFFF" strokeWidth={2.5} />
-            )}
-          </button>
+          {/* Stack vertical de botones de acción */}
+          <div style={styles.actionsStack}>
+            {/* Botón de Favorito */}
+            <button
+              className="product-action-btn"
+              style={styles.roundButton}
+              onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
+              title="Favorito"
+            >
+              <Heart
+                size={15}
+                color={isFavorite ? '#FF4A75' : '#9CA3AF'}
+                fill={isFavorite ? '#FF4A75' : 'none'}
+                strokeWidth={isFavorite ? 0 : 2}
+              />
+            </button>
+
+            {/* Botón de Agregar a la bolsa */}
+            <button
+              className="product-action-btn"
+              style={{
+                ...styles.roundButton,
+                ...(justAdded ? styles.roundButtonSuccess : {}),
+              }}
+              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+              title="Añadir a la bolsa"
+            >
+              {justAdded ? (
+                <span style={styles.addedText}>✓</span>
+              ) : (
+                <Plus size={16} color="#1F2937" strokeWidth={2} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -144,10 +134,10 @@ const styles = {
   card: {
     display: 'flex',
     flexDirection: 'column',
-    borderRadius: '20px',
-    overflow: 'hidden',
+    borderRadius: '28px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid rgba(216, 27, 96, 0.04)',
+    padding: '16px',
+    border: '1px solid rgba(0, 0, 0, 0.02)',
     transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease',
     cursor: 'pointer',
     position: 'relative',
@@ -157,17 +147,14 @@ const styles = {
   imageZone: {
     position: 'relative',
     width: '100%',
-    aspectRatio: '4 / 4.2',
+    aspectRatio: '1',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    backgroundColor: '#FDFBFC',
-  },
-  organicBackdrop: {
-    position: 'absolute',
-    inset: 0,
-    zIndex: 0,
+    borderRadius: '20px',
+    backgroundColor: '#F9FAFB',
+    marginBottom: '14px',
   },
   shimmer: {
     position: 'absolute',
@@ -175,17 +162,17 @@ const styles = {
     left: '-100%',
     width: '60%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)',
+    background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)',
     zIndex: 1,
     pointerEvents: 'none',
   },
   productImage: {
     position: 'relative',
     zIndex: 2,
-    maxHeight: '75%',
+    maxHeight: '80%',
     maxWidth: '80%',
     objectFit: 'contain',
-    filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.06))',
+    filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04))',
     transition: 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
   },
 
@@ -195,20 +182,19 @@ const styles = {
     top: '10px',
     left: '10px',
     zIndex: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backdropFilter: 'blur(8px)',
     borderRadius: '20px',
-    padding: '4px 10px',
-    border: '1px solid rgba(255, 255, 255, 0.5)',
+    padding: '3px 8px',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
   },
   categoryText: {
     fontFamily: 'var(--font-title)',
-    fontSize: '0.6rem',
+    fontSize: '0.58rem',
     fontWeight: '600',
-    color: 'var(--text-primary)',
+    color: '#4B5563',
     textTransform: 'uppercase',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.06em',
   },
   trendingBadge: {
     position: 'absolute',
@@ -217,125 +203,129 @@ const styles = {
     zIndex: 5,
     background: 'var(--accent-gradient)',
     borderRadius: '20px',
-    padding: '4px 10px',
+    padding: '3px 8px',
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
-    boxShadow: '0 4px 12px rgba(255, 46, 147, 0.25)',
+    gap: '3px',
+    boxShadow: '0 4px 10px rgba(255, 46, 147, 0.2)',
   },
   trendingText: {
     fontFamily: 'var(--font-title)',
-    fontSize: '0.6rem',
+    fontSize: '0.58rem',
     fontWeight: '700',
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
 
-  // ─── Corazón ───
-  heartButton: {
-    position: 'absolute',
-    top: '10px',
-    right: '10px',
-    zIndex: 5,
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    border: '1px solid rgba(216, 27, 96, 0.08)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.25s ease',
-    boxShadow: '0 3px 10px rgba(0, 0, 0, 0.06)',
-  },
-
-  // ─── Línea de acento ───
-  accentLine: {
-    width: '100%',
-    height: '2px',
-    background: 'linear-gradient(90deg, transparent 0%, var(--accent-start) 30%, var(--accent-end) 70%, transparent 100%)',
-    opacity: 0.25,
-  },
-
   // ─── Zona de información ───
   infoZone: {
-    padding: '14px 14px 16px 14px',
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
     flex: 1,
   },
   brandLabel: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '0.6rem',
-    fontWeight: '500',
-    color: 'var(--accent-start)',
+    fontFamily: 'var(--font-body), sans-serif',
+    fontSize: '0.62rem',
+    fontWeight: '600',
+    color: '#9CA3AF',
     textTransform: 'uppercase',
-    letterSpacing: '0.12em',
-    opacity: 0.8,
+    letterSpacing: '0.08em',
+    marginBottom: '2px',
   },
   productName: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '0.95rem',
+    fontFamily: 'var(--font-logo), "Cormorant Garamond", Georgia, serif',
+    fontSize: '1.15rem',
     fontWeight: '600',
-    color: 'var(--text-primary)',
-    lineHeight: '1.3',
+    color: '#1F2937',
+    lineHeight: '1.25',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    minHeight: '2.6em',
-    letterSpacing: '0.01em',
+    minHeight: '2.5em',
+    marginBottom: '2px',
+  },
+  descriptionLabel: {
+    fontFamily: 'var(--font-body), sans-serif',
+    fontSize: '0.78rem',
+    color: '#6B7280',
+    lineHeight: '1.35',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+    minHeight: '2.7em',
+    marginBottom: '12px',
   },
 
-  // ─── Fila inferior (precio + botón) ───
+  // ─── Fila inferior (precio + botones) ───
   bottomRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     marginTop: 'auto',
-    paddingTop: '10px',
   },
   priceBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  priceLabel: {
+    fontFamily: 'var(--font-body), sans-serif',
+    fontSize: '0.72rem',
+    color: '#9CA3AF',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  priceValueBlock: {
     display: 'flex',
     alignItems: 'baseline',
     gap: '2px',
   },
   currency: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '0.7rem',
-    fontWeight: '500',
-    color: 'var(--text-secondary)',
+    fontFamily: 'var(--font-title), sans-serif',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    color: '#1F2937',
   },
   priceValue: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '1.15rem',
+    fontFamily: 'var(--font-title), sans-serif',
+    fontSize: '1.3rem',
     fontWeight: '700',
-    color: 'var(--text-primary)',
+    color: '#1F2937',
     letterSpacing: '-0.02em',
   },
-  addButton: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '12px',
+
+  // ─── Stack de botones de acción ───
+  actionsStack: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    alignItems: 'center',
+  },
+  roundButton: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
     border: 'none',
-    background: 'var(--accent-gradient)',
+    backgroundColor: '#FFFFFF',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 4px 14px rgba(255, 46, 147, 0.25)',
-    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)',
   },
-  addButtonSuccess: {
-    background: 'linear-gradient(135deg, #22C55E, #16A34A)',
-    boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)',
-    transform: 'scale(1.1)',
+  roundButtonSuccess: {
+    backgroundColor: '#22C55E',
+    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
   },
   addedText: {
     color: '#FFFFFF',
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     fontWeight: '700',
   },
 };

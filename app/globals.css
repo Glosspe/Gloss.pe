@@ -330,7 +330,7 @@ a {
 /* Botón de añadir al carrito - micro-interacción */
 .gloss-product-card button[title="Añadir a la bolsa"]:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(255, 46, 147, 0.35) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .gloss-product-card button[title="Añadir a la bolsa"]:active {
@@ -339,10 +339,12 @@ a {
 
 /* Corazón de favorito - pulso */
 .gloss-product-card button[title="Favorito"]:hover {
-  transform: scale(1.12);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .gloss-product-card button[title="Favorito"]:active {
   transform: scale(0.9);
 }
+
 
