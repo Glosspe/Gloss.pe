@@ -272,22 +272,7 @@ a {
   100% { left: 130%; opacity: 0; }
 }
 
-/* Glow sutil en hover de la tarjeta */
-.gloss-product-card::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 21px;
-  background: linear-gradient(135deg, rgba(255, 46, 147, 0.15), rgba(216, 27, 96, 0.08), transparent);
-  opacity: 0;
-  z-index: -1;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
 
-.gloss-product-card:hover::after {
-  opacity: 1;
-}
 
 /* Animación de entrada escalonada */
 .product-grid .gloss-product-card {
