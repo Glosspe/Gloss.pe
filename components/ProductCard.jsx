@@ -10,22 +10,9 @@ export default function ProductCard({ product }) {
   const isFavorite = favorites.some((fav) => fav.id === product.id);
 
   return (
-    <div style={styles.card} className="soft-card soft-card-hover">
-      {/* Botón de Favorito Flotante superior */}
-      <button 
-        style={styles.favoriteButton} 
-        onClick={() => toggleFavorite(product)}
-        title={isFavorite ? "Quitar de Favoritos" : "Añadir a Favoritos"}
-      >
-        <Heart 
-          size={18} 
-          color={isFavorite ? 'var(--accent-start)' : 'var(--text-secondary)'} 
-          fill={isFavorite ? 'var(--accent-start)' : 'none'} 
-        />
-      </button>
-
-      {/* Contenedor de la Imagen del Producto (Dentro de la tarjeta con fondo rosa pastel suave) */}
-      <div style={styles.imageContainer}>
+    <div style={styles.container}>
+      {/* Mitad Superior: Imagen del Producto flotando libremente sin fondo */}
+      <div style={styles.imageWrapper}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src={product.image || 'https://via.placeholder.com/200?text=Gloss'} 
@@ -34,25 +21,43 @@ export default function ProductCard({ product }) {
         />
       </div>
 
-      {/* Información del Producto (Nombre y Detalle) */}
-      <div style={styles.infoContainer}>
+      {/* Mitad Inferior: Tarjeta blanca con información y botones de acción */}
+      <div style={styles.infoCard} className="soft-card soft-card-hover">
+        {/* Nombre del producto con tipografía Serif Premium */}
         <h3 style={styles.name}>{product.name}</h3>
+        
+        {/* Marca/Descripción */}
         <p style={styles.description}>{product.brand || 'Cosmética Premium'}</p>
         
-        {/* Fila Inferior: Precio y Añadir */}
+        {/* Fila del precio y botones de compra */}
         <div style={styles.priceRow}>
           <div style={styles.priceColumn}>
             <span style={styles.priceLabel}>Precio</span>
             <span style={styles.priceValue}>S/ {product.price}</span>
           </div>
           
-          <button 
-            style={styles.addButton} 
-            onClick={() => addToCart(product)}
-            title="Añadir a la Bolsa"
-          >
-            <Plus size={20} color="var(--text-primary)" />
-          </button>
+          {/* Grupo de Botones de Acción (Favorito + Agregar a la Bolsa) */}
+          <div style={styles.actionsGroup}>
+            <button 
+              style={styles.circleButton} 
+              onClick={() => toggleFavorite(product)}
+              title="Añadir a Favoritos"
+            >
+              <Heart 
+                size={16} 
+                color={isFavorite ? 'var(--accent-start)' : 'var(--text-secondary)'} 
+                fill={isFavorite ? 'var(--accent-start)' : 'none'} 
+              />
+            </button>
+            
+            <button 
+              style={styles.circleButton} 
+              onClick={() => addToCart(product)}
+              title="Añadir a la Bolsa"
+            >
+              <Plus size={18} color="var(--text-primary)" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -60,84 +65,68 @@ export default function ProductCard({ product }) {
 }
 
 const styles = {
-  card: {
-    padding: '16px',
+  container: {
     display: 'flex',
     flexDirection: 'column',
-    position: 'relative',
     height: '100%',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '28px',
-    boxShadow: 'var(--soft-shadow-outer)',
-    border: '1px solid rgba(216, 27, 96, 0.02)',
-    transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease',
+    overflow: 'visible',
+    justifyContent: 'flex-end',
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    background: '#FFFFFF',
-    border: 'none',
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    boxShadow: '0 6px 12px rgba(216, 27, 96, 0.05)',
-    zIndex: 2,
-    transition: 'transform 0.2s ease',
-    outline: 'none',
-  },
-  imageContainer: {
+  imageWrapper: {
     width: '100%',
-    aspectRatio: '1',
+    height: '120px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '12px',
-    backgroundColor: 'var(--accent-soft)', // Fondo rosa pastel suave oficial de la marca
-    borderRadius: '20px',
-    overflow: 'hidden',
-    marginBottom: '14px',
+    backgroundColor: 'transparent', // Sin fondo en el bloque superior
+    marginBottom: '10px',
+    position: 'relative',
+    zIndex: 2,
   },
   image: {
-    maxWidth: '100%',
     maxHeight: '100%',
+    maxWidth: '90%',
     objectFit: 'contain',
-    mixBlendMode: 'multiply', // Se mezcla de forma limpia si la imagen tiene fondo blanco
+    filter: 'drop-shadow(0 10px 12px rgba(216, 27, 96, 0.06))', // Sombra de gota suave sobre el fondo de la página
   },
-  infoContainer: {
+  infoCard: {
+    backgroundColor: '#FFFFFF', // Bloque inferior con fondo blanco
+    borderRadius: '24px',
+    padding: '16px',
+    boxShadow: 'var(--soft-shadow-outer)',
+    border: '1px solid rgba(216, 27, 96, 0.02)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    justifyContent: 'space-between',
     flex: 1,
   },
   name: {
-    fontFamily: 'var(--font-logo)', // Mantenemos la tipografía de logotipo elegante
-    fontSize: '0.95rem',
+    fontFamily: 'var(--font-logo)', // Bodoni Moda editorial
+    fontSize: '0.9rem',
     fontWeight: '700',
     color: 'var(--text-primary)',
-    lineHeight: '1.3',
-    minHeight: '2.6em', // Asegurar altura uniforme para 2 líneas
+    lineHeight: '1.25',
+    marginBottom: '4px',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
+    minHeight: '2.5em', // Altura consistente para 2 líneas
   },
   description: {
-    fontSize: '0.8rem',
+    fontSize: '0.75rem',
     color: 'var(--text-secondary)',
     lineHeight: '1.2',
-    marginBottom: '12px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginBottom: '10px',
   },
   priceRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 'auto', // Empuja la fila del precio al final del contenedor de información
+    marginTop: 'auto',
     borderTop: '1px solid rgba(216, 27, 96, 0.02)',
     paddingTop: '10px',
   },
@@ -146,26 +135,33 @@ const styles = {
     flexDirection: 'column',
   },
   priceLabel: {
-    fontSize: '0.75rem',
+    fontSize: '0.65rem',
     color: 'var(--text-secondary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   priceValue: {
-    fontSize: '1.15rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-title)',
   },
-  addButton: {
+  actionsGroup: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+  },
+  circleButton: {
     background: '#FFFFFF',
     border: '1px solid rgba(216, 27, 96, 0.05)',
-    width: '40px',
-    height: '40px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 6px 12px rgba(216, 27, 96, 0.03)',
+    boxShadow: '0 4px 10px rgba(216, 27, 96, 0.03)',
     transition: 'transform 0.2s ease, background-color 0.2s ease',
     outline: 'none',
   },
