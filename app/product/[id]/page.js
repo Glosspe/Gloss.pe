@@ -33,7 +33,7 @@ export default function ProductDetailPage({ params }) {
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
 
-  const { addToCart, toggleFavorite, favorites, setIsCartOpen } = useCart();
+  const { cart, addToCart, toggleFavorite, favorites, setIsCartOpen } = useCart();
 
   const [product, setProduct] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
@@ -110,14 +110,23 @@ export default function ProductDetailPage({ params }) {
 
   const handleBuyKit = () => {
     if (!product) return;
-    // Agregar el principal
-    addToCart(product);
-    // Agregar los equivalentes
+    
+    // Si el producto base no está en el carrito, lo agregamos
+    const isBaseInCart = cart.some(item => item.id === product.id);
+    if (!isBaseInCart) {
+      addToCart(product);
+    }
+    
+    // Agregamos únicamente los complementos del kit que no estén en el carrito y tengan stock
     equivalents.forEach(eq => {
       if (eq.stock > 0) {
-        addToCart(eq);
+        const isEquivalentInCart = cart.some(item => item.id === eq.id);
+        if (!isEquivalentInCart) {
+          addToCart(eq);
+        }
       }
     });
+    
     // Abrir el carrito
     setIsCartOpen(true);
   };
