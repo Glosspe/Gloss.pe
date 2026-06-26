@@ -31,7 +31,7 @@ export default function ProductCard({ product }) {
       }}
     >
       {/* ═══ ZONA DE IMAGEN CON ALFOMBRA LIMPIA ═══ */}
-      <div style={styles.imageZone}>
+      <div className="product-card-image-zone">
         {/* Shimmer / Brillo sutil animado */}
         <div style={styles.shimmer} className="card-shimmer" />
 
@@ -144,18 +144,6 @@ const styles = {
   },
 
   // ─── Zona de imagen ───
-  imageZone: {
-    position: 'relative',
-    width: '100%',
-    aspectRatio: '1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderRadius: '20px',
-    backgroundColor: '#F9FAFB',
-    marginBottom: '14px',
-  },
   shimmer: {
     position: 'absolute',
     top: 0,

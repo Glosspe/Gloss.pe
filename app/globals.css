@@ -347,4 +347,25 @@ a {
   transform: scale(0.9);
 }
 
+/* Zona de imagen de la tarjeta de producto responsiva */
+.product-card-image-zone {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10; /* Menos alto en celulares para evitar que se vea gigante */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: #F9FAFB;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 768px) {
+  .product-card-image-zone {
+    aspect-ratio: 1; /* Cuadrado perfecto en tablets y laptops */
+  }
+}
+
+
 
