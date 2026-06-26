@@ -157,7 +157,6 @@ export default function ProductDetailPage({ params }) {
         <Link href="/" style={styles.backBtn} title="Volver al catálogo">
           <ArrowLeft size={22} color="var(--accent-start)" />
         </Link>
-        <h2 style={styles.logoText}>GLOSS</h2>
         <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)}>
           <ShoppingBag size={22} color="var(--accent-start)" />
         </button>
@@ -493,19 +492,17 @@ const styles = {
     maxWidth: '380px',
     aspectRatio: '1',
     borderRadius: '28px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid rgba(142, 154, 167, 0.06)',
-    boxShadow: 'var(--soft-shadow-outer)',
+    backgroundColor: 'transparent',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '20px',
     overflow: 'hidden',
   },
   mainImage: {
     maxWidth: '100%',
     maxHeight: '100%',
     objectFit: 'contain',
+    borderRadius: '20px',
   },
   infoColumn: {
     display: 'flex',
