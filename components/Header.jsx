@@ -34,13 +34,14 @@ export default function Header() {
       {/* Fila Inferior: Buscador Expandido */}
       <div style={styles.searchRow}>
         <div style={styles.searchBar}>
-          <Search size={22} color="var(--accent-start)" style={styles.searchIcon} />
+          <Search size={22} color="#B07090" style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos, marcas, cosméticos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
+            className="search-input-premium"
           />
         </div>
       </div>
@@ -129,6 +130,7 @@ const styles = {
   },
   searchIcon: {
     marginRight: '12px',
+    opacity: 0.85,
   },
   searchInput: {
     flex: 1,
@@ -136,7 +138,7 @@ const styles = {
     outline: 'none',
     backgroundColor: 'transparent',
     fontFamily: 'var(--font-body)',
-    color: 'var(--text-primary)',
+    color: '#5A384A', // Color frambuesa oscuro elegante, combina perfectamente con el fondo rosa pastel
     fontSize: '1rem',
     height: '100%',
   },
