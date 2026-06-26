@@ -44,8 +44,6 @@ export function CartProvider({ children }) {
       }
       return [...prevCart, { ...product, quantity }];
     });
-    // Opcionalmente abrir el carrito al agregar un producto
-    setIsCartOpen(true);
   };
 
   const removeFromCart = (productId) => {
