@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
 
 :root {
   /* Paleta Clean Beauty / Fondo Blanco y Tonos Suaves */
@@ -22,8 +22,8 @@
   --soft-shadow-inner: inset 1px 1px 4px rgba(216, 27, 96, 0.03);
   --button-shadow: 0 8px 20px var(--accent-shadow);
   
-  --font-title: 'DM Sans', 'Segoe UI', sans-serif;
-  --font-body: 'Nunito Sans', 'Helvetica Neue', sans-serif;
+  --font-title: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
   --font-logo: 'Cormorant Garamond', 'Garamond', 'Georgia', serif;
 }
 
