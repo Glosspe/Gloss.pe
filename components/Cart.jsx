@@ -146,8 +146,8 @@ const styles = {
     gap: '10px',
   },
   title: {
-    fontFamily: 'var(--font-logo)',
-    fontSize: '1.3rem', // Ligeramente mayor para el estilo Serif
+    fontFamily: 'var(--font-title)',
+    fontSize: '1.25rem',
     fontWeight: '700',
     letterSpacing: '0.01em',
   },

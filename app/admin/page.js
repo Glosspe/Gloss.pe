@@ -697,7 +697,7 @@ const s = {
     boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   },
   panelHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' },
-  panelTitle: { fontSize: '1.1rem', fontWeight: '700', fontFamily: 'var(--font-logo)', letterSpacing: '0.02em' },
+  panelTitle: { fontSize: '1.1rem', fontWeight: '700', fontFamily: 'var(--font-title)', letterSpacing: '0.02em' },
   panelSub: { fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '16px', marginTop: '-6px' },
   refreshBtn: { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' },
 
@@ -815,7 +815,7 @@ const s = {
   },
   catIcon: { fontSize: '1.8rem', lineHeight: 1 },
   catInfo: { flex: 1 },
-  catName: { fontFamily: 'var(--font-logo)', fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' },
+  catName: { fontFamily: 'var(--font-title)', fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' },
   catStatus: { fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' },
   saveCatBtn: { width: '100%', height: '48px', fontSize: '0.88rem' },
 };

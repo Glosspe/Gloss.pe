@@ -276,7 +276,7 @@ const styles = {
     opacity: 0.8,
   },
   productName: {
-    fontFamily: 'var(--font-logo)',
+    fontFamily: 'var(--font-title)',
     fontSize: '0.95rem',
     fontWeight: '600',
     color: 'var(--text-primary)',

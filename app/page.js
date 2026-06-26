@@ -133,8 +133,8 @@ const styles = {
     alignItems: 'center',
   },
   sectionTitle: {
-    fontFamily: 'var(--font-logo)',
-    fontSize: '1.4rem', // Ligeramente mayor para el estilo Serif elegante
+    fontFamily: 'var(--font-title)',
+    fontSize: '1.3rem',
     fontWeight: '700',
     color: 'var(--text-primary)',
     letterSpacing: '0.02em',
