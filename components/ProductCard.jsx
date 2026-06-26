@@ -102,7 +102,7 @@ export default function ProductCard({ product }) {
               {justAdded ? '¡Agregado! ✓' : 'Agregar al carrito'}
             </button>
 
-            {/* Botón de Favorito (Corazón con borde verde) */}
+            {/* Botón de Favorito (Corazón con borde de marca) */}
             <button
               className={`product-favorite-btn ${isFavorite ? 'active' : ''}`}
               onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
@@ -110,7 +110,7 @@ export default function ProductCard({ product }) {
             >
               <Heart
                 size={18}
-                color={isFavorite ? '#FFFFFF' : '#16A34A'}
+                color={isFavorite ? '#FFFFFF' : 'var(--accent-start)'}
                 fill={isFavorite ? '#FFFFFF' : 'none'}
                 strokeWidth={2}
               />
