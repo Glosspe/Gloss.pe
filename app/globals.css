@@ -352,5 +352,130 @@ a {
   }
 }
 
+/* ═══ Estilos Responsivos de Botones en Tarjeta de Producto ═══ */
 
+/* Contenedor de acciones */
+.product-card-actions-zone {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+}
 
+@media (min-width: 768px) {
+  .product-card-actions-zone {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* Botón Favorito (Corazón) */
+.product-favorite-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(142, 154, 167, 0.08);
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.product-favorite-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.product-favorite-btn:active {
+  transform: scale(0.92);
+}
+
+@media (min-width: 768px) {
+  .product-favorite-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Botón Agregar al Contado (Texto móvil) */
+.product-add-to-cart-text-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-gradient);
+  color: #FFFFFF;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 6px 14px rgba(255, 46, 147, 0.25);
+  height: 38px;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.product-add-to-cart-text-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(255, 46, 147, 0.35);
+}
+
+.product-add-to-cart-text-btn:active {
+  transform: translateY(1px);
+}
+
+.product-add-to-cart-text-btn.success {
+  background: #22C55E;
+  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.25);
+}
+
+@media (min-width: 768px) {
+  .product-add-to-cart-text-btn {
+    display: none !important;
+  }
+}
+
+/* Botón Agregar Circular (+ desktop) */
+.product-add-to-cart-circle-btn {
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.product-add-to-cart-circle-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.product-add-to-cart-circle-btn:active {
+  transform: scale(0.95);
+}
+
+.product-add-to-cart-circle-btn.success {
+  background-color: #22C55E;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+@media (min-width: 768px) {
+  .product-add-to-cart-circle-btn {
+    display: flex !important;
+  }
+}

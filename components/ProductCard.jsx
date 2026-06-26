@@ -92,30 +92,33 @@ export default function ProductCard({ product }) {
             </div>
           </div>
 
-          {/* Stack vertical de botones de acción */}
-          <div style={styles.actionsStack}>
-            {/* Botón de Favorito */}
+          {/* Zona de Botones de Acción Responsiva */}
+          <div className="product-card-actions-zone">
+            {/* Botón de Favorito (Corazón) */}
             <button
-              className="product-action-btn"
-              style={styles.roundButton}
+              className="product-favorite-btn"
               onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
               title="Favorito"
             >
               <Heart
-                size={15}
+                size={18}
                 color={isFavorite ? '#FF4A75' : '#9CA3AF'}
                 fill={isFavorite ? '#FF4A75' : 'none'}
                 strokeWidth={isFavorite ? 0 : 2}
               />
             </button>
 
-            {/* Botón de Agregar a la bolsa */}
+            {/* Botón Agregar al Contado (Versión Textual Móvil) */}
             <button
-              className="product-action-btn"
-              style={{
-                ...styles.roundButton,
-                ...(justAdded ? styles.roundButtonSuccess : {}),
-              }}
+              className={`product-add-to-cart-text-btn ${justAdded ? 'success' : ''}`}
+              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+            >
+              {justAdded ? '¡Agregado! ✓' : 'Agregar al Contado'}
+            </button>
+
+            {/* Botón Agregar Circular (+ Desktop) */}
+            <button
+              className={`product-add-to-cart-circle-btn ${justAdded ? 'success' : ''}`}
               onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
               title="Añadir a la bolsa"
             >
