@@ -10,7 +10,7 @@ export async function GET() {
       try {
         const res = await fetch(`${cleanApiUrl}/api/products/categories-tree`, {
           headers: { 'Content-Type': 'application/json' },
-          next: { revalidate: 300 }
+          cache: 'no-store'
         });
         if (res.ok) {
           const data = await res.json();

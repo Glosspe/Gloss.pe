@@ -19,7 +19,7 @@ export async function GET() {
         const res = await fetch(`${cleanApiUrl}/api/products/categories`, {
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          next: { revalidate: 300 }
+          cache: 'no-store'
         });
         clearTimeout(timeout);
 
@@ -40,7 +40,7 @@ export async function GET() {
         console.log('[API Categories] Derivando categorías desde proxy de búsqueda...');
         const searchRes = await fetch(`${cleanApiUrl}/api/products/search?category=Todos`, {
           headers: { 'Content-Type': 'application/json' },
-          next: { revalidate: 300 }
+          cache: 'no-store'
         });
 
         if (searchRes.ok) {

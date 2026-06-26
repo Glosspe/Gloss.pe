@@ -74,7 +74,7 @@ export async function GET(request) {
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },
-          next: { revalidate: 60 } // Cachear por 60 segundos
+          cache: 'no-store'
         });
         
         if (res.ok) {
