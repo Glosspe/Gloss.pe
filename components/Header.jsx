@@ -18,7 +18,7 @@ export default function Header() {
         <div style={styles.actions}>
           {/* Botón Bolsa (Carrito) */}
           <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-            <ShoppingBag size={24} color="var(--text-primary)" />
+            <ShoppingBag size={24} color="var(--accent-start)" />
             {cartCount > 0 && (
               <span style={styles.badge}>{cartCount}</span>
             )}
@@ -26,7 +26,7 @@ export default function Header() {
           
           {/* Botón Menú Desplegable */}
           <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-            <Menu size={24} color="var(--text-primary)" />
+            <Menu size={24} color="var(--accent-start)" />
           </button>
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function Header() {
       {/* Fila Inferior: Buscador Expandido */}
       <div style={styles.searchRow}>
         <div style={styles.searchBar}>
-          <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
+          <Search size={22} color="var(--accent-start)" style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos, marcas, cosméticos..."
@@ -120,11 +120,11 @@ const styles = {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#F8F7F6',
+    backgroundColor: 'var(--accent-soft)',
     borderRadius: '30px',
     padding: '0 20px',
-    boxShadow: '0 8px 24px rgba(165, 177, 194, 0.05)',
-    border: '1px solid rgba(142, 154, 167, 0.06)',
+    boxShadow: '0 8px 24px rgba(216, 27, 96, 0.03)',
+    border: '1px solid rgba(216, 27, 96, 0.08)',
     height: '60px',
   },
   searchIcon: {

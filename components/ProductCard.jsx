@@ -90,7 +90,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '8px',
-    backgroundColor: '#FAF9F8',
+    backgroundColor: 'var(--accent-soft)',
     borderRadius: '20px',
     overflow: 'hidden',
     marginBottom: '16px',

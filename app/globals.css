@@ -6,20 +6,20 @@
   --bg-card: #FFFFFF;
   --bg-card-rgb: 255, 255, 255;
   --text-primary: #1C2B38;
-  --text-secondary: #7F8C8D;
-  --text-tertiary: #BDC3C7;
+  --text-secondary: #8E9AA8;
+  --text-tertiary: #D0D7DE;
   
   /* Acento Fucsia / Magenta Vibrante - Inspirado en gloss.pe.oficial */
   --accent-start: #FF2E93; /* Rosa Fucsia Radiante */
   --accent-end: #D81B60; /* Magenta Elegante */
   --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   --accent-shadow: rgba(216, 27, 96, 0.2);
-  --accent-soft: #FFF0F5; /* Rosa Pastel Suave para fondos secundarios y badges */
+  --accent-soft: #FFF2F6; /* Rosa Pastel Suave para fondos secundarios, buscador y badges */
   --accent-soft-hover: #FFE3EC; /* Rosa Pastel Hover */
   
-  /* Sombras Neumórficas Ultra-Suaves (Optimizado para fondo blanco) */
-  --soft-shadow-outer: 0 12px 30px rgba(165, 177, 194, 0.08), 0 3px 8px rgba(165, 177, 194, 0.03);
-  --soft-shadow-inner: inset 1px 1px 4px rgba(165, 177, 194, 0.06);
+  /* Sombras Neumórficas Ultra-Suaves (Optimizado para fondo blanco y tono rosa de la marca) */
+  --soft-shadow-outer: 0 12px 30px rgba(216, 27, 96, 0.04), 0 4px 12px rgba(216, 27, 96, 0.02);
+  --soft-shadow-inner: inset 1px 1px 4px rgba(216, 27, 96, 0.03);
   --button-shadow: 0 8px 20px var(--accent-shadow);
   
   --font-title: 'Outfit', sans-serif;
@@ -81,14 +81,14 @@ html, body {
 /* Buscador y campos de texto */
 .soft-input {
   background: var(--bg-card);
-  border: 1px solid rgba(142, 154, 167, 0.15);
+  border: 1px solid rgba(216, 27, 96, 0.12);
   border-radius: 20px;
   padding: 14px 20px;
   font-family: var(--font-body);
   color: var(--text-primary);
   font-size: 0.95rem;
   outline: none;
-  box-shadow: inset 1px 1px 4px rgba(142, 154, 167, 0.03);
+  box-shadow: inset 1px 1px 4px rgba(216, 27, 96, 0.02);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
