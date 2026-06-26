@@ -102,7 +102,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     width: '100%',
-    marginTop: '12px',
+    marginTop: '32px',
     gap: '8px',
   },
   infoCol: {
