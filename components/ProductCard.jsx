@@ -225,7 +225,7 @@ const styles = {
     marginBottom: '2px',
   },
   productName: {
-    fontFamily: 'var(--font-logo), "Cormorant Garamond", Georgia, serif',
+    fontFamily: 'var(--font-body), sans-serif',
     fontSize: '1.15rem',
     fontWeight: '600',
     color: '#1F2937',

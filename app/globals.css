@@ -22,7 +22,7 @@
   --soft-shadow-inner: inset 1px 1px 4px rgba(216, 27, 96, 0.03);
   --button-shadow: 0 8px 20px var(--accent-shadow);
   
-  --font-title: 'Outfit', sans-serif;
+  --font-title: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
   --font-logo: 'Cormorant Garamond', 'Garamond', 'Georgia', serif;
 }
@@ -171,14 +171,14 @@ html, body {
 
 /* Ajustes tipográficos */
 h1, h2, h3 {
-  font-family: var(--font-logo); /* Bodoni Moda Serif de alta costura */
+  font-family: var(--font-body); /* Plus Jakarta Sans unificado */
   color: var(--text-primary);
   font-weight: 800;
   letter-spacing: -0.01em;
 }
 
 h4, h5, h6 {
-  font-family: var(--font-title); /* Outfit Sans-serif moderna */
+  font-family: var(--font-title); /* Plus Jakarta Sans unificado */
   color: var(--text-primary);
   font-weight: 600;
 }
