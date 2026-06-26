@@ -22,12 +22,23 @@ model WebUsuarioAdmin {
 model WebProductoImagen {
   id                    String   @id @default(uuid())
   codart                String   @unique // Código del artículo en Navasoft ERP (prd0101.codi)
-  imagenes              String   // JSON string que contiene el array de URLs de imágenes
+  imagenes              String   @db.Text // JSON string — puede contener data URIs Base64 o URLs
   descripcionEnriquecida String?  @db.Text // Descripción enriquecida para el e-commerce
   destacado             Boolean  @default(false)
+  visible               Boolean  @default(true) // Controla si el producto se muestra en la web
   fechaActualizacion    DateTime @updatedAt
 
   @@map("web_producto_imagenes")
+}
+
+// Modelo para controlar la visibilidad y orden de categorías en la web
+model WebCategoriaConfig {
+  id        String  @id @default(uuid())
+  categoria String  @unique  // "Capilar", "Facial", "Cosmeticos", "Corporal"
+  visible   Boolean @default(true)
+  orden     Int     @default(0)
+
+  @@map("web_categorias_config")
 }
 
 // Modelo de respaldo para guardar las cotizaciones/pedidos de la web
@@ -48,4 +59,3 @@ model WebPedido {
 
   @@map("web_pedidos")
 }
-

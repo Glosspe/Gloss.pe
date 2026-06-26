@@ -205,8 +205,9 @@ export async function GET(request) {
       productsList = result.recordset;
     }
 
-    // Cruzar con PostgreSQL de Railway para jalar fotos y detalles
+    // Cruzar con PostgreSQL de Railway para jalar fotos, detalles y visibilidad
     let enrichedMap = {};
+    let disabledCategories = [];
     try {
       const productCodes = productsList.map(p => p.id);
       if (productCodes.length > 0) {
@@ -220,10 +221,17 @@ export async function GET(request) {
           enrichedMap[img.codart] = {
             imagenes: JSON.parse(img.imagenes || '[]'),
             descripcionEnriquecida: img.descripcionEnriquecida,
-            destacado: img.destacado
+            destacado: img.destacado,
+            visible: img.visible
           };
         });
       }
+
+      // Obtener categorías deshabilitadas
+      const catConfigs = await prisma.webCategoriaConfig.findMany({
+        where: { visible: false }
+      });
+      disabledCategories = catConfigs.map(c => c.categoria);
     } catch (pgErr) {
       console.warn('[API Products Search - LOCAL MODE] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
     }
@@ -270,11 +278,21 @@ export async function GET(request) {
       };
     });
 
-    let finalProducts = formattedProducts;
+    // Filtrar productos ocultos (visible=false en PostgreSQL)
+    let visibleProducts = formattedProducts.filter(p => {
+      const enrichment = enrichedMap[p.id];
+      // Si el producto tiene config y está marcado como oculto, excluirlo
+      if (enrichment && enrichment.visible === false) return false;
+      // Si la categoría del producto está deshabilitada, excluirlo
+      if (disabledCategories.includes(p.category)) return false;
+      return true;
+    });
+
+    let finalProducts = visibleProducts;
     if (category === 'Trending') {
-      finalProducts = formattedProducts.filter(p => p.destacado || p.price > 80);
+      finalProducts = visibleProducts.filter(p => p.destacado || p.price > 80);
       if (finalProducts.length === 0) {
-        finalProducts = formattedProducts.slice(0, 12);
+        finalProducts = visibleProducts.slice(0, 12);
       }
     }
 

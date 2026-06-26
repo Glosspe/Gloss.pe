@@ -1,23 +1,56 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 
-const CATEGORIES = [
-  { id: 'Trending', label: 'Trending' },
+const FALLBACK_CATEGORIES = [
+  { id: 'Trending', label: 'Trending', isSystem: true },
   { id: 'Capilar', label: 'Cuidado Capilar' },
   { id: 'Facial', label: 'Cuidado Facial' },
   { id: 'Cosmeticos', label: 'Cosméticos' },
   { id: 'Corporal', label: 'Cuidado Corporal' }
 ];
 
+const CATEGORY_LABELS = {
+  'Capilar': 'Cuidado Capilar',
+  'Facial': 'Cuidado Facial',
+  'Cosmeticos': 'Cosméticos',
+  'Corporal': 'Cuidado Corporal',
+};
+
 export default function CategorySlider() {
   const { selectedCategory, setSelectedCategory } = useCart();
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+
+  // Cargar categorías habilitadas desde la API
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/admin/categories');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.categories.length > 0) {
+            const apiCats = [
+              { id: 'Trending', label: 'Trending', isSystem: true },
+              ...data.categories.map(c => ({
+                id: c.categoria,
+                label: CATEGORY_LABELS[c.categoria] || c.categoria
+              }))
+            ];
+            setCategories(apiCats);
+          }
+        }
+      } catch (err) {
+        console.warn('[CategorySlider] No se pudieron cargar categorías desde API, usando fallback');
+      }
+    }
+    loadCategories();
+  }, []);
 
   return (
     <div style={styles.container}>
       <div style={styles.slider}>
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;
           return (
             <div key={cat.id} style={styles.tabContainer}>

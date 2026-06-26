@@ -1,48 +1,59 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Search, Image as ImageIcon, Save, CheckCircle, AlertCircle, Loader2, Sparkles, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
+import {
+  LogOut, Search, Save, CheckCircle, AlertCircle, Loader2,
+  Sparkles, RefreshCw, Upload, X, Eye, EyeOff, Package,
+  LayoutGrid, Trash2, Star, ImagePlus
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState(null);
-  
-  // Estados de carga y búsqueda
+  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'categories'
+
+  // ── Productos ──
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-
-  // Producto seleccionado para editar
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
-  // Campos del editor
-  const [imageUrl, setImageUrl] = useState('');
+
+  // Campos del editor de producto
+  const [uploadedImages, setUploadedImages] = useState([]); // Array de data URIs o URLs
   const [richDescription, setRichDescription] = useState('');
   const [isTrending, setIsTrending] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
-  // 1. Proteger ruta en el cliente
+  // ── Categorías ──
+  const [categories, setCategories] = useState([]);
+  const [isCatLoading, setIsCatLoading] = useState(false);
+  const [isCatSaving, setIsCatSaving] = useState(false);
+  const [catMessage, setCatMessage] = useState({ type: '', text: '' });
+
+  // ═══ Autenticación ═══
   useEffect(() => {
     const token = localStorage.getItem('gloss_admin_token');
     const user = localStorage.getItem('gloss_admin_user');
-    
     if (!token) {
       router.push('/admin/login');
     } else {
       setAdminUser(user ? JSON.parse(user) : { nombre: 'Administrador' });
       loadProducts('');
+      loadCategories();
     }
   }, [router]);
 
-  // 2. Cargar productos desde la API (conecta a SQL Server/PostgreSQL)
+  // ═══ Productos: Cargar ═══
   const loadProducts = async (query = '') => {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
     try {
-      // Consultamos todos los productos (sin filtrar por categoría para ver el catálogo completo)
       const response = await fetch(`/api/products/search?category=Todos&q=${encodeURIComponent(query)}`);
       if (response.ok) {
         const data = await response.json();
@@ -51,51 +62,106 @@ export default function AdminDashboard() {
         setMessage({ type: 'error', text: 'Error al obtener productos del ERP.' });
       }
     } catch (err) {
-      console.error(err);
       setMessage({ type: 'error', text: 'Error de red al consultar productos.' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Buscar productos
   const handleSearch = (e) => {
     e.preventDefault();
     loadProducts(searchQuery);
   };
 
-  // Seleccionar producto para editar
+  // ═══ Productos: Seleccionar ═══
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
-    // Rellenar campos del editor con la info actual
-    setImageUrl(product.images && product.images.length > 0 ? product.images[0] : product.image || '');
+    setUploadedImages(product.images && product.images.length > 0 ? [...product.images] : []);
     setRichDescription(product.description || '');
     setIsTrending(product.category === 'Trending' || product.destacado || false);
+    setIsVisible(product.visible !== false);
     setMessage({ type: '', text: '' });
   };
 
-  // Guardar cambios en PostgreSQL
+  // ═══ Upload de Imágenes ═══
+  const uploadFile = async (file) => {
+    const token = localStorage.getItem('gloss_admin_token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/admin/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al subir archivo');
+    }
+
+    const data = await res.json();
+    return data.dataUri;
+  };
+
+  const handleFileSelect = async (files) => {
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const newImages = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 3 * 1024 * 1024) {
+          setMessage({ type: 'error', text: `${file.name} excede 3MB. Usa una imagen más pequeña.` });
+          continue;
+        }
+        const dataUri = await uploadFile(file);
+        newImages.push(dataUri);
+      }
+      setUploadedImages(prev => [...prev, ...newImages]);
+      if (newImages.length > 0) {
+        setMessage({ type: 'success', text: `${newImages.length} imagen(es) subida(s) correctamente.` });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Drag & Drop
+  const handleDragOver = useCallback((e) => { e.preventDefault(); setIsDragOver(true); }, []);
+  const handleDragLeave = useCallback(() => setIsDragOver(false), []);
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    handleFileSelect(e.dataTransfer.files);
+  }, []);
+
+  // ═══ Guardar Producto ═══
   const handleSave = async (e) => {
     e.preventDefault();
     if (!selectedProduct) return;
 
     setIsSaving(true);
     setMessage({ type: '', text: '' });
-
     const token = localStorage.getItem('gloss_admin_token');
 
     try {
       const response = await fetch('/api/admin/products/update', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           codart: selectedProduct.id,
-          imagenes: imageUrl.trim() !== '' ? [imageUrl.trim()] : [],
+          imagenes: uploadedImages,
           descripcionEnriquecida: richDescription,
-          destacado: isTrending
+          destacado: isTrending,
+          visible: isVisible
         })
       });
 
@@ -103,40 +169,86 @@ export default function AdminDashboard() {
 
       if (response.ok && data.success) {
         setMessage({ type: 'success', text: '¡Producto actualizado con éxito!' });
-        
-        // Actualizar el producto en la lista local sin tener que volver a consultar
-        setProducts(prevProducts => 
-          prevProducts.map(p => 
-            p.id === selectedProduct.id 
-              ? { 
-                  ...p, 
-                  image: imageUrl.trim() !== '' ? imageUrl.trim() : p.image, 
-                  images: imageUrl.trim() !== '' ? [imageUrl.trim()] : [], 
-                  description: richDescription, 
-                  destacado: isTrending,
-                  category: isTrending ? 'Trending' : p.category
-                } 
-              : p
-          )
-        );
-        
-        // Actualizar también el producto seleccionado en pantalla
+        setProducts(prev => prev.map(p =>
+          p.id === selectedProduct.id
+            ? {
+                ...p,
+                image: uploadedImages.length > 0 ? uploadedImages[0] : p.image,
+                images: uploadedImages,
+                description: richDescription,
+                destacado: isTrending,
+                visible: isVisible,
+                category: isTrending ? 'Trending' : p.category
+              }
+            : p
+        ));
         setSelectedProduct(prev => ({
           ...prev,
-          image: imageUrl.trim() !== '' ? imageUrl.trim() : prev.image,
-          images: imageUrl.trim() !== '' ? [imageUrl.trim()] : [],
+          image: uploadedImages.length > 0 ? uploadedImages[0] : prev.image,
+          images: uploadedImages,
           description: richDescription,
           destacado: isTrending,
+          visible: isVisible,
           category: isTrending ? 'Trending' : prev.category
         }));
       } else {
         setMessage({ type: 'error', text: data.error || 'Error al guardar.' });
       }
     } catch (err) {
-      console.error(err);
       setMessage({ type: 'error', text: 'Error de red al intentar guardar.' });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // ═══ Categorías: Cargar ═══
+  const loadCategories = async () => {
+    setIsCatLoading(true);
+    const token = localStorage.getItem('gloss_admin_token');
+    try {
+      const res = await fetch('/api/admin/categories', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data.categories || []);
+      }
+    } catch (err) {
+      console.error('Error cargando categorías:', err);
+    } finally {
+      setIsCatLoading(false);
+    }
+  };
+
+  // ═══ Categorías: Toggle visibilidad ═══
+  const toggleCategoryVisibility = (categoria) => {
+    setCategories(prev => prev.map(c =>
+      c.categoria === categoria ? { ...c, visible: !c.visible } : c
+    ));
+  };
+
+  // ═══ Categorías: Guardar ═══
+  const saveCategories = async () => {
+    setIsCatSaving(true);
+    setCatMessage({ type: '', text: '' });
+    const token = localStorage.getItem('gloss_admin_token');
+
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ categories })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCatMessage({ type: 'success', text: 'Categorías actualizadas correctamente.' });
+      } else {
+        setCatMessage({ type: 'error', text: data.error || 'Error al guardar categorías.' });
+      }
+    } catch (err) {
+      setCatMessage({ type: 'error', text: 'Error de red.' });
+    } finally {
+      setIsCatSaving(false);
     }
   };
 
@@ -146,615 +258,542 @@ export default function AdminDashboard() {
     router.push('/admin/login');
   };
 
+  const CATEGORY_ICONS = { 'Capilar': '💇‍♀️', 'Facial': '🧴', 'Cosmeticos': '💄', 'Corporal': '🧖‍♀️' };
+  const CATEGORY_LABELS = { 'Capilar': 'Cuidado Capilar', 'Facial': 'Cuidado Facial', 'Cosmeticos': 'Cosméticos', 'Corporal': 'Cuidado Corporal' };
+
+  // ═══ RENDER ═══
   return (
-    <div style={styles.container}>
-      {/* Barra Superior */}
-      <header style={styles.header} className="glass-menu">
-        <div style={styles.headerContent}>
-          <div style={styles.logoGroup}>
+    <div style={s.container}>
+      {/* ── Barra Superior ── */}
+      <header style={s.header}>
+        <div style={s.headerContent}>
+          <div style={s.logoGroup}>
             <Sparkles size={20} color="var(--accent-start)" />
-            <h1 style={styles.logo}>GLOSS ADMIN</h1>
-            <span style={styles.badge}>Moda & Belleza</span>
+            <h1 style={s.logo}>GLOSS ADMIN</h1>
           </div>
-          <div style={styles.userGroup}>
-            <span style={styles.userName}>{adminUser?.nombre}</span>
-            <button onClick={handleLogout} style={styles.logoutButton}>
-              <LogOut size={16} />
-              Cerrar Sesión
+          <div style={s.userGroup}>
+            <span style={s.userName}>{adminUser?.nombre}</span>
+            <button onClick={handleLogout} style={s.logoutBtn}>
+              <LogOut size={16} /> Salir
             </button>
           </div>
         </div>
       </header>
 
-      {/* Grid del Dashboard */}
-      <div className="dashboard-grid">
-        {/* Panel Izquierdo: Lista de Productos */}
-        <div style={styles.leftPanel}>
-          <div style={styles.panelCard} className="soft-card">
-            <div style={styles.panelHeader}>
-              <h3 style={styles.panelTitle}>Catálogo de Navasoft ERP</h3>
-              <button onClick={() => loadProducts(searchQuery)} style={styles.refreshButton}>
-                <RefreshCw size={16} />
-              </button>
-            </div>
+      {/* ── Tabs de Navegación ── */}
+      <div style={s.tabBar}>
+        <button
+          style={{ ...s.tab, ...(activeTab === 'products' ? s.tabActive : {}) }}
+          onClick={() => setActiveTab('products')}
+        >
+          <Package size={16} /> Productos
+        </button>
+        <button
+          style={{ ...s.tab, ...(activeTab === 'categories' ? s.tabActive : {}) }}
+          onClick={() => setActiveTab('categories')}
+        >
+          <LayoutGrid size={16} /> Categorías
+        </button>
+      </div>
 
-            {/* Buscador de Productos */}
-            <form onSubmit={handleSearch} style={styles.searchForm}>
-              <div style={styles.searchBox}>
-                <Search size={18} color="var(--text-secondary)" style={styles.searchIcon} />
-                <input
-                  type="text"
-                  placeholder="Buscar por código, nombre o marca..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={styles.searchInput}
-                />
-              </div>
-              <button type="submit" style={styles.searchBtn} className="soft-button">
-                Buscar
-              </button>
-            </form>
-
-            {/* Listado de Productos */}
-            <div style={styles.productsList}>
-              {isLoading ? (
-                <div style={styles.loadingState}>
-                  <Loader2 size={32} className="spinner" color="var(--accent-start)" />
-                  <p style={styles.loadingText}>Cargando productos de Navasoft...</p>
-                </div>
-              ) : products.length === 0 ? (
-                <div style={styles.emptyState}>
-                  <p>No se encontraron productos.</p>
-                </div>
-              ) : (
-                products.map((prod) => {
-                  const isSelected = selectedProduct?.id === prod.id;
-                  const hasCustomImage = prod.images && prod.images.length > 0;
-                  return (
-                    <div
-                      key={prod.id}
-                      onClick={() => handleSelectProduct(prod)}
-                      style={{
-                        ...styles.productItem,
-                        backgroundColor: isSelected ? 'var(--accent-soft)' : 'transparent',
-                        borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.08)'
-                      }}
-                    >
-                      <div style={styles.prodListImageContainer}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={prod.image} alt={prod.name} style={styles.prodListImage} />
-                      </div>
-                      <div style={styles.prodListInfo}>
-                        <h4 style={styles.prodListName}>{prod.name}</h4>
-                        <div style={styles.prodListMeta}>
-                          <span style={styles.prodListCode}>{prod.id}</span>
-                          <span style={styles.prodListPrice}>S/ {prod.price}</span>
-                          {hasCustomImage && (
-                            <span style={styles.imageBadge}>Con Foto</span>
-                          )}
-                          {prod.destacado && (
-                            <span style={styles.trendingBadge}>Destacado</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Panel Derecho: Editor de Productos */}
-        <div style={styles.rightPanel}>
-          {selectedProduct ? (
-            <div style={styles.panelCard} className="soft-card">
-              <h3 style={styles.panelTitle}>Enriquecer Detalles Web</h3>
-              <p style={styles.panelSubtitle}>Personaliza las fotos y descripciones que verán tus clientes en internet.</p>
-
-              {message.text && (
-                <div style={{
-                  ...styles.alert,
-                  backgroundColor: message.type === 'success' ? 'rgba(46, 204, 113, 0.08)' : 'rgba(235, 94, 85, 0.08)',
-                  borderColor: message.type === 'success' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(235, 94, 85, 0.2)'
-                }}>
-                  {message.type === 'success' ? (
-                    <CheckCircle size={18} color="#2ECC71" />
-                  ) : (
-                    <AlertCircle size={18} color="#EB5E55" />
-                  )}
-                  <span style={{
-                    ...styles.alertText,
-                    color: message.type === 'success' ? '#2ECC71' : '#EB5E55'
-                  }}>{message.text}</span>
-                </div>
-              )}
-
-              {/* Ficha rápida del ERP */}
-              <div style={styles.erpSummary}>
-                <div style={styles.erpSummaryItem}>
-                  <span style={styles.erpLabel}>Código ERP</span>
-                  <span style={styles.erpValue}>{selectedProduct.id}</span>
-                </div>
-                <div style={styles.erpSummaryItem}>
-                  <span style={styles.erpLabel}>Nombre original ERP</span>
-                  <span style={styles.erpValue}>{selectedProduct.name}</span>
-                </div>
-                <div style={styles.erpSummaryItem}>
-                  <span style={styles.erpLabel}>Marca / Stock</span>
-                  <span style={styles.erpValue}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
-                </div>
-                <div style={styles.erpSummaryItem}>
-                  <span style={styles.erpLabel}>Precio ERP</span>
-                  <span style={styles.erpValue}>S/ {selectedProduct.price}</span>
-                </div>
+      {/* ══════════════════════════════════════════ */}
+      {/* ═══ TAB: PRODUCTOS ═══ */}
+      {/* ══════════════════════════════════════════ */}
+      {activeTab === 'products' && (
+        <div className="dashboard-grid">
+          {/* Panel Izquierdo: Lista de Productos */}
+          <div style={s.leftPanel}>
+            <div style={s.panelCard} className="soft-card">
+              <div style={s.panelHeader}>
+                <h3 style={s.panelTitle}>Catálogo ERP</h3>
+                <button onClick={() => loadProducts(searchQuery)} style={s.refreshBtn}>
+                  <RefreshCw size={16} />
+                </button>
               </div>
 
-              <form onSubmit={handleSave} style={styles.editorForm}>
-                {/* Checkbox Destacado (Trending) */}
-                <div style={styles.checkboxGroup}>
+              <form onSubmit={handleSearch} style={s.searchForm}>
+                <div style={s.searchBox}>
+                  <Search size={18} color="var(--text-secondary)" />
                   <input
-                    type="checkbox"
-                    id="isTrending"
-                    checked={isTrending}
-                    onChange={(e) => setIsTrending(e.target.checked)}
-                    style={styles.checkbox}
-                  />
-                  <label htmlFor="isTrending" style={styles.checkboxLabel}>
-                    Destacar en la Página de Inicio (Sección Trending)
-                  </label>
-                </div>
-
-                {/* URL de Imagen */}
-                <div style={styles.inputGroup}>
-                  <label style={styles.label} htmlFor="imageUrl">URL de Imagen del Producto *</label>
-                  <div style={styles.inputIconWrapper}>
-                    <ImageIcon size={18} color="var(--text-secondary)" style={styles.inputIcon} />
-                    <input
-                      type="url"
-                      id="imageUrl"
-                      placeholder="Pegar enlace de imagen (ej. de Unsplash o servidor)"
-                      required
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      style={styles.input}
-                    />
-                  </div>
-                  {imageUrl && (
-                    <div style={styles.previewContainer}>
-                      <span style={styles.previewLabel}>Vista Previa:</span>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt="Vista previa" style={styles.previewImage} onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/150?text=Error+Carga';
-                      }} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Descripción enriquecida */}
-                <div style={styles.inputGroup}>
-                  <label style={styles.label} htmlFor="richDescription">Descripción de Venta (Larga)</label>
-                  <textarea
-                    id="richDescription"
-                    placeholder="Escribe los beneficios, ingredientes, cómo aplicar el producto..."
-                    rows={6}
-                    value={richDescription}
-                    onChange={(e) => setRichDescription(e.target.value)}
-                    style={styles.textarea}
+                    type="text"
+                    placeholder="Buscar por código, nombre o marca..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={s.searchInput}
                   />
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  style={styles.saveButton}
-                  className="soft-button"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 size={18} className="spinner" />
-                      Guardando cambios...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={18} />
-                      Guardar Detalles Web
-                    </>
-                  )}
+                <button type="submit" style={s.searchBtn} className="soft-button">
+                  Buscar
                 </button>
               </form>
+
+              <div style={s.productsList}>
+                {isLoading ? (
+                  <div style={s.centerState}>
+                    <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+                    <p style={s.stateText}>Cargando productos...</p>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div style={s.centerState}>
+                    <p style={s.stateText}>No se encontraron productos.</p>
+                  </div>
+                ) : (
+                  products.map((prod) => {
+                    const isSelected = selectedProduct?.id === prod.id;
+                    const hasCustomImage = prod.images && prod.images.length > 0;
+                    const prodVisible = prod.visible !== false;
+                    return (
+                      <div
+                        key={prod.id}
+                        onClick={() => handleSelectProduct(prod)}
+                        style={{
+                          ...s.productItem,
+                          backgroundColor: isSelected ? 'var(--accent-soft)' : 'transparent',
+                          borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.08)',
+                          opacity: prodVisible ? 1 : 0.5,
+                        }}
+                      >
+                        <div style={s.prodThumb}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={prod.image} alt={prod.name} style={s.prodThumbImg} />
+                        </div>
+                        <div style={s.prodInfo}>
+                          <h4 style={s.prodName}>{prod.name}</h4>
+                          <div style={s.prodMeta}>
+                            <span style={s.prodCode}>{prod.id}</span>
+                            <span style={s.prodPrice}>S/ {prod.price}</span>
+                            {hasCustomImage && <span style={s.badgeGreen}>📷</span>}
+                            {prod.destacado && <span style={s.badgePink}>⭐</span>}
+                            {!prodVisible && <span style={s.badgeGray}>Oculto</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          ) : (
-            <div style={styles.noSelectedCard} className="soft-card">
-              <ImageIcon size={48} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
-              <h4>Selecciona un producto</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '6px' }}>
-                Elige un artículo de la lista de la izquierda para enriquecer su imagen, descripción y destacar en la Tienda Gloss.
-              </p>
-            </div>
-          )}
+          </div>
+
+          {/* Panel Derecho: Editor */}
+          <div style={s.rightPanel}>
+            {selectedProduct ? (
+              <div style={s.panelCard} className="soft-card">
+                <h3 style={s.panelTitle}>Editar Producto</h3>
+                <p style={s.panelSub}>Personaliza las fotos y detalles para la web.</p>
+
+                {/* Alertas */}
+                {message.text && (
+                  <div style={{
+                    ...s.alert,
+                    backgroundColor: message.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                    borderColor: message.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+                  }}>
+                    {message.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                    <span style={{ fontSize: '0.82rem', fontWeight: '600', color: message.type === 'success' ? '#22C55E' : '#EF4444' }}>
+                      {message.text}
+                    </span>
+                  </div>
+                )}
+
+                {/* Ficha ERP */}
+                <div style={s.erpGrid}>
+                  <div style={s.erpItem}>
+                    <span style={s.erpLabel}>Código ERP</span>
+                    <span style={s.erpVal}>{selectedProduct.id}</span>
+                  </div>
+                  <div style={s.erpItem}>
+                    <span style={s.erpLabel}>Nombre ERP</span>
+                    <span style={s.erpVal}>{selectedProduct.name}</span>
+                  </div>
+                  <div style={s.erpItem}>
+                    <span style={s.erpLabel}>Marca / Stock</span>
+                    <span style={s.erpVal}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
+                  </div>
+                  <div style={s.erpItem}>
+                    <span style={s.erpLabel}>Precio ERP</span>
+                    <span style={s.erpVal}>S/ {selectedProduct.price}</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSave} style={s.editorForm}>
+                  {/* ── Switches ── */}
+                  <div style={s.switchRow}>
+                    {/* Switch Visible */}
+                    <div
+                      style={{ ...s.switchCard, borderColor: isVisible ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.2)' }}
+                      onClick={() => setIsVisible(!isVisible)}
+                    >
+                      {isVisible ? <Eye size={18} color="#22C55E" /> : <EyeOff size={18} color="#EF4444" />}
+                      <div>
+                        <div style={s.switchTitle}>{isVisible ? 'Visible en Web' : 'Oculto en Web'}</div>
+                        <div style={s.switchDesc}>Los clientes {isVisible ? 'pueden' : 'NO pueden'} ver este producto</div>
+                      </div>
+                      <div style={{
+                        ...s.toggleTrack,
+                        backgroundColor: isVisible ? '#22C55E' : '#D1D5DB',
+                      }}>
+                        <div style={{
+                          ...s.toggleThumb,
+                          transform: isVisible ? 'translateX(20px)' : 'translateX(2px)',
+                        }} />
+                      </div>
+                    </div>
+
+                    {/* Switch Destacado */}
+                    <div
+                      style={{ ...s.switchCard, borderColor: isTrending ? 'rgba(255,46,147,0.3)' : 'rgba(142,154,167,0.1)' }}
+                      onClick={() => setIsTrending(!isTrending)}
+                    >
+                      <Star size={18} color={isTrending ? 'var(--accent-start)' : 'var(--text-secondary)'} fill={isTrending ? 'var(--accent-start)' : 'none'} />
+                      <div>
+                        <div style={s.switchTitle}>Producto Destacado</div>
+                        <div style={s.switchDesc}>Aparece en la sección "Trending"</div>
+                      </div>
+                      <div style={{
+                        ...s.toggleTrack,
+                        backgroundColor: isTrending ? 'var(--accent-start)' : '#D1D5DB',
+                      }}>
+                        <div style={{
+                          ...s.toggleThumb,
+                          transform: isTrending ? 'translateX(20px)' : 'translateX(2px)',
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Zona de Upload con Drag & Drop ── */}
+                  <div style={s.uploadSection}>
+                    <label style={s.label}>Imágenes del Producto</label>
+                    <div
+                      style={{
+                        ...s.dropZone,
+                        borderColor: isDragOver ? 'var(--accent-start)' : 'rgba(142,154,167,0.2)',
+                        backgroundColor: isDragOver ? 'rgba(255,46,147,0.04)' : '#FAFAFA',
+                      }}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {isUploading ? (
+                        <div style={s.uploadingState}>
+                          <Loader2 size={28} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+                          <span style={s.dropText}>Subiendo imagen...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <ImagePlus size={32} color={isDragOver ? 'var(--accent-start)' : 'var(--text-secondary)'} />
+                          <span style={s.dropText}>
+                            {isDragOver ? 'Suelta la imagen aquí' : 'Arrastra una imagen o haz clic para seleccionar'}
+                          </span>
+                          <span style={s.dropHint}>JPEG, PNG, WebP — máx. 3MB</span>
+                        </>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleFileSelect(e.target.files)}
+                      />
+                    </div>
+
+                    {/* Grid de imágenes subidas */}
+                    {uploadedImages.length > 0 && (
+                      <div style={s.imageGrid}>
+                        {uploadedImages.map((imgSrc, idx) => (
+                          <div key={idx} style={s.imageThumb}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={imgSrc} alt={`Imagen ${idx + 1}`} style={s.imageThumbImg} />
+                            <button
+                              type="button"
+                              style={s.removeImgBtn}
+                              onClick={() => handleRemoveImage(idx)}
+                            >
+                              <X size={12} color="#FFF" />
+                            </button>
+                            {idx === 0 && <span style={s.mainBadge}>Principal</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Descripción ── */}
+                  <div style={s.inputGroup}>
+                    <label style={s.label}>Descripción de Venta</label>
+                    <textarea
+                      placeholder="Beneficios, ingredientes, modo de uso..."
+                      rows={5}
+                      value={richDescription}
+                      onChange={(e) => setRichDescription(e.target.value)}
+                      style={s.textarea}
+                    />
+                  </div>
+
+                  {/* ── Botón Guardar ── */}
+                  <button type="submit" disabled={isSaving} style={s.saveBtn} className="soft-button">
+                    {isSaving ? (
+                      <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+                    ) : (
+                      <><Save size={18} /> Guardar Cambios</>
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div style={s.emptyEditor} className="soft-card">
+                <Package size={48} color="var(--text-tertiary)" />
+                <h4 style={{ marginTop: '16px' }}>Selecciona un producto</h4>
+                <p style={s.emptyText}>Elige un artículo de la lista para editar sus imágenes, descripción y visibilidad.</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ══════════════════════════════════════════ */}
+      {/* ═══ TAB: CATEGORÍAS ═══ */}
+      {/* ══════════════════════════════════════════ */}
+      {activeTab === 'categories' && (
+        <div style={s.catContainer}>
+          <div style={s.catCard} className="soft-card">
+            <h3 style={s.panelTitle}>Gestión de Categorías</h3>
+            <p style={s.panelSub}>Controla qué categorías se muestran en la tienda y su orden.</p>
+
+            {catMessage.text && (
+              <div style={{
+                ...s.alert,
+                backgroundColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                borderColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+              }}>
+                {catMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                <span style={{ fontSize: '0.82rem', fontWeight: '600', color: catMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>
+                  {catMessage.text}
+                </span>
+              </div>
+            )}
+
+            {isCatLoading ? (
+              <div style={s.centerState}>
+                <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+              </div>
+            ) : (
+              <div style={s.catList}>
+                {categories.map((cat) => (
+                  <div key={cat.categoria} style={{
+                    ...s.catItem,
+                    opacity: cat.visible ? 1 : 0.5,
+                    borderColor: cat.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)',
+                  }}>
+                    <div style={s.catIcon}>{CATEGORY_ICONS[cat.categoria] || '📦'}</div>
+                    <div style={s.catInfo}>
+                      <div style={s.catName}>{CATEGORY_LABELS[cat.categoria] || cat.categoria}</div>
+                      <div style={s.catStatus}>
+                        {cat.visible ? '✅ Visible en la tienda' : '🚫 Oculta para los clientes'}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        ...s.toggleTrack,
+                        backgroundColor: cat.visible ? '#22C55E' : '#D1D5DB',
+                      }}
+                      onClick={() => toggleCategoryVisibility(cat.categoria)}
+                    >
+                      <div style={{
+                        ...s.toggleThumb,
+                        transform: cat.visible ? 'translateX(20px)' : 'translateX(2px)',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={saveCategories}
+              disabled={isCatSaving}
+              style={s.saveCatBtn}
+              className="soft-button"
+            >
+              {isCatSaving ? (
+                <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+              ) : (
+                <><Save size={18} /> Guardar Configuración de Categorías</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
-    display: 'flex',
-    flexDirection: 'column',
-  },
+// ═══════════════════════════════════════════════════
+// ═══ ESTILOS ═══
+// ═══════════════════════════════════════════════════
+const s = {
+  container: { minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', flexDirection: 'column' },
+
+  // Header
   header: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderBottom: '1px solid rgba(142, 154, 167, 0.08)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    padding: '12px 24px',
+    backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(142,154,167,0.08)',
+    position: 'sticky', top: 0, zIndex: 10, padding: '14px 24px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
   },
-  headerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+  headerContent: { maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
+  logoGroup: { display: 'flex', alignItems: 'center', gap: '8px' },
+  logo: { fontFamily: 'var(--font-logo)', fontWeight: '600', fontSize: '1.35rem', letterSpacing: '0.15em', color: 'var(--text-primary)' },
+  userGroup: { display: 'flex', alignItems: 'center', gap: '16px' },
+  userName: { fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' },
+  logoutBtn: { background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' },
+
+  // Tabs
+  tabBar: {
+    display: 'flex', gap: '0', maxWidth: '1200px', width: '100%', margin: '0 auto',
+    padding: '16px 20px 0 20px',
   },
-  logoGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  logo: {
-    fontFamily: 'var(--font-logo)',
-    fontWeight: '700',
-    fontSize: '1.35rem',
-    letterSpacing: '0.15em',
-  },
-  badge: {
-    fontSize: '0.7rem',
-    fontWeight: '700',
-    color: 'var(--accent-start)',
-    backgroundColor: 'var(--accent-soft)',
-    padding: '4px 8px',
-    borderRadius: '8px',
-  },
-  userGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-  },
-  userName: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
-  },
-  logoutButton: {
-    background: 'none',
-    border: 'none',
-    color: '#EB5E55',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  },
-  dashboardGrid: {
-    display: 'flex',
-    flexDirection: 'row',
-    maxWidth: '1200px',
-    width: '100%',
-    margin: '24px auto',
-    padding: '0 20px',
-    gap: '24px',
-    flex: 1,
-  },
-  leftPanel: {
-    flex: 1,
-    minWidth: '350px',
-  },
-  rightPanel: {
-    flex: 1.2,
-  },
-  panelCard: {
-    padding: '24px',
-    backgroundColor: '#FFFFFF',
-    height: 'calc(100vh - 150px)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  panelTitle: {
-    fontSize: '1.15rem',
-    fontWeight: '700',
-  },
-  panelSubtitle: {
-    fontSize: '0.8rem',
-    color: 'var(--text-secondary)',
-    marginBottom: '18px',
-    marginTop: '-4px',
-  },
-  refreshButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: 'var(--text-secondary)',
-  },
-  searchForm: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '16px',
-  },
-  searchBox: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid rgba(142, 154, 167, 0.15)',
-    borderRadius: '16px',
-    padding: '0 12px',
-    backgroundColor: '#FFFFFF',
-  },
-  searchIcon: {
-    marginRight: '8px',
-  },
-  searchInput: {
-    border: 'none',
-    outline: 'none',
-    width: '100%',
-    height: '42px',
-    fontSize: '0.85rem',
-    fontFamily: 'var(--font-body)',
-  },
-  searchBtn: {
-    padding: '0 16px',
-    borderRadius: '16px',
-    height: '44px',
-  },
-  productsList: {
-    flex: 1,
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    paddingRight: '4px',
-  },
-  loadingState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '200px',
-    gap: '12px',
-  },
-  loadingText: {
-    fontSize: '0.85rem',
-    color: 'var(--text-secondary)',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '40px 20px',
-    color: 'var(--text-secondary)',
-  },
-  productItem: {
-    display: 'flex',
-    gap: '12px',
-    padding: '10px',
-    borderRadius: '16px',
-    border: '1px solid',
-    cursor: 'pointer',
+  tab: {
+    display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px',
+    border: 'none', borderBottom: '3px solid transparent', cursor: 'pointer',
+    fontFamily: 'var(--font-body)', fontWeight: '600', fontSize: '0.9rem',
+    color: 'var(--text-secondary)', backgroundColor: 'transparent',
     transition: 'all 0.2s ease',
   },
-  prodListImageContainer: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '10px',
-    backgroundColor: '#FAF9F8',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    flexShrink: 0,
+  tabActive: {
+    color: 'var(--accent-start)', borderBottomColor: 'var(--accent-start)',
   },
-  prodListImage: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
+
+  // Panels
+  leftPanel: { flex: 1, minWidth: '320px' },
+  rightPanel: { flex: 1.3 },
+  panelCard: {
+    padding: '20px', backgroundColor: '#FFFFFF', borderRadius: '20px',
+    height: 'calc(100vh - 170px)', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   },
-  prodListInfo: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
+  panelHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' },
+  panelTitle: { fontSize: '1.1rem', fontWeight: '700', fontFamily: 'var(--font-logo)', letterSpacing: '0.02em' },
+  panelSub: { fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '16px', marginTop: '-6px' },
+  refreshBtn: { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' },
+
+  // Search
+  searchForm: { display: 'flex', gap: '8px', marginBottom: '14px' },
+  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(142,154,167,0.12)', borderRadius: '14px', padding: '0 12px', backgroundColor: '#FAFAFA' },
+  searchInput: { border: 'none', outline: 'none', width: '100%', height: '40px', fontSize: '0.85rem', fontFamily: 'var(--font-body)', backgroundColor: 'transparent' },
+  searchBtn: { padding: '0 16px', borderRadius: '14px', height: '42px', fontSize: '0.82rem' },
+
+  // Products list
+  productsList: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '4px' },
+  centerState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' },
+  stateText: { fontSize: '0.85rem', color: 'var(--text-secondary)' },
+  productItem: { display: 'flex', gap: '10px', padding: '8px', borderRadius: '14px', border: '1px solid', cursor: 'pointer', transition: 'all 0.2s ease' },
+  prodThumb: { width: '44px', height: '44px', borderRadius: '10px', backgroundColor: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 },
+  prodThumbImg: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
+  prodInfo: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 },
+  prodName: { fontSize: '0.82rem', fontWeight: '600', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  prodMeta: { display: 'flex', gap: '6px', marginTop: '2px', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-secondary)' },
+  prodCode: { fontWeight: '600' },
+  prodPrice: { fontWeight: '700', color: 'var(--text-primary)' },
+  badgeGreen: { fontSize: '0.65rem' },
+  badgePink: { fontSize: '0.65rem' },
+  badgeGray: { backgroundColor: '#F3F4F6', color: '#6B7280', padding: '1px 5px', borderRadius: '4px', fontWeight: '600', fontSize: '0.6rem' },
+
+  // Alert
+  alert: { display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid', padding: '10px 14px', borderRadius: '12px', marginBottom: '12px' },
+
+  // ERP summary
+  erpGrid: { backgroundColor: '#F8F9FA', borderRadius: '14px', padding: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' },
+  erpItem: { display: 'flex', flexDirection: 'column' },
+  erpLabel: { fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  erpVal: { fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+
+  // Editor form
+  editorForm: { display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto', paddingRight: '4px' },
+
+  // Switches
+  switchRow: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
+  switchCard: {
+    flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '10px',
+    padding: '12px 14px', borderRadius: '14px', border: '1px solid',
+    cursor: 'pointer', transition: 'all 0.2s ease', backgroundColor: '#FAFAFA',
   },
-  prodListName: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    lineHeight: '1.2',
-    display: '-webkit-box',
-    WebkitLineClamp: 1,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
+  switchTitle: { fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)' },
+  switchDesc: { fontSize: '0.68rem', color: 'var(--text-secondary)', marginTop: '1px' },
+  toggleTrack: {
+    width: '42px', height: '22px', borderRadius: '11px', marginLeft: 'auto',
+    position: 'relative', transition: 'background-color 0.2s ease', flexShrink: 0, cursor: 'pointer',
   },
-  prodListMeta: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '4px',
-    alignItems: 'center',
-    fontSize: '0.75rem',
-    color: 'var(--text-secondary)',
+  toggleThumb: {
+    width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#FFFFFF',
+    position: 'absolute', top: '2px', transition: 'transform 0.2s ease',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
   },
-  prodListCode: {
-    fontWeight: '600',
+
+  // Upload
+  uploadSection: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  label: { fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)' },
+  dropZone: {
+    border: '2px dashed', borderRadius: '16px', padding: '28px 20px',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    gap: '8px', cursor: 'pointer', transition: 'all 0.2s ease',
   },
-  prodListPrice: {
-    fontWeight: '700',
-    color: 'var(--text-primary)',
+  dropText: { fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500', textAlign: 'center' },
+  dropHint: { fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: '500' },
+  uploadingState: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' },
+  imageGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' },
+  imageThumb: {
+    position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1',
+    backgroundColor: '#F5F5F5', border: '1px solid rgba(142,154,167,0.1)',
   },
-  imageBadge: {
-    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-    color: '#2ECC71',
-    padding: '2px 6px',
-    borderRadius: '6px',
-    fontWeight: '700',
-    fontSize: '0.65rem',
+  imageThumbImg: { width: '100%', height: '100%', objectFit: 'cover' },
+  removeImgBtn: {
+    position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px',
+    borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.9)', border: 'none',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
   },
-  trendingBadge: {
-    backgroundColor: 'var(--accent-soft)',
-    color: 'var(--accent-start)',
-    padding: '2px 6px',
-    borderRadius: '6px',
-    fontWeight: '700',
-    fontSize: '0.65rem',
+  mainBadge: {
+    position: 'absolute', bottom: '4px', left: '4px', backgroundColor: 'var(--accent-start)',
+    color: '#FFF', fontSize: '0.55rem', fontWeight: '700', padding: '2px 6px',
+    borderRadius: '6px', textTransform: 'uppercase',
   },
-  noSelectedCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 'calc(100vh - 150px)',
-    padding: '40px',
-    backgroundColor: '#FFFFFF',
-    color: 'var(--text-primary)',
-  },
-  erpSummary: {
-    backgroundColor: 'var(--bg-primary)',
-    borderRadius: '16px',
-    padding: '16px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '12px',
-    marginBottom: '20px',
-  },
-  erpSummaryItem: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  erpLabel: {
-    fontSize: '0.7rem',
-    color: 'var(--text-secondary)',
-    fontWeight: '500',
-  },
-  erpValue: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-    display: '-webkit-box',
-    WebkitLineClamp: 1,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-  },
-  editorForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    flex: 1,
-    overflowY: 'auto',
-    paddingRight: '4px',
-  },
-  checkboxGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'var(--accent-soft)',
-    padding: '12px 16px',
-    borderRadius: '16px',
-    border: '1px solid rgba(216, 27, 96, 0.15)',
-  },
-  checkbox: {
-    width: '18px',
-    height: '18px',
-    cursor: 'pointer',
-    accentColor: 'var(--accent-start)',
-  },
-  checkboxLabel: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  label: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
-  },
-  inputIconWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: '16px',
-  },
-  input: {
-    width: '100%',
-    height: '46px',
-    paddingLeft: '48px',
-    paddingRight: '16px',
-    border: '1px solid rgba(142, 154, 167, 0.15)',
-    borderRadius: '16px',
-    fontFamily: 'var(--font-body)',
-    fontSize: '0.9rem',
-    outline: 'none',
-  },
-  previewContainer: {
-    marginTop: '10px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  previewLabel: {
-    fontSize: '0.75rem',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-  },
-  previewImage: {
-    maxWidth: '120px',
-    maxHeight: '120px',
-    borderRadius: '12px',
-    border: '1px solid rgba(142, 154, 167, 0.1)',
-    objectFit: 'contain',
-    backgroundColor: '#FAF9F8',
-    padding: '4px',
-  },
+
+  // Description textarea
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   textarea: {
-    width: '100%',
-    padding: '12px 16px',
-    border: '1px solid rgba(142, 154, 167, 0.15)',
-    borderRadius: '16px',
-    fontFamily: 'var(--font-body)',
-    fontSize: '0.9rem',
-    outline: 'none',
-    resize: 'none',
+    width: '100%', padding: '12px 14px', border: '1px solid rgba(142,154,167,0.12)',
+    borderRadius: '14px', fontFamily: 'var(--font-body)', fontSize: '0.85rem',
+    outline: 'none', resize: 'none', backgroundColor: '#FAFAFA',
   },
-  saveButton: {
-    width: '100%',
-    height: '48px',
-    marginTop: '10px',
-    flexShrink: 0,
+
+  // Save button
+  saveBtn: { width: '100%', height: '46px', marginTop: '8px', flexShrink: 0, fontSize: '0.88rem' },
+
+  // Empty editor
+  emptyEditor: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    height: 'calc(100vh - 170px)', padding: '40px', backgroundColor: '#FFFFFF',
+    color: 'var(--text-primary)', borderRadius: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   },
-  alert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    border: '1px solid',
-    padding: '10px 16px',
-    borderRadius: '16px',
-    marginBottom: '16px',
+  emptyText: { fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '8px', maxWidth: '280px' },
+
+  // ── Categories tab ──
+  catContainer: { maxWidth: '700px', width: '100%', margin: '20px auto', padding: '0 20px' },
+  catCard: {
+    padding: '24px', backgroundColor: '#FFFFFF', borderRadius: '20px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   },
-  alertText: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
+  catList: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' },
+  catItem: {
+    display: 'flex', alignItems: 'center', gap: '14px', padding: '16px',
+    borderRadius: '16px', border: '1px solid', transition: 'all 0.2s ease',
+    backgroundColor: '#FAFAFA',
   },
+  catIcon: { fontSize: '1.8rem', lineHeight: 1 },
+  catInfo: { flex: 1 },
+  catName: { fontFamily: 'var(--font-logo)', fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' },
+  catStatus: { fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' },
+  saveCatBtn: { width: '100%', height: '48px', fontSize: '0.88rem' },
 };

@@ -4,36 +4,38 @@ import prisma from '@/lib/prisma';
 export async function POST(request) {
   try {
     // 1. Validar la sesión del administrador
-    // Por simplicidad de desarrollo, verificamos que tenga el header de autorización o token
     const token = request.headers.get('Authorization');
     if (!token || !token.startsWith('Bearer gloss-admin-')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { codart, imagenes, descripcionEnriquecida, destacado } = await request.json();
+    const { codart, imagenes, descripcionEnriquecida, destacado, visible } = await request.json();
 
-    if (!codart || !imagenes) {
-      return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+    if (!codart) {
+      return NextResponse.json({ error: 'Falta el código de artículo' }, { status: 400 });
     }
 
     console.log(`[Admin Update Product] Modificando enriquecimiento para artículo: ${codart}`);
 
     // Convertir array de imágenes a string JSON para guardarlo en la columna
-    const imagenesString = JSON.stringify(imagenes);
+    // Ahora soporta data URIs (Base64) además de URLs
+    const imagenesString = JSON.stringify(imagenes || []);
 
     // 2. Ejecutar Upsert (crear o actualizar) en PostgreSQL mediante Prisma
     const updatedProduct = await prisma.webProductoImagen.upsert({
       where: { codart },
       update: {
         imagenes: imagenesString,
-        descripcionEnriquecida,
-        destacado: !!destacado
+        descripcionEnriquecida: descripcionEnriquecida || null,
+        destacado: !!destacado,
+        visible: visible !== undefined ? !!visible : true,
       },
       create: {
         codart,
         imagenes: imagenesString,
-        descripcionEnriquecida,
-        destacado: !!destacado
+        descripcionEnriquecida: descripcionEnriquecida || null,
+        destacado: !!destacado,
+        visible: visible !== undefined ? !!visible : true,
       }
     });
 
