@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShoppingBag, Sparkles, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
@@ -282,10 +282,7 @@ export default function ProductDetailPage({ params }) {
         {product.hasEquivalents && equivalents.length > 0 && (
           <div id="kit" style={styles.kitSection}>
             <div style={styles.kitHeader}>
-              <div style={styles.kitTitleBlock}>
-                <Sparkles size={22} color="var(--accent-start)" />
-                <h2 style={styles.kitTitle}>Arma tu Kit de Rutina</h2>
-              </div>
+              <h2 style={styles.kitTitle}>Arma tu Kit de Rutina</h2>
               <p style={styles.kitSubtitle}>
                 Combina este producto con sus complementos recomendados del ERP para maximizar tus resultados de belleza.
               </p>
