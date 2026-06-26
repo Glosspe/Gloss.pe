@@ -151,6 +151,37 @@ export default function ProfilePage() {
                 </div>
               )}
 
+              {/* Tipo y Nro Documento */}
+              <div style={styles.row}>
+                <div style={{ ...styles.inputGroup, flex: 0.35 }}>
+                  <label style={styles.label}>Doc.</label>
+                  <select
+                    value={docType}
+                    onChange={(e) => { setDocType(e.target.value); setDocNumber(''); }}
+                    style={styles.select}
+                  >
+                    <option value="DNI">DNI</option>
+                    <option value="RUC">RUC</option>
+                  </select>
+                </div>
+
+                <div style={{ ...styles.inputGroup, flex: 0.65 }}>
+                  <label style={styles.label}>Número de Documento</label>
+                  <div style={styles.inputIconWrapper}>
+                    <FileText size={18} color="var(--text-secondary)" style={styles.inputIcon} />
+                    <input
+                      type="text"
+                      placeholder={docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
+                      required
+                      maxLength={docType === 'DNI' ? 8 : 11}
+                      value={docNumber}
+                      onChange={(e) => setDocNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                      style={styles.input}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Nombre */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>Nombre y Apellidos</label>
@@ -180,37 +211,6 @@ export default function ProfilePage() {
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                     style={styles.input}
                   />
-                </div>
-              </div>
-
-              {/* Tipo y Nro Documento */}
-              <div style={styles.row}>
-                <div style={{ ...styles.inputGroup, flex: 0.35 }}>
-                  <label style={styles.label}>Doc.</label>
-                  <select
-                    value={docType}
-                    onChange={(e) => { setDocType(e.target.value); setDocNumber(''); }}
-                    style={styles.select}
-                  >
-                    <option value="DNI">DNI</option>
-                    <option value="RUC">RUC</option>
-                  </select>
-                </div>
-
-                <div style={{ ...styles.inputGroup, flex: 0.65 }}>
-                  <label style={styles.label}>Número de Documento</label>
-                  <div style={styles.inputIconWrapper}>
-                    <FileText size={18} color="var(--text-secondary)" style={styles.inputIcon} />
-                    <input
-                      type="text"
-                      placeholder={docType === 'DNI' ? '8 dígitos' : '11 dígitos'}
-                      required
-                      maxLength={docType === 'DNI' ? 8 : 11}
-                      value={docNumber}
-                      onChange={(e) => setDocNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                      style={styles.input}
-                    />
-                  </div>
                 </div>
               </div>
 
