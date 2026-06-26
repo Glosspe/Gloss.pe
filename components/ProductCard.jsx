@@ -168,10 +168,9 @@ export default function ProductCard({ product }) {
                 e.stopPropagation();
                 setIsEquivalentsOpen(true);
               }}
-              style={styles.equivalentsBtn}
               className="equivalents-pill-btn"
             >
-              ✨ Completa tu rutina
+              Completa tu rutina
             </button>
           </div>
         )}

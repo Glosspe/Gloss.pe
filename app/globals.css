@@ -448,3 +448,40 @@ a {
   box-shadow: 0 0 0 4px rgba(255, 46, 147, 0.15) !important;
 }
 
+/* Botón 'Completa tu rutina' de la tarjeta de producto */
+.equivalents-pill-btn {
+  background: rgba(255, 46, 147, 0.04) !important;
+  border: 1px solid rgba(255, 46, 147, 0.18) !important;
+  border-radius: 30px !important;
+  padding: 6px 14px !important;
+  color: var(--accent-start) !important;
+  font-family: var(--font-body), sans-serif !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: none !important;
+  width: fit-content !important;
+  margin-top: 6px !important;
+  margin-bottom: 4px !important;
+}
+
+.equivalents-pill-btn:hover {
+  background: var(--accent-gradient) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 14px rgba(255, 46, 147, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+.equivalents-pill-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(255, 46, 147, 0.15) !important;
+}
+
+
