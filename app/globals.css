@@ -252,10 +252,10 @@ a {
   }
 }
 
-/* Placeholder premium para el buscador rosa pastel */
+/* Placeholder premium para el buscador */
 .search-input-premium::placeholder {
-  color: #C0A8B5 !important;
-  opacity: 0.8;
+  color: #8E9AA8 !important;
+  opacity: 0.7;
 }
 
 /* ═══ Animaciones de tarjeta de producto ═══ */
