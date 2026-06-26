@@ -5,37 +5,63 @@ import Header from '@/components/Header';
 import CategorySlider from '@/components/CategorySlider';
 import ProductCard from '@/components/ProductCard';
 import { useCart } from '@/context/CartContext';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
   const { selectedCategory, searchQuery } = useCart();
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Filtrar productos según categoría y búsqueda en tiempo real
+  // Fetch dinámico de productos desde la API híbrida de la tienda
   useEffect(() => {
-    let result = MOCK_PRODUCTS;
-
-    // Filtro por Categoría
-    if (selectedCategory !== 'Trending') {
-      result = result.filter(p => p.category === selectedCategory);
-    } else {
-      // "Trending" muestra los destacados (en este caso el MOCK tiene algunos marcados de forma predeterminada)
-      result = result.filter(p => p.category === 'Trending' || p.price > 150);
+    let active = true;
+    
+    async function fetchProducts() {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const queryParams = new URLSearchParams();
+        if (selectedCategory) queryParams.append('category', selectedCategory);
+        if (searchQuery.trim() !== '') queryParams.append('q', searchQuery.trim());
+        
+        console.log(`[Frontend] Fetching products with: ${queryParams.toString()}`);
+        const res = await fetch(`/api/products/search?${queryParams.toString()}`);
+        
+        if (!res.ok) {
+          throw new Error(`Error en el servidor: código ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if (active) {
+          setProducts(data);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('[Frontend] Error fetching products:', err);
+        if (active) {
+          // Fallback a mocks locales ante caídas para asegurar que la web siga activa
+          const localFallback = MOCK_PRODUCTS.filter(p => {
+            const matchesCat = selectedCategory === 'Trending' || p.category === selectedCategory;
+            const matchesQuery = searchQuery.trim() === '' || 
+              p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+              p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCat && matchesQuery;
+          });
+          setProducts(localFallback);
+          setIsLoading(false);
+        }
+      }
     }
 
-    // Filtro por Búsqueda
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        p => p.name.toLowerCase().includes(q) || 
-             p.brand.toLowerCase().includes(q) || 
-             (p.description && p.description.toLowerCase().includes(q))
-      );
-    }
-
-    setFilteredProducts(result);
+    fetchProducts();
+    
+    return () => {
+      active = false;
+    };
   }, [selectedCategory, searchQuery]);
 
   return (
@@ -51,17 +77,24 @@ export default function HomePage() {
         <h3 style={styles.sectionTitle}>
           {selectedCategory === 'Trending' ? 'Productos Destacados' : selectedCategory}
         </h3>
-        <span style={styles.sectionCount}>{filteredProducts.length} productos</span>
+        {!isLoading && (
+          <span style={styles.sectionCount}>{products.length} productos</span>
+        )}
       </div>
 
-      {/* Rejilla de Productos */}
-      {filteredProducts.length === 0 ? (
+      {/* Cuerpo principal / Rejilla */}
+      {isLoading ? (
+        <div style={styles.loaderContainer}>
+          <Loader2 style={styles.spinner} />
+          <p style={styles.loaderText}>Buscando productos de belleza...</p>
+        </div>
+      ) : products.length === 0 ? (
         <div style={styles.noResults}>
-          <p style={styles.noResultsText}>No encontramos productos que coincidan con tu búsqueda.</p>
+          <p style={styles.noResultsText}>No encontramos productos que coincidan con tu búsqueda en este momento.</p>
         </div>
       ) : (
         <div className="product-grid">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -90,11 +123,32 @@ const styles = {
     fontFamily: 'var(--font-title)',
     fontSize: '1.2rem',
     fontWeight: '700',
+    color: 'var(--text-primary)',
   },
   sectionCount: {
     fontSize: '0.8rem',
     color: 'var(--text-secondary)',
     fontWeight: '500',
+  },
+  loaderContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '80px 20px',
+    gap: '12px',
+  },
+  spinner: {
+    width: '32px',
+    height: '32px',
+    color: 'var(--accent-start)',
+    animation: 'spin 1s linear infinite',
+  },
+  loaderText: {
+    color: 'var(--text-secondary)',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    fontFamily: 'var(--font-body)',
   },
   noResults: {
     width: '100%',
@@ -104,5 +158,6 @@ const styles = {
   noResultsText: {
     color: 'var(--text-secondary)',
     fontSize: '0.95rem',
+    fontFamily: 'var(--font-body)',
   },
 };

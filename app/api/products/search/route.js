@@ -19,7 +19,6 @@ export function mapSubfamilyToWebCategory(codsub) {
   if (cosmeticosCodes.includes(codsub)) return 'Cosmeticos';
   if (corporalCodes.includes(codsub)) return 'Corporal';
   
-  // Agrupamiento por prefijo como fallback
   if (codsub.startsWith('05')) return 'Capilar';
   if (codsub.startsWith('02')) return 'Cosmeticos';
   if (codsub.startsWith('06')) return 'Corporal';
@@ -42,15 +41,43 @@ export async function GET(request) {
     const query = searchParams.get('q') || '';
     const category = searchParams.get('category') || 'Trending';
     
-    console.log(`[API Products Search] Parámetros: q="${query}", category="${category}"`);
+    // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
+    // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
+    const localApiUrl = process.env.LOCAL_API_URL;
+    
+    if (localApiUrl) {
+      console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search`);
+      try {
+        const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
+        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+        
+        const res = await fetch(targetUrl, {
+          headers: { 'Content-Type': 'application/json' },
+          next: { revalidate: 60 } // Cachear por 60 segundos
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          return NextResponse.json(data);
+        } else {
+          console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
+        }
+      } catch (proxyErr) {
+        console.error(`[API Products Search - PROXY MODE] Error conectando a la API local de ngrok:`, proxyErr.message);
+        // Continuar al fallback de mocks locales para mantener la tienda activa
+      }
+    }
 
-    // 1. Intentar conexión a la base de datos SQL Server del ERP Navasoft
+    // --- MODO LOCAL / API SERVER ---
+    // Si LOCAL_API_URL no está definida (o el proxy falló), procesamos directamente contra la DB ERP local.
+    console.log(`[API Products Search - LOCAL MODE] Ejecutando consulta de base de datos local...`);
+
     let pool;
     let useFallback = false;
     try {
       pool = await getErpConnection();
     } catch (dbErr) {
-      console.warn('[API Products Search] SQL Server del ERP no disponible, usando MOCK_PRODUCTS como fallback:', dbErr.message);
+      console.warn('[API Products Search - LOCAL MODE] ERP no accesible, usando MOCK_PRODUCTS como fallback:', dbErr.message);
       useFallback = true;
     }
 
@@ -59,8 +86,7 @@ export async function GET(request) {
     if (useFallback) {
       // MOCK_PRODUCTS locales
       productsList = MOCK_PRODUCTS.map(p => {
-        // Asignar códigos de categoría ficticios para el mapeo local
-        let categoryCode = '05-05'; // Cabello/Capilar por defecto
+        let categoryCode = '05-05';
         if (p.category === 'Facial') categoryCode = '04-04';
         else if (p.category === 'Cosmeticos') categoryCode = '04-01';
         else if (p.category === 'Corporal') categoryCode = '06-03';
@@ -78,7 +104,6 @@ export async function GET(request) {
         };
       });
 
-      // Filtrar por query de texto
       if (query.trim() !== '') {
         const q = query.toLowerCase();
         productsList = productsList.filter(
@@ -88,12 +113,11 @@ export async function GET(request) {
         );
       }
 
-      // Filtrar por categoría
       if (category && category !== 'Trending' && category !== 'Todos') {
         productsList = productsList.filter(p => mapSubfamilyToWebCategory(p.categoryCode) === category);
       }
     } else {
-      // 2. Construir la consulta SQL parametrizada de forma robusta y segura
+      // Consultar directo a la base de datos Navasoft por ZeroTier
       const warehouse = process.env.ERP_DEFAULT_WAREHOUSE || '01';
       const stockField = getStockColumnName(warehouse);
       const prdTable = getStockTableName(warehouse);
@@ -112,12 +136,9 @@ export async function GET(request) {
         if (subfamilies.length > 0) {
           categoryFilter = ` AND s.codsub IN (${subfamilies.join(',')})`;
         } else {
-          // Si es una categoría no soportada, forzar a que no devuelva nada
           categoryFilter = " AND 1=0";
         }
       }
-
-      console.log(`[API Products Search] Resolviendo stock en Almacén: ${warehouse}, Tabla: ${prdTable}, Col: ${stockField}`);
 
       let sqlQuery = "";
       if (warehouse === '01') {
@@ -184,7 +205,7 @@ export async function GET(request) {
       productsList = result.recordset;
     }
 
-    // 3. Cruzar datos con PostgreSQL para inyectar fotos y descripciones enriquecidas
+    // Cruzar con PostgreSQL de Railway para jalar fotos y detalles
     let enrichedMap = {};
     try {
       const productCodes = productsList.map(p => p.id);
@@ -204,14 +225,13 @@ export async function GET(request) {
         });
       }
     } catch (pgErr) {
-      console.warn('[API Products Search] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
+      console.warn('[API Products Search - LOCAL MODE] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
     }
 
-    // 4. Formatear y enriquecer los productos finales
+    // Formatear la lista
     const formattedProducts = productsList.map(p => {
       const enrichment = enrichedMap[p.id] || {};
       
-      // Asignar imagen por defecto según la categoría si no hay fotos en PostgreSQL
       let defaultImage = 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=80';
       const webCat = mapSubfamilyToWebCategory(p.categoryCode);
       
@@ -250,10 +270,8 @@ export async function GET(request) {
     });
 
     let finalProducts = formattedProducts;
-    // Si la categoría web es 'Trending', priorizar destacados o artículos caros/premium
     if (category === 'Trending') {
       finalProducts = formattedProducts.filter(p => p.destacado || p.price > 80);
-      // Si la lista de Trending queda vacía, devolver los primeros 12 de forma genérica
       if (finalProducts.length === 0) {
         finalProducts = formattedProducts.slice(0, 12);
       }
