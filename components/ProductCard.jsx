@@ -88,12 +88,7 @@ export default function ProductCard({ product }) {
             ...styles.stockImageBadge,
             backgroundColor: stockBadge.bg,
             color: stockBadge.color,
-            borderColor: stockBadge.color + '20'
           }}>
-            <span style={{
-              ...styles.stockDot,
-              backgroundColor: stockBadge.dotColor
-            }} />
             {stockBadge.label}
           </div>
 
@@ -289,15 +284,8 @@ const styles = {
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
-    border: '1px solid',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
-  },
-  stockDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-    display: 'inline-block',
   },
   disabledAddToCartBtn: {
     backgroundColor: '#E5E7EB',
