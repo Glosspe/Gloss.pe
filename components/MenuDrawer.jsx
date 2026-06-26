@@ -123,11 +123,12 @@ const styles = {
   },
   logoText: {
     fontFamily: 'var(--font-logo)',
-    fontSize: '1.4rem',
-    fontWeight: '800',
+    fontSize: '1.45rem',
+    fontWeight: '700',
     color: 'var(--accent-start)',
-    letterSpacing: '0.12em',
+    letterSpacing: '0.2em',
     textTransform: 'uppercase',
+    fontStyle: 'normal',
   },
   closeButton: {
     background: 'none',

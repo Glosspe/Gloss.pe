@@ -153,7 +153,7 @@ export default function AdminDashboard() {
         <div style={styles.headerContent}>
           <div style={styles.logoGroup}>
             <Sparkles size={20} color="var(--accent-start)" />
-            <h1 style={styles.logo}>Gloss Admin</h1>
+            <h1 style={styles.logo}>GLOSS ADMIN</h1>
             <span style={styles.badge}>Moda & Belleza</span>
           </div>
           <div style={styles.userGroup}>
@@ -408,9 +408,10 @@ const styles = {
     gap: '8px',
   },
   logo: {
-    fontFamily: 'var(--font-title)',
+    fontFamily: 'var(--font-logo)',
     fontWeight: '700',
-    fontSize: '1.3rem',
+    fontSize: '1.35rem',
+    letterSpacing: '0.15em',
   },
   badge: {
     fontSize: '0.7rem',

@@ -74,11 +74,12 @@ const styles = {
   },
   logoText: {
     fontFamily: 'var(--font-logo)',
-    fontSize: '2rem',
-    fontWeight: '800',
+    fontSize: '2.1rem',
+    fontWeight: '700',
     color: 'var(--accent-start)',
-    letterSpacing: '0.12em',
+    letterSpacing: '0.22em',
     textTransform: 'uppercase',
+    fontStyle: 'normal',
   },
   actions: {
     display: 'flex',
