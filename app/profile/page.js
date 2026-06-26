@@ -159,6 +159,7 @@ export default function ProfilePage() {
                     value={docType}
                     onChange={(e) => { setDocType(e.target.value); setDocNumber(''); }}
                     style={styles.select}
+                    className="soft-select"
                   >
                     <option value="DNI">DNI</option>
                     <option value="RUC">RUC</option>
@@ -537,7 +538,7 @@ const styles = {
     backgroundColor: '#FAF9F8',
     border: '1px solid rgba(142, 154, 167, 0.08)',
     borderRadius: '16px',
-    padding: '12px 16px',
+    padding: '12px 40px 12px 16px',
     fontSize: '0.9rem',
     fontFamily: 'var(--font-body)',
     color: 'var(--text-primary)',

@@ -245,6 +245,7 @@ ${formattedItems}
                       setName('');
                     }}
                     style={styles.select}
+                    className="soft-select"
                   >
                     <option value="DNI">DNI</option>
                     <option value="RUC">RUC</option>
@@ -500,7 +501,7 @@ const styles = {
   },
   select: {
     height: '50px',
-    padding: '0 16px',
+    padding: '0 40px 0 16px',
     border: '1px solid rgba(142, 154, 167, 0.15)',
     borderRadius: '16px',
     fontFamily: 'var(--font-body)',
