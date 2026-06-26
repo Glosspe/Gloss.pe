@@ -90,7 +90,12 @@ export async function GET(request) {
       }
 
       if (category && category !== 'Trending' && category !== 'Todos') {
-        productsList = productsList.filter(p => mapSubfamilyToWebCategory(p.categoryCode) === category);
+        if (/^\d{2}-\d{2,}$/.test(category)) {
+          // Filtrar por codsub del mock
+          productsList = productsList.filter(p => p.categoryCode === category);
+        } else {
+          productsList = productsList.filter(p => mapSubfamilyToWebCategory(p.categoryCode, p.categoryName) === category);
+        }
       }
     } else {
       // Consultar directo a la base de datos Navasoft por ZeroTier
@@ -108,8 +113,17 @@ export async function GET(request) {
 
       let categoryFilter = "";
       if (category && category !== 'Trending' && category !== 'Todos') {
-        sqlRequest.input('categoryFilterName', sql.VarChar, category);
-        categoryFilter = ` AND s.nomsub = @categoryFilterName`;
+        // Detectar si es un ID de subfamilia (formato XX-YY como '01-03') o un nombre
+        if (/^\d{2}-\d{2,}$/.test(category)) {
+          // Filtrar por codsub (mismo patrón que el POS Syscom.click)
+          sqlRequest.input('catRight', sql.VarChar, category.split('-')[1]);
+          sqlRequest.input('catLeft', sql.VarChar, category.split('-')[0]);
+          categoryFilter = ` AND LTRIM(RTRIM(p01.codcat)) = @catRight AND LEFT(p01.codi, 2) = @catLeft`;
+        } else {
+          // Filtrar por nombre de subfamilia (legacy/fallback)
+          sqlRequest.input('categoryFilterName', sql.VarChar, category);
+          categoryFilter = ` AND s.nomsub = @categoryFilterName`;
+        }
       }
 
       let sqlQuery = "";

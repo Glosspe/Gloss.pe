@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// Categorías por defecto que se sincronizan con el mapeo del ERP
+// Categorías por defecto — se sincronizan automáticamente con el ERP vía /api/products/categories.
+// Estas solo se usan como seed inicial si PostgreSQL no tiene categorías configuradas.
+// Los valores de 'categoria' deben coincidir con el codsub o nomsub del ERP para que
+// el cruce de visibilidad funcione correctamente.
 const DEFAULT_CATEGORIES = [
-  { categoria: 'Capilar', visible: true, orden: 1 },
-  { categoria: 'Facial', visible: true, orden: 2 },
-  { categoria: 'Cosmeticos', visible: true, orden: 3 },
-  { categoria: 'Corporal', visible: true, orden: 4 },
+  { categoria: 'UÑAS', visible: true, orden: 1 },
+  { categoria: 'PESTAÑAS', visible: true, orden: 2 },
+  { categoria: 'DECOLORADOR', visible: true, orden: 3 },
+  { categoria: 'ACCESORIOS', visible: true, orden: 4 },
+  { categoria: 'HIDRATANTE', visible: true, orden: 5 },
 ];
 
 // GET: Listar todas las categorías con su estado de visibilidad

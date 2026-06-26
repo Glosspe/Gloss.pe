@@ -3,48 +3,31 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 
+// Fallback mínimo si la API no responde
 const FALLBACK_CATEGORIES = [
-  { id: 'Trending', label: 'Trending', isSystem: true },
-  { id: 'Todos', label: 'Todos', isSystem: true },
-  { id: 'UÑAS', label: 'Uñas' },
-  { id: 'PESTAÑAS', label: 'Pestañas' },
-  { id: 'DECOLORADOR', label: 'Decoloradores' },
-  { id: 'ACCESORIOS', label: 'Accesorios' },
-  { id: 'HIDRATANTE', label: 'Hidratantes' },
-  { id: 'ELECTRONICOS', label: 'Electrónicos' }
+  { id: 'Trending', name: 'Trending', isSystem: true },
+  { id: 'Todos', name: 'Todos', isSystem: true },
 ];
-
-const CATEGORY_LABELS = {
-  'UÑAS': 'Uñas',
-  'PESTAÑAS': 'Pestañas',
-  'DECOLORADOR': 'Decoloradores',
-  'ACCESORIOS': 'Accesorios',
-  'HIDRATANTE': 'Hidratantes',
-  'ELECTRONICOS': 'Electrónicos',
-  'PIES': 'Pies',
-  'PERFUME': 'Perfumes',
-  'FIJADOR': 'Fijadores',
-  'PARCHES': 'Parches'
-};
 
 export default function CategorySlider() {
   const { selectedCategory, setSelectedCategory } = useCart();
   const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
 
-  // Cargar categorías habilitadas desde la API
+  // Cargar categorías reales desde el ERP vía /api/products/categories
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await fetch('/api/admin/categories');
+        const res = await fetch('/api/products/categories');
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.categories.length > 0) {
+          // data es un array de { id: codsub, name: nomsub } directo del ERP
+          if (Array.isArray(data) && data.length > 0) {
             const apiCats = [
-              { id: 'Trending', label: 'Trending', isSystem: true },
-              { id: 'Todos', label: 'Todos', isSystem: true },
-              ...data.categories.map(c => ({
-                id: c.categoria,
-                label: CATEGORY_LABELS[c.categoria] || c.categoria
+              { id: 'Trending', name: 'Trending', isSystem: true },
+              { id: 'Todos', name: 'Todos', isSystem: true },
+              ...data.map(c => ({
+                id: c.id,       // codsub del ERP (ej: '01-03')
+                name: c.name,   // nomsub del ERP (ej: 'UÑAS')
               }))
             ];
             setCategories(apiCats);
@@ -56,6 +39,14 @@ export default function CategorySlider() {
     }
     loadCategories();
   }, []);
+
+  // Formatear label para mostrar en UI (capitalizar primera letra)
+  function formatLabel(name) {
+    if (!name) return '';
+    if (name === 'Trending' || name === 'Todos') return name;
+    // Capitalizar solo la primera letra, el resto en minúsculas
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  }
 
   return (
     <div style={styles.container}>
@@ -71,7 +62,7 @@ export default function CategorySlider() {
                   ...(isActive ? styles.tabActive : styles.tabInactive)
                 }}
               >
-                {cat.label}
+                {formatLabel(cat.name)}
               </button>
               {isActive && <div style={styles.activeDot} />}
             </div>
@@ -116,6 +107,7 @@ const styles = {
     borderRadius: '16px',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    whiteSpace: 'nowrap',
   },
   tabActive: {
     backgroundColor: 'var(--bg-card)',
