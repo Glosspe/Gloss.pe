@@ -248,8 +248,8 @@ a {
 
 /* Placeholder premium para el buscador rosa pastel */
 .search-input-premium::placeholder {
-  color: #B29AA6 !important;
-  opacity: 1;
+  color: #C0A8B5 !important;
+  opacity: 0.8;
 }
 
 
