@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Modelo para el acceso de administradores al panel
+model WebUsuarioAdmin {
+  id        String   @id @default(uuid())
+  usuario   String   @unique
+  password  String
+  nombre    String
+  rol       String   @default("ADMIN")
+  createdAt DateTime @default(now())
+
+  @@map("web_usuarios_admin")
+}
+
+// Modelo para asociar imágenes y descripciones enriquecidas a los artículos del ERP
+model WebProductoImagen {
+  id                    String   @id @default(uuid())
+  codart                String   @unique // Código del artículo en Navasoft ERP (prd0101.codi)
+  imagenes              String   // JSON string que contiene el array de URLs de imágenes
+  descripcionEnriquecida String?  @db.Text // Descripción enriquecida para el e-commerce
+  destacado             Boolean  @default(false)
+  fechaActualizacion    DateTime @updatedAt
+
+  @@map("web_producto_imagenes")
+}
+
+// Modelo de respaldo para guardar las cotizaciones/pedidos de la web
+model WebPedido {
+  id                String   @id @default(uuid())
+  nroPedido         String   @unique // Nro de pedido autogenerado, ej: GLOSS-1001
+  clienteNombre     String
+  clienteTelefono   String   // Celular / WhatsApp
+  clienteDocumento  String   // DNI o RUC
+  direccion         String
+  coordenadas       String?  // Coordenadas "lat,lng" de Google Maps
+  productos         String   // JSON string con el array de productos del carrito
+  total             Decimal  @db.Decimal(18, 4)
+  voucherUrl        String?  // Ruta o URL de la imagen del comprobante
+  estado            String   @default("PENDIENTE") // PENDIENTE, PAGADO, CANCELADO
+  fechaCreacion     DateTime @default(now())
+  nroCotizacionErp  String?  // Número de cotización devuelto por Navasoft al sincronizar
+
+  @@map("web_pedidos")
+}
+

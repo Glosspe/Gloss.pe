@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Paleta Clean Beauty / Glow */
+  --bg-primary: #F7F6F9;
+  --bg-card: #FFFFFF;
+  --bg-card-rgb: 255, 255, 255;
+  --text-primary: #1C2A38;
+  --text-secondary: #8E9AA7;
+  --text-tertiary: #A5B1C2;
+  
+  /* Acento Coral / Naranja Soft */
+  --accent-start: #FFA07A;
+  --accent-end: #FF8C69;
+  --accent-gradient: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  --accent-shadow: rgba(255, 140, 105, 0.4);
+  
+  /* Sombras Neumórficas / Soft UI */
+  --soft-shadow-outer: 0 16px 36px rgba(142, 154, 167, 0.12), 0 4px 12px rgba(142, 154, 167, 0.04);
+  --soft-shadow-inner: inset 2px 2px 5px rgba(142, 154, 167, 0.1), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+  --button-shadow: 0 10px 25px var(--accent-shadow);
+  
+  --font-title: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar personalizada minimalista */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Clases de Utilidad Soft UI / Neumorfismo */
+
+/* Tarjeta neumórfica flotante */
+.soft-card {
+  background: var(--bg-card);
+  border-radius: 28px;
+  box-shadow: var(--soft-shadow-outer);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+}
+
+.soft-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 48px rgba(142, 154, 167, 0.16);
+}
+
+/* Buscador y campos de texto */
+.soft-input {
+  background: var(--bg-card);
+  border: 1px solid rgba(142, 154, 167, 0.15);
+  border-radius: 20px;
+  padding: 14px 20px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: inset 1px 1px 4px rgba(142, 154, 167, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.soft-input:focus {
+  border-color: var(--accent-start);
+  box-shadow: 0 0 0 4px rgba(255, 160, 122, 0.15);
+}
+
+/* Botón neumórfico con gradiente coral */
+.soft-button {
+  background: var(--accent-gradient);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 20px;
+  padding: 14px 28px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--button-shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.soft-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 140, 105, 0.5);
+}
+
+.soft-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(255, 140, 105, 0.3);
+}
+
+.soft-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Botón circular secundario (como el + o favoritos) */
+.soft-btn-circle {
+  background: var(--bg-card);
+  border: 1px solid rgba(142, 154, 167, 0.08);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(142, 154, 167, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.soft-btn-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(142, 154, 167, 0.12);
+}
+
+.soft-btn-circle:active {
+  transform: scale(0.95);
+  box-shadow: 0 4px 10px rgba(142, 154, 167, 0.05);
+}
+
+/* Menú translúcido / Glassmorphism */
+.glass-menu {
+  background: rgba(var(--bg-card-rgb), 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Ajustes tipográficos */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Ocultar barra de navegación móvil en PC */
+@media (min-width: 768px) {
+  .mobile-only-bar {
+    display: none !important;
+  }
+}
+
+/* Rejilla de productos responsiva */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+}
+
+@media (min-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Layout del Checkout responsivo */
+.checkout-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .checkout-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* Layout del Dashboard Administrativo responsivo */
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 20px;
+  flex: 1;
+}
+
+@media (min-width: 900px) {
+  .dashboard-grid {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+
+
+
+
