@@ -101,17 +101,17 @@ const styles = {
     flex: 1,
   },
   name: {
-    fontFamily: 'var(--font-logo)', // Bodoni Moda editorial
-    fontSize: '0.9rem',
-    fontWeight: '700',
+    fontFamily: 'var(--font-logo)', // Cormorant Garamond editorial
+    fontSize: '0.95rem',
+    fontWeight: '600',
     color: 'var(--text-primary)',
-    lineHeight: '1.25',
+    lineHeight: '1.3',
     marginBottom: '4px',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    minHeight: '2.5em', // Altura consistente para 2 líneas
+    minHeight: '2.6em', // Altura consistente para 2 líneas
   },
   description: {
     fontSize: '0.75rem',

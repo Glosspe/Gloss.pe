@@ -71,10 +71,10 @@ const styles = {
   },
   logoText: {
     fontFamily: 'var(--font-logo)',
-    fontSize: '2.1rem',
-    fontWeight: '700',
+    fontSize: '2.2rem',
+    fontWeight: '600',
     color: 'var(--accent-start)',
-    letterSpacing: '0.22em',
+    letterSpacing: '0.28em',
     textTransform: 'uppercase',
     fontStyle: 'normal',
   },

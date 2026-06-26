@@ -1,0 +1,12 @@
+Gloss.pe
+
+Link Cliente: https://glosspe-production.up.railway.app/
+
+
+
+Link Admin: https://glosspe-production.up.railway.app/admin
+
+Usuario maestro: admin
+Contraseña maestra: Gloss2026
+
+
