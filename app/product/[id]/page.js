@@ -253,7 +253,7 @@ export default function ProductDetailPage({ params }) {
             </div>
 
             {/* Consultar por WhatsApp */}
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={styles.whatsappLink}>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="whatsapp-btn">
               <Phone size={16} /> Consultar por WhatsApp
             </a>
 
@@ -626,24 +626,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
-  whatsappLink: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '12px',
-    borderRadius: '16px',
-    backgroundColor: '#25D366',
-    color: '#FFFFFF',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: '6px',
-    marginBottom: '16px',
-    boxShadow: '0 8px 20px rgba(37, 211, 102, 0.15)',
-    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-  },
+
   descriptionBox: {
     borderTop: '1px solid rgba(142, 154, 167, 0.08)',
     paddingTop: '16px',
