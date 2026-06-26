@@ -10,21 +10,21 @@ const getStockBadge = (stock) => {
     return {
       label: 'Agotado',
       color: '#EF4444',
-      bg: '#FEF2F2',
+      bg: 'rgba(254, 242, 242, 0.9)',
       dotColor: '#EF4444'
     };
   } else if (qty <= 10) {
     return {
       label: `Poco stock (${qty})`,
       color: '#F59E0B',
-      bg: '#FEF3C7',
+      bg: 'rgba(254, 243, 199, 0.9)',
       dotColor: '#F59E0B'
     };
   } else {
     return {
       label: 'Disponible',
       color: '#10B981',
-      bg: '#ECFDF5',
+      bg: 'rgba(236, 253, 245, 0.9)',
       dotColor: '#10B981'
     };
   }
@@ -77,6 +77,20 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
+        {/* Badge de Stock en la esquina superior derecha */}
+        <div style={{
+          ...styles.stockImageBadge,
+          backgroundColor: stockBadge.bg,
+          color: stockBadge.color,
+          borderColor: stockBadge.color + '20'
+        }}>
+          <span style={{
+            ...styles.stockDot,
+            backgroundColor: stockBadge.dotColor
+          }} />
+          {stockBadge.label}
+        </div>
+
         {/* Imagen del Producto */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -91,23 +105,10 @@ export default function ProductCard({ product }) {
 
       {/* ═══ ZONA DE INFORMACIÓN ═══ */}
       <div style={styles.infoZone}>
-        {/* Fila de Marca y Badge de Stock */}
-        <div style={styles.metaRow}>
-          <span style={styles.brandLabel}>
-            {product.brand || 'Gloss Beauty'}
-          </span>
-          <div style={{
-            ...styles.stockBadge,
-            backgroundColor: stockBadge.bg,
-            color: stockBadge.color
-          }}>
-            <span style={{
-              ...styles.stockDot,
-              backgroundColor: stockBadge.dotColor
-            }} />
-            {stockBadge.label}
-          </div>
-        </div>
+        {/* Marca en mayúsculas, ultra ligero */}
+        <span style={styles.brandLabel}>
+          {product.brand || 'Gloss Beauty'}
+        </span>
 
         {/* Nombre del producto con tipografía serif editorial */}
         <h3 style={styles.productName}>
@@ -254,16 +255,23 @@ const styles = {
     marginBottom: '2px',
     gap: '8px',
   },
-  stockBadge: {
+  stockImageBadge: {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    zIndex: 5,
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
-    padding: '3px 8px',
-    borderRadius: '12px',
-    fontSize: '0.62rem',
+    padding: '4px 10px',
+    borderRadius: '20px',
+    fontSize: '0.58rem',
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.06em',
+    border: '1px solid',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
   },
   stockDot: {
     width: '6px',
