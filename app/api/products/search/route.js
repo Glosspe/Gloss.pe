@@ -257,7 +257,7 @@ export async function GET(request) {
         category: finalCategory,
         image: mainImage,
         images: imagesArray,
-        description: enrichment.descripcionEnriquecida || p.observations?.trim() || p.name,
+        description: enrichment.descripcionEnriquecida || p.observations?.trim() || null,
         destacado: !!enrichment.destacado,
         isMock: useFallback
       };

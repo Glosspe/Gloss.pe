@@ -75,9 +75,11 @@ export default function ProductCard({ product }) {
         </h3>
 
         {/* Descripción / Observaciones del ERP */}
-        <p style={styles.descriptionLabel}>
-          {product.description || 'Cuidado de belleza de alta calidad para consentirte todos los días.'}
-        </p>
+        {product.description && (
+          <p style={styles.descriptionLabel}>
+            {product.description}
+          </p>
+        )}
 
         {/* Fila inferior: precio a la izquierda, botones de acción a la derecha */}
         <div style={styles.bottomRow}>
@@ -244,8 +246,7 @@ const styles = {
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
-    minHeight: '2.7em',
-    marginBottom: '12px',
+    marginBottom: '4px',
   },
 
   // ─── Fila inferior (precio + botones) ───
@@ -253,7 +254,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: 'auto',
+    marginTop: '10px',
   },
   priceBlock: {
     display: 'flex',
