@@ -18,7 +18,7 @@ export default function Header() {
         <div style={styles.actions}>
           {/* Botón Bolsa (Carrito) */}
           <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-            <ShoppingBag size={22} color="var(--text-primary)" />
+            <ShoppingBag size={24} color="var(--text-primary)" />
             {cartCount > 0 && (
               <span style={styles.badge}>{cartCount}</span>
             )}
@@ -26,15 +26,15 @@ export default function Header() {
           
           {/* Botón Menú Desplegable */}
           <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-            <Menu size={22} color="var(--text-primary)" />
+            <Menu size={24} color="var(--text-primary)" />
           </button>
         </div>
       </div>
       
-      {/* Fila Inferior: Buscador e Icono de Filtro */}
+      {/* Fila Inferior: Buscador Expandido */}
       <div style={styles.searchRow}>
         <div style={styles.searchBar}>
-          <Search size={20} color="var(--text-secondary)" style={styles.searchIcon} />
+          <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos, marcas, cosméticos..."
@@ -43,10 +43,6 @@ export default function Header() {
             style={styles.searchInput}
           />
         </div>
-        
-        <button style={styles.filterButton}>
-          <SlidersHorizontal size={20} color="#FFFFFF" />
-        </button>
       </div>
     </header>
   );
@@ -83,29 +79,29 @@ const styles = {
   },
   actions: {
     display: 'flex',
-    gap: '12px',
+    gap: '8px',
   },
   iconButton: {
-    background: 'var(--bg-card)',
-    border: '1px solid rgba(142, 154, 167, 0.08)',
-    width: '44px',
-    height: '44px',
-    borderRadius: '50%',
+    background: 'none',
+    border: 'none',
+    width: '40px',
+    height: '40px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 8px 16px rgba(142, 154, 167, 0.05)',
     position: 'relative',
     transition: 'transform 0.2s ease',
+    outline: 'none',
+    padding: 0,
   },
   badge: {
     position: 'absolute',
-    top: '-2px',
-    right: '-2px',
+    top: '0px',
+    right: '0px',
     backgroundColor: 'var(--accent-start)',
     color: '#FFFFFF',
-    fontSize: '0.7rem',
+    fontSize: '0.65rem',
     fontWeight: '700',
     width: '18px',
     height: '18px',
@@ -117,7 +113,7 @@ const styles = {
   },
   searchRow: {
     display: 'flex',
-    gap: '12px',
+    width: '100%',
     alignItems: 'center',
   },
   searchBar: {
@@ -125,14 +121,14 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     backgroundColor: '#F8F7F6',
-    borderRadius: '24px',
-    padding: '0 16px',
+    borderRadius: '30px',
+    padding: '0 20px',
     boxShadow: '0 8px 24px rgba(165, 177, 194, 0.05)',
     border: '1px solid rgba(142, 154, 167, 0.06)',
-    height: '52px',
+    height: '60px',
   },
   searchIcon: {
-    marginRight: '10px',
+    marginRight: '12px',
   },
   searchInput: {
     flex: 1,
@@ -141,20 +137,7 @@ const styles = {
     backgroundColor: 'transparent',
     fontFamily: 'var(--font-body)',
     color: 'var(--text-primary)',
-    fontSize: '0.95rem',
+    fontSize: '1rem',
     height: '100%',
-  },
-  filterButton: {
-    background: 'var(--accent-gradient)',
-    border: 'none',
-    width: '52px',
-    height: '52px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    boxShadow: '0 10px 20px var(--accent-shadow)',
-    transition: 'transform 0.2s ease',
   },
 };
