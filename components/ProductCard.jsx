@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Heart, Sparkles, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Heart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import Link from 'next/link';
 
 const getStockBadge = (stock) => {
   const qty = parseFloat(stock || 0);
@@ -35,13 +36,6 @@ export default function ProductCard({ product }) {
   const [isHovered, setIsHovered] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
-  // Estados para productos recomendados ("Completa tu rutina")
-  const [isEquivalentsOpen, setIsEquivalentsOpen] = useState(false);
-  const [equivalents, setEquivalents] = useState([]);
-  const [isLoadingEquivalents, setIsLoadingEquivalents] = useState(false);
-  const [equivalentsError, setEquivalentsError] = useState(null);
-  const [addedEquivalents, setAddedEquivalents] = useState({});
-
   const isFavorite = favorites.some((fav) => fav.id === product.id);
   const stockBadge = getStockBadge(product.stock);
 
@@ -50,37 +44,6 @@ export default function ProductCard({ product }) {
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
-
-  const handleAddToEquivalentsCart = (item) => {
-    addToCart(item);
-    setAddedEquivalents((prev) => ({ ...prev, [item.id]: true }));
-    setTimeout(() => {
-      setAddedEquivalents((prev) => ({ ...prev, [item.id]: false }));
-    }, 1500);
-  };
-
-  // Carga perezosa de equivalentes al abrir el modal
-  useEffect(() => {
-    if (!isEquivalentsOpen || equivalents.length > 0 || isLoadingEquivalents) return;
-
-    const fetchEquivalents = async () => {
-      setIsLoadingEquivalents(true);
-      setEquivalentsError(null);
-      try {
-        const res = await fetch(`/api/products/equivalents?id=${product.id}`);
-        if (!res.ok) throw new Error('Error al cargar recomendaciones');
-        const data = await res.json();
-        setEquivalents(data);
-      } catch (err) {
-        console.error('Error fetching equivalents:', err);
-        setEquivalentsError(err.message);
-      } finally {
-        setIsLoadingEquivalents(false);
-      }
-    };
-
-    fetchEquivalents();
-  }, [isEquivalentsOpen, product.id, equivalents.length, isLoadingEquivalents]);
 
   return (
     <div
@@ -95,249 +58,129 @@ export default function ProductCard({ product }) {
           : '0 8px 24px rgba(0,0,0,0.02), 0 1px 4px rgba(0,0,0,0.01)',
       }}
     >
-      {/* ═══ ZONA DE IMAGEN CON ALFOMBRA LIMPIA ═══ */}
-      <div className="product-card-image-zone">
-        {/* Shimmer / Brillo sutil animado */}
-        <div style={styles.shimmer} className="card-shimmer" />
+      {/* Zona clickable que redirige al detalle del producto */}
+      <Link 
+        href={`/product/${product.id}`} 
+        style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit' }}
+      >
+        {/* ═══ ZONA DE IMAGEN CON ALFOMBRA LIMPIA ═══ */}
+        <div className="product-card-image-zone">
+          {/* Shimmer / Brillo sutil animado */}
+          <div style={styles.shimmer} className="card-shimmer" />
 
-        {/* Badge de Categoría con glassmorphism */}
-        {product.category && product.category !== 'Trending' && (
-          <div style={styles.categoryBadge}>
-            <span style={styles.categoryText}>{product.category}</span>
+          {/* Badge de Categoría con glassmorphism */}
+          {product.category && product.category !== 'Trending' && (
+            <div style={styles.categoryBadge}>
+              <span style={styles.categoryText}>{product.category}</span>
+            </div>
+          )}
+
+          {/* Badge Trending / Destacado */}
+          {(product.destacado || product.category === 'Trending') && (
+            <div style={styles.trendingBadge}>
+              <Sparkles size={10} color="#FFFFFF" />
+              <span style={styles.trendingText}>Top</span>
+            </div>
+          )}
+
+          {/* Badge de Stock en la esquina superior derecha */}
+          <div style={{
+            ...styles.stockImageBadge,
+            backgroundColor: stockBadge.bg,
+            color: stockBadge.color,
+            borderColor: stockBadge.color + '20'
+          }}>
+            <span style={{
+              ...styles.stockDot,
+              backgroundColor: stockBadge.dotColor
+            }} />
+            {stockBadge.label}
           </div>
-        )}
 
-        {/* Badge Trending / Destacado */}
-        {(product.destacado || product.category === 'Trending') && (
-          <div style={styles.trendingBadge}>
-            <Sparkles size={10} color="#FFFFFF" />
-            <span style={styles.trendingText}>Top</span>
-          </div>
-        )}
-
-        {/* Badge de Stock en la esquina superior derecha */}
-        <div style={{
-          ...styles.stockImageBadge,
-          backgroundColor: stockBadge.bg,
-          color: stockBadge.color,
-          borderColor: stockBadge.color + '20'
-        }}>
-          <span style={{
-            ...styles.stockDot,
-            backgroundColor: stockBadge.dotColor
-          }} />
-          {stockBadge.label}
+          {/* Imagen del Producto */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={product.image || 'https://via.placeholder.com/200?text=Gloss'}
+            alt={product.name}
+            style={{
+              ...styles.productImage,
+              transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+            }}
+          />
         </div>
 
-        {/* Imagen del Producto */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.image || 'https://via.placeholder.com/200?text=Gloss'}
-          alt={product.name}
-          style={{
-            ...styles.productImage,
-            transform: isHovered ? 'scale(1.06)' : 'scale(1)',
-          }}
-        />
-      </div>
+        {/* ═══ ZONA DE INFORMACIÓN ═══ */}
+        <div style={styles.infoZone}>
+          {/* Marca en mayúsculas, ultra ligero */}
+          <span style={styles.brandLabel}>
+            {product.brand || 'Gloss Beauty'}
+          </span>
 
-      {/* ═══ ZONA DE INFORMACIÓN ═══ */}
-      <div style={styles.infoZone}>
-        {/* Marca en mayúsculas, ultra ligero */}
-        <span style={styles.brandLabel}>
-          {product.brand || 'Gloss Beauty'}
-        </span>
+          {/* Nombre del producto con tipografía serif editorial */}
+          <h3 style={styles.productName}>
+            {product.name}
+          </h3>
 
-        {/* Nombre del producto con tipografía serif editorial */}
-        <h3 style={styles.productName}>
-          {product.name}
-        </h3>
-
-        {/* Descripción / Observaciones del ERP */}
-        {product.description && (
-          <p style={styles.descriptionLabel}>
-            {product.description}
-          </p>
-        )}
-
-        {/* Botón de Equivalentes (Completa tu rutina) */}
-        {product.hasEquivalents && (
-          <div style={styles.equivalentsContainer}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEquivalentsOpen(true);
-              }}
-              className="equivalents-pill-btn"
-            >
-              Completa tu rutina
-            </button>
-          </div>
-        )}
-
-        {/* Fila inferior: precio a la izquierda, botones de acción a la derecha */}
-        <div style={styles.bottomRow}>
-          {/* Bloque de Precio */}
-          <div style={styles.priceBlock}>
-            <span style={styles.priceLabel}>Precio</span>
-            <div style={styles.priceValueBlock}>
-              <span style={styles.currency}>S/</span>
-              <span style={styles.priceValue}>{parseFloat(product.price || 0).toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Zona de Botones de Acción */}
-          <div className="product-card-actions-zone">
-            {/* Botón Agregar al Carrito (Verde) */}
-            <button
-              className={`product-add-to-cart-btn ${justAdded ? 'success' : ''}`}
-              onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
-              disabled={product.stock <= 0}
-              style={product.stock <= 0 ? styles.disabledAddToCartBtn : {}}
-            >
-              {product.stock <= 0 ? 'Agotado' : (justAdded ? '¡Agregado! ✓' : 'Agregar al carrito')}
-            </button>
-
-            {/* Botón de Favorito (Corazón con borde de marca) */}
-            <button
-              className={`product-favorite-btn ${isFavorite ? 'active' : ''}`}
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
-              title="Favorito"
-            >
-              <Heart
-                size={18}
-                color={isFavorite ? '#FFFFFF' : 'var(--accent-start)'}
-                fill={isFavorite ? '#FFFFFF' : 'none'}
-                strokeWidth={2}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ MODAL RECOMENDACIONES (COMPLETA TU RUTINA) ═══ */}
-      {isEquivalentsOpen && (
-        <div 
-          style={modalStyles.overlay} 
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEquivalentsOpen(false);
-          }}
-        >
-          <div 
-            style={modalStyles.modalContainer} 
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header del Modal */}
-            <div style={modalStyles.header}>
-              <div style={modalStyles.titleContainer}>
-                <Sparkles size={18} color="var(--accent-start)" />
-                <h3 style={modalStyles.title}>Completa tu rutina</h3>
-              </div>
-              <button 
-                style={modalStyles.closeButton} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEquivalentsOpen(false);
-                }}
-              >
-                <X size={20} color="var(--text-primary)" />
-              </button>
-            </div>
-
-            {/* Subtítulo */}
-            <p style={modalStyles.subtitle}>
-              Recomendaciones del ERP para potenciar los resultados de tu compra.
+          {/* Descripción / Observaciones del ERP */}
+          {product.description && (
+            <p style={styles.descriptionLabel}>
+              {product.description}
             </p>
+          )}
+        </div>
+      </Link>
 
-            {/* Cuerpo del Modal */}
-            <div style={modalStyles.body}>
-              {isLoadingEquivalents ? (
-                <div style={modalStyles.loaderContainer}>
-                  <div className="loader-spinner" style={modalStyles.spinner} />
-                  <span style={modalStyles.loadingText}>Cargando recomendaciones...</span>
-                </div>
-              ) : equivalentsError ? (
-                <div style={modalStyles.errorContainer}>
-                  <p style={modalStyles.errorText}>Error al cargar recomendaciones de compra.</p>
-                </div>
-              ) : equivalents.length === 0 ? (
-                <div style={modalStyles.emptyContainer}>
-                  <p style={modalStyles.emptyText}>No hay recomendaciones disponibles para este producto.</p>
-                </div>
-              ) : (
-                <div style={modalStyles.list}>
-                  {equivalents.map((item) => {
-                    const itemBadge = getStockBadge(item.stock);
-                    const isAdded = addedEquivalents[item.id];
-                    return (
-                      <div key={item.id} style={modalStyles.itemRow}>
-                        {/* Imagen mini */}
-                        <div style={modalStyles.itemImageContainer}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={item.image} 
-                            alt={item.name} 
-                            style={modalStyles.itemImage} 
-                          />
-                        </div>
-
-                        {/* Detalles */}
-                        <div style={modalStyles.itemInfo}>
-                          <span style={modalStyles.itemBrand}>{item.brand}</span>
-                          <h4 style={modalStyles.itemName} title={item.name}>
-                            {item.name}
-                          </h4>
-                          
-                          {/* Precio y Stock */}
-                          <div style={modalStyles.itemMeta}>
-                            <span style={modalStyles.itemPrice}>S/ {parseFloat(item.price || 0).toFixed(2)}</span>
-                            
-                            {/* Stock Badge */}
-                            <span style={{
-                              ...modalStyles.stockBadge,
-                              backgroundColor: itemBadge.bg,
-                              color: itemBadge.color,
-                            }}>
-                              {itemBadge.label}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Botón Agregar */}
-                        <div style={modalStyles.actionContainer}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToEquivalentsCart(item);
-                            }}
-                            disabled={item.stock <= 0}
-                            style={{
-                              ...modalStyles.addButton,
-                              backgroundColor: item.stock <= 0 
-                                ? '#E5E7EB' 
-                                : isAdded 
-                                  ? '#22C55E' 
-                                  : 'var(--accent-gradient)',
-                              color: item.stock <= 0 ? '#9CA3AF' : '#FFFFFF',
-                              cursor: item.stock <= 0 ? 'not-allowed' : 'pointer',
-                              transform: isAdded ? 'scale(1.03)' : 'scale(1)',
-                              boxShadow: item.stock <= 0 ? 'none' : isAdded ? '0 4px 12px rgba(34, 197, 94, 0.3)' : '0 4px 12px rgba(255, 46, 147, 0.2)'
-                            }}
-                            className={item.stock <= 0 ? '' : 'soft-button-hover'}
-                          >
-                            {item.stock <= 0 ? 'Agotado' : isAdded ? '¡Agregado!' : 'Agregar'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Botón de Kit (Ver Kit) - Fuera de Link para evitar anidamiento HTML inválido */}
+      {product.hasEquivalents && (
+        <div style={styles.equivalentsContainer}>
+          <Link
+            href={`/product/${product.id}#kit`}
+            className="equivalents-pill-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            Ver Kit
+          </Link>
         </div>
       )}
+
+      {/* Fila inferior: precio a la izquierda, botones de acción a la derecha */}
+      <div style={styles.bottomRow}>
+        {/* Bloque de Precio */}
+        <div style={styles.priceBlock}>
+          <span style={styles.priceLabel}>Precio</span>
+          <div style={styles.priceValueBlock}>
+            <span style={styles.currency}>S/</span>
+            <span style={styles.priceValue}>{parseFloat(product.price || 0).toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Zona de Botones de Acción */}
+        <div className="product-card-actions-zone">
+          {/* Botón Agregar al Carrito (Verde) */}
+          <button
+            className={`product-add-to-cart-btn ${justAdded ? 'success' : ''}`}
+            onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+            disabled={product.stock <= 0}
+            style={product.stock <= 0 ? styles.disabledAddToCartBtn : {}}
+          >
+            {product.stock <= 0 ? 'Agotado' : (justAdded ? '¡Agregado! ✓' : 'Agregar al carrito')}
+          </button>
+
+          {/* Botón de Favorito (Corazón con borde de marca) */}
+          <button
+            className={`product-favorite-btn ${isFavorite ? 'active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
+            title="Favorito"
+          >
+            <Heart
+              size={18}
+              color={isFavorite ? '#FFFFFF' : 'var(--accent-start)'}
+              fill={isFavorite ? '#FFFFFF' : 'none'}
+              strokeWidth={2}
+            />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -586,200 +429,4 @@ const styles = {
     gap: '4px',
     transition: 'all 0.2s ease',
   },
-};
-
-const modalStyles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(28, 42, 56, 0.4)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    zIndex: 1100,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-  },
-  modalContainer: {
-    backgroundColor: 'var(--bg-primary)',
-    width: '90%',
-    maxWidth: '550px',
-    borderRadius: '28px',
-    boxShadow: '0 24px 60px rgba(216, 27, 96, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04)',
-    border: '1px solid rgba(255, 46, 147, 0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    padding: '24px',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px',
-  },
-  titleContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  title: {
-    fontSize: '1.25rem',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    margin: 0,
-  },
-  closeButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.2s ease',
-  },
-  subtitle: {
-    fontSize: '0.82rem',
-    color: 'var(--text-secondary)',
-    marginBottom: '20px',
-    lineHeight: '1.4',
-  },
-  body: {
-    display: 'flex',
-    flexDirection: 'column',
-    maxHeight: '350px',
-    overflowY: 'auto',
-    paddingRight: '4px',
-    gap: '12px',
-  },
-  loaderContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px 0',
-    gap: '12px',
-  },
-  spinner: {
-    width: '32px',
-    height: '32px',
-    border: '3px solid var(--accent-soft)',
-    borderTop: '3px solid var(--accent-start)',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-  },
-  loadingText: {
-    fontSize: '0.85rem',
-    color: 'var(--text-secondary)',
-    fontWeight: '500',
-  },
-  errorContainer: {
-    padding: '24px 0',
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: '0.88rem',
-    color: '#EF4444',
-  },
-  emptyContainer: {
-    padding: '30px 0',
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: '0.88rem',
-    color: 'var(--text-secondary)',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-  },
-  itemRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '12px',
-    borderRadius: '18px',
-    backgroundColor: 'var(--accent-soft)',
-    border: '1px solid rgba(255, 46, 147, 0.05)',
-    transition: 'transform 0.2s ease',
-  },
-  itemImageContainer: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '12px',
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '4px',
-    flexShrink: 0,
-    border: '1px solid rgba(255, 46, 147, 0.03)',
-  },
-  itemImage: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-  },
-  itemInfo: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    minWidth: 0,
-  },
-  itemBrand: {
-    fontSize: '0.62rem',
-    fontWeight: '700',
-    color: 'var(--text-secondary)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  itemName: {
-    fontSize: '0.88rem',
-    fontWeight: '600',
-    color: 'var(--text-primary)',
-    lineHeight: '1.25',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginTop: '2px',
-  },
-  itemPrice: {
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    color: 'var(--accent-end)',
-  },
-  stockBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '0.62rem',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  actionContainer: {
-    flexShrink: 0,
-  },
-  addButton: {
-    border: 'none',
-    borderRadius: '14px',
-    padding: '8px 16px',
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    transition: 'all 0.2s ease',
-  }
 };
