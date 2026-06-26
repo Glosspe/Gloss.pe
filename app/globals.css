@@ -192,7 +192,8 @@ a {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 36px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -202,7 +203,8 @@ a {
 @media (min-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    column-gap: 24px;
+    row-gap: 48px;
     padding: 20px;
   }
 }

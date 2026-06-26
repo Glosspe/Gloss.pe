@@ -11,19 +11,7 @@ export default function ProductCard({ product }) {
 
   return (
     <div style={styles.card} className="soft-card soft-card-hover">
-      {/* Botón de Favorito Flotante superior */}
-      <button 
-        style={styles.favoriteButton} 
-        onClick={() => toggleFavorite(product)}
-      >
-        <Heart 
-          size={18} 
-          color={isFavorite ? 'var(--accent-start)' : 'var(--text-secondary)'} 
-          fill={isFavorite ? 'var(--accent-start)' : 'none'} 
-        />
-      </button>
-
-      {/* Imagen del Producto */}
+      {/* Contenedor de la Imagen Flotante que sobresale hacia arriba */}
       <div style={styles.imageContainer}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
@@ -33,23 +21,42 @@ export default function ProductCard({ product }) {
         />
       </div>
 
-      {/* Información del Producto */}
-      <div style={styles.infoContainer}>
-        <h3 style={styles.name}>{product.name}</h3>
-        <p style={styles.description}>{product.brand || 'Cosmética Premium'}</p>
-        
-        {/* Fila Inferior: Precio y Añadir */}
-        <div style={styles.priceRow}>
-          <div style={styles.priceColumn}>
+      {/* Información del Producto y Acciones (Layout horizontal con dos columnas) */}
+      <div style={styles.footerRow}>
+        <div style={styles.infoCol}>
+          {/* Nombre del producto con tipografía Serif Premium Bodoni Moda */}
+          <h3 style={styles.name}>{product.name}</h3>
+          
+          {/* Descripción corta */}
+          <p style={styles.description}>{product.brand || 'Cosmética Premium'}</p>
+          
+          {/* Precio del producto */}
+          <div style={styles.priceContainer}>
             <span style={styles.priceLabel}>Precio</span>
             <span style={styles.priceValue}>S/ {product.price}</span>
           </div>
+        </div>
+
+        {/* Columna de Acciones apiladas verticalmente en el lado derecho */}
+        <div style={styles.actionsCol}>
+          <button 
+            style={styles.circleButton} 
+            onClick={() => toggleFavorite(product)}
+            title="Añadir a Favoritos"
+          >
+            <Heart 
+              size={16} 
+              color={isFavorite ? 'var(--accent-start)' : 'var(--text-secondary)'} 
+              fill={isFavorite ? 'var(--accent-start)' : 'none'} 
+            />
+          </button>
           
           <button 
-            style={styles.addButton} 
+            style={styles.circleButton} 
             onClick={() => addToCart(product)}
+            title="Añadir a la Bolsa"
           >
-            <Plus size={20} color="var(--text-primary)" />
+            <Plus size={18} color="var(--text-primary)" />
           </button>
         </div>
       </div>
@@ -59,101 +66,109 @@ export default function ProductCard({ product }) {
 
 const styles = {
   card: {
-    padding: '16px',
+    padding: '0 16px 20px 16px',
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
     height: '100%',
-    justifyContent: 'space-between',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    background: '#FFFFFF',
-    border: 'none',
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    boxShadow: '0 6px 12px rgba(142, 154, 167, 0.08)',
-    zIndex: 2,
-    transition: 'transform 0.2s ease',
+    overflow: 'visible',
+    marginTop: '45px', // Espacio necesario para el producto flotante
+    backgroundColor: '#FFFFFF',
+    borderRadius: '28px',
+    boxShadow: 'var(--soft-shadow-outer)',
+    border: '1px solid rgba(216, 27, 96, 0.02)',
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: '1',
+    height: '110px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '8px',
-    backgroundColor: 'var(--accent-soft)',
-    borderRadius: '20px',
-    overflow: 'hidden',
-    marginBottom: '16px',
+    position: 'relative',
+    marginTop: '-45px', // Margen negativo para empujar la imagen hacia arriba
+    zIndex: 3,
+    backgroundColor: 'transparent',
+    overflow: 'visible',
   },
   image: {
+    maxHeight: '125px',
     maxWidth: '100%',
-    maxHeight: '100%',
     objectFit: 'contain',
-    mixBlendMode: 'multiply', // Combina con fondos claros
+    filter: 'drop-shadow(0 12px 14px rgba(216, 27, 96, 0.12))', // Sombra de gota de alta calidad
+    transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
   },
-  infoContainer: {
+  footerRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    width: '100%',
+    marginTop: '12px',
+    gap: '8px',
+  },
+  infoCol: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    flex: 1,
+    minWidth: 0, // Evita desbordamiento de textos en flexbox
   },
   name: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '1rem',
+    fontFamily: 'var(--font-logo)', // Bodoni Moda para un look editorial premium
+    fontSize: '0.95rem',
     fontWeight: '600',
     color: 'var(--text-primary)',
-    lineHeight: '1.3',
-    minHeight: '2.6em', // Asegurar altura uniforme para 2 líneas
+    lineHeight: '1.25',
+    marginBottom: '4px',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
+    minHeight: '2.5em', // Altura uniforme para 2 líneas
   },
   description: {
-    fontSize: '0.8rem',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.2',
-    marginBottom: '12px',
-  },
-  priceRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  priceLabel: {
     fontSize: '0.75rem',
     color: 'var(--text-secondary)',
+    lineHeight: '1.2',
+    marginBottom: '10px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  priceContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  priceLabel: {
+    fontSize: '0.7rem',
+    color: 'var(--text-secondary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   priceValue: {
-    fontSize: '1.15rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-title)',
   },
-  addButton: {
+  actionsCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  circleButton: {
     background: '#FFFFFF',
-    border: '1px solid rgba(142, 154, 167, 0.08)',
-    width: '40px',
-    height: '40px',
+    border: '1px solid rgba(216, 27, 96, 0.05)',
+    width: '38px',
+    height: '38px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 6px 12px rgba(142, 154, 167, 0.08)',
-    transition: 'transform 0.2s ease, background-color 0.2s ease',
+    boxShadow: '0 6px 12px rgba(216, 27, 96, 0.04)',
+    transition: 'transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease',
+    outline: 'none',
   },
 };
