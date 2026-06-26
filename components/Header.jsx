@@ -51,11 +51,17 @@ export default function Header() {
 
 const styles = {
   header: {
-    padding: '24px 20px 16px 20px',
-    backgroundColor: 'var(--bg-primary)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
+    padding: '14px 20px 12px 20px',
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    borderBottom: '1px solid rgba(142, 154, 167, 0.05)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '12px',
     width: '100%',
     maxWidth: '800px',
     margin: '0 auto',
@@ -126,7 +132,7 @@ const styles = {
     padding: '0 20px',
     boxShadow: '0 8px 24px rgba(216, 27, 96, 0.03)',
     border: 'none',
-    height: '60px',
+    height: '52px',
   },
   searchIcon: {
     marginRight: '12px',

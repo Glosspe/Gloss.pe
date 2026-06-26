@@ -22,7 +22,7 @@ export default function BottomBar() {
             ...styles.iconWrapper,
             ...(isHomeActive ? styles.activeIcon : {})
           }}>
-            <Home size={22} color={isHomeActive ? '#FFFFFF' : 'var(--text-secondary)'} />
+            <Home size={20} color={isHomeActive ? '#FFFFFF' : 'var(--text-secondary)'} />
           </div>
           <span style={{
             ...styles.label,
@@ -34,7 +34,7 @@ export default function BottomBar() {
         {/* Botón Bolsa (Carrito) */}
         <button onClick={() => setIsCartOpen(true)} style={styles.navItemBtn}>
           <div style={styles.iconWrapper}>
-            <ShoppingBag size={22} color="var(--text-secondary)" />
+            <ShoppingBag size={20} color="var(--text-secondary)" />
             {cartCount > 0 && (
               <span style={styles.badge}>{cartCount}</span>
             )}
@@ -45,7 +45,7 @@ export default function BottomBar() {
         {/* Botón Favoritos */}
         <Link href="/favorites" style={styles.navItem}>
           <div style={styles.iconWrapper}>
-            <Heart size={22} color="var(--text-secondary)" />
+            <Heart size={20} color="var(--text-secondary)" />
             {favCount > 0 && (
               <span style={styles.badge}>{favCount}</span>
             )}
@@ -56,7 +56,7 @@ export default function BottomBar() {
         {/* Botón Perfil */}
         <Link href="/profile" style={styles.navItem}>
           <div style={styles.iconWrapper}>
-            <User size={22} color="var(--text-secondary)" />
+            <User size={20} color="var(--text-secondary)" />
           </div>
           <span style={styles.label}>Mi Cuenta</span>
         </Link>
@@ -75,7 +75,7 @@ const styles = {
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     borderTop: '1px solid rgba(142, 154, 167, 0.08)',
-    padding: '8px 16px 24px 16px', // Espaciado para el área segura de iOS
+    padding: '4px 16px 6px 16px', // Altura reducida optimizada
     zIndex: 900,
     display: 'block',
     // Ocultar en pantallas grandes (Laptops/PC) usando media query en el globals o inline por JS
@@ -91,7 +91,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4px',
+    gap: '2px',
     cursor: 'pointer',
   },
   navItemBtn: {
@@ -100,14 +100,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4px',
+    gap: '2px',
     cursor: 'pointer',
     outline: 'none',
   },
   iconWrapper: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '14px',
+    width: '32px',
+    height: '32px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -125,14 +125,14 @@ const styles = {
   },
   badge: {
     position: 'absolute',
-    top: '4px',
-    right: '4px',
+    top: '0px',
+    right: '0px',
     backgroundColor: 'var(--accent-start)',
     color: '#FFFFFF',
-    fontSize: '0.65rem',
+    fontSize: '0.6rem',
     fontWeight: '700',
-    width: '16px',
-    height: '16px',
+    width: '14px',
+    height: '14px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',

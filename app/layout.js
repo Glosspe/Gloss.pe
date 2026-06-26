@@ -41,7 +41,7 @@ const styles = {
   },
   mainContent: {
     flex: 1,
-    paddingBottom: '80px', // Espacio para que el BottomBar móvil no tape el contenido
+    paddingBottom: '56px', // Espacio para que el BottomBar móvil compacto no tape el contenido
     display: 'flex',
     flexDirection: 'column',
   }
