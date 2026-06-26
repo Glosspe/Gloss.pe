@@ -132,7 +132,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
-    paddingTop: '120px',
+    paddingTop: '130px',
     paddingBottom: '20px',
   },
   sectionHeader: {

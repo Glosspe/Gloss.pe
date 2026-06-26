@@ -40,7 +40,7 @@ export default function Header() {
 
   const searchRowStyle = {
     ...styles.searchRow,
-    maxHeight: isCollapsed ? '0px' : '72px',
+    maxHeight: isCollapsed ? '0px' : '80px',
     opacity: isCollapsed ? 0 : 1,
     transform: isCollapsed ? 'translateY(-10px)' : 'translateY(0)',
     pointerEvents: isCollapsed ? 'none' : 'auto',
@@ -174,7 +174,7 @@ const styles = {
     padding: '0 20px',
     boxShadow: '0 8px 24px rgba(216, 27, 96, 0.03)',
     border: 'none',
-    height: '52px',
+    height: '60px',
   },
   searchIcon: {
     marginRight: '12px',
