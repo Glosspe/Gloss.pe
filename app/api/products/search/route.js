@@ -229,7 +229,10 @@ export async function GET(request) {
           ${stockExpression} as stock,
           RTRIM(p01.obse) as observations,
           RTRIM(s.codsub) as categoryCode,
-          RTRIM(s.nomsub) as categoryName
+          RTRIM(s.nomsub) as categoryName,
+          CASE WHEN EXISTS (
+            SELECT 1 FROM dtl_item_equivalente eq WITH(nolock) WHERE eq.codi = p01.codi
+          ) THEN 1 ELSE 0 END as hasEquivalents
         FROM prd0101 p01 WITH(nolock)
         ${joinsSql}
         LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
@@ -306,6 +309,9 @@ export async function GET(request) {
         images: imagesArray,
         description: enrichment.descripcionEnriquecida || p.observations?.trim() || null,
         destacado: !!enrichment.destacado,
+        hasEquivalents: useFallback 
+          ? (p.id === '0505-010288' || p.id === '0505-010340' || p.id === '0505-010287') 
+          : (p.hasEquivalents === 1 || p.hasEquivalents === true),
         isMock: useFallback
       };
     });
