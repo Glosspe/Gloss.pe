@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'tienda-gloss-api',
       script: 'node_modules/next/dist/bin/next',
-      args: 'dev -p 3001',
+      args: 'start -p 3001',
       cwd: './',
       instances: 1,
       exec_mode: 'fork',
@@ -11,7 +11,7 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'development',
+        NODE_ENV: 'production',
       }
     },
     {
