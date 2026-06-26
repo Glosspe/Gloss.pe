@@ -11,7 +11,7 @@ export default function ProductCard({ product }) {
 
   return (
     <div style={styles.card} className="soft-card soft-card-hover">
-      {/* Contenedor de la Imagen Flotante que sobresale hacia arriba */}
+      {/* Contenedor de la Imagen Flotante Absoluta */}
       <div style={styles.imageContainer}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
@@ -21,23 +21,19 @@ export default function ProductCard({ product }) {
         />
       </div>
 
-      {/* Información del Producto y Acciones (Layout horizontal con dos columnas) */}
+      {/* Bloque superior de la tarjeta (Nombre + Descripción) */}
+      <div style={styles.infoContainer}>
+        <h3 style={styles.name}>{product.name}</h3>
+        <p style={styles.description}>{product.brand || 'Cosmética Premium'}</p>
+      </div>
+
+      {/* Bloque inferior de la tarjeta (Precio + Botones de acciones) */}
       <div style={styles.footerRow}>
-        <div style={styles.infoCol}>
-          {/* Nombre del producto con tipografía Serif Premium Bodoni Moda */}
-          <h3 style={styles.name}>{product.name}</h3>
-          
-          {/* Descripción corta */}
-          <p style={styles.description}>{product.brand || 'Cosmética Premium'}</p>
-          
-          {/* Precio del producto */}
-          <div style={styles.priceContainer}>
-            <span style={styles.priceLabel}>Precio</span>
-            <span style={styles.priceValue}>S/ {product.price}</span>
-          </div>
+        <div style={styles.priceContainer}>
+          <span style={styles.priceLabel}>Precio</span>
+          <span style={styles.priceValue}>S/ {product.price}</span>
         </div>
 
-        {/* Columna de Acciones apiladas verticalmente en el lado derecho */}
         <div style={styles.actionsCol}>
           <button 
             style={styles.circleButton} 
@@ -66,58 +62,53 @@ export default function ProductCard({ product }) {
 
 const styles = {
   card: {
-    padding: '0 16px 20px 16px',
+    padding: '85px 16px 16px 16px', // Espacio superior reservado para la imagen flotante absoluta
     display: 'flex',
     flexDirection: 'column',
+    justifyContent: 'space-between', // Empuja la info hacia arriba y el precio/botones hacia abajo
     position: 'relative',
     height: '100%',
+    minHeight: '290px', // Altura uniforme y compacta para todas las tarjetas
     overflow: 'visible',
-    marginTop: '45px', // Espacio necesario para el producto flotante
+    marginTop: '35px',
     backgroundColor: '#FFFFFF',
     borderRadius: '28px',
     boxShadow: 'var(--soft-shadow-outer)',
     border: '1px solid rgba(216, 27, 96, 0.02)',
   },
   imageContainer: {
-    width: '100%',
+    position: 'absolute',
+    top: '-35px', // Sobresale 35px por encima del borde superior de la tarjeta blanca
+    left: '12px',
+    right: '12px',
     height: '110px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    marginTop: '-45px', // Margen negativo para empujar la imagen hacia arriba
-    zIndex: 3,
+    zIndex: 10,
     backgroundColor: 'transparent',
     overflow: 'visible',
   },
   image: {
-    maxHeight: '125px',
+    maxHeight: '105px',
     maxWidth: '100%',
     objectFit: 'contain',
-    filter: 'drop-shadow(0 12px 14px rgba(216, 27, 96, 0.12))', // Sombra de gota de alta calidad
-    transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    filter: 'drop-shadow(0 12px 14px rgba(216, 27, 96, 0.12))', // Sombra flotante sobre la tarjeta blanca
   },
-  footerRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    width: '100%',
-    marginTop: '32px',
-    gap: '8px',
-  },
-  infoCol: {
+  infoContainer: {
     display: 'flex',
     flexDirection: 'column',
+    gap: '4px',
     flex: 1,
     minWidth: 0, // Evita desbordamiento de textos en flexbox
   },
   name: {
     fontFamily: 'var(--font-logo)', // Bodoni Moda para un look editorial premium
-    fontSize: '0.95rem',
-    fontWeight: '600',
+    fontSize: '0.9rem',
+    fontWeight: '700',
     color: 'var(--text-primary)',
     lineHeight: '1.25',
-    marginBottom: '4px',
+    marginBottom: '2px',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
@@ -128,10 +119,19 @@ const styles = {
     fontSize: '0.75rem',
     color: 'var(--text-secondary)',
     lineHeight: '1.2',
-    marginBottom: '10px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    marginBottom: '8px',
+  },
+  footerRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    width: '100%',
+    gap: '8px',
+    borderTop: '1px solid rgba(216, 27, 96, 0.02)',
+    paddingTop: '10px', // Línea divisoria muy tenue para que se vea estructurada la base
   },
   priceContainer: {
     display: 'flex',
@@ -139,7 +139,7 @@ const styles = {
     gap: '2px',
   },
   priceLabel: {
-    fontSize: '0.7rem',
+    fontSize: '0.65rem',
     color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
@@ -153,21 +153,21 @@ const styles = {
   actionsCol: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
     alignItems: 'center',
     flexShrink: 0,
   },
   circleButton: {
     background: '#FFFFFF',
     border: '1px solid rgba(216, 27, 96, 0.05)',
-    width: '38px',
-    height: '38px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 6px 12px rgba(216, 27, 96, 0.04)',
+    boxShadow: '0 6px 12px rgba(216, 27, 96, 0.03)',
     transition: 'transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease',
     outline: 'none',
   },

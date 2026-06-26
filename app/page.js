@@ -15,7 +15,7 @@ const MOCK_PRODUCTS = [
     brand: 'Yanbal Perfumes',
     price: 238.00,
     category: 'Trending', // Y también es de tipo Cosméticos
-    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&auto=format&fit=crop&q=80',
     description: 'Un aroma fresco y elegante floral frutal para la mujer moderna.',
     stock: 12
   },
@@ -25,7 +25,7 @@ const MOCK_PRODUCTS = [
     brand: 'Yanbal Perfumes',
     price: 186.00,
     category: 'Trending',
-    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400&auto=format&fit=crop&q=80',
     description: 'Una fragancia oriental floral con notas exquisitas y seductoras.',
     stock: 8
   },
@@ -35,7 +35,7 @@ const MOCK_PRODUCTS = [
     brand: "L'Oréal Professionnel",
     price: 115.00,
     category: 'Capilar',
-    image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=400&auto=format&fit=crop&q=80',
     description: 'Champú reconstructor instantáneo para cabellos muy dañados o debilitados.',
     stock: 25
   },
@@ -45,7 +45,7 @@ const MOCK_PRODUCTS = [
     brand: 'La Roche-Posay',
     price: 159.00,
     category: 'Facial',
-    image: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&auto=format&fit=crop&q=80',
     description: 'Sérum antiarrugas reparador rellenador para pieles sensibles.',
     stock: 15
   },
@@ -65,7 +65,7 @@ const MOCK_PRODUCTS = [
     brand: 'CeraVe',
     price: 85.00,
     category: 'Facial',
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&auto=format&fit=crop&q=80',
     description: 'Fórmula ultra ligera con 3 ceramidas esenciales para hidratar todo el día.',
     stock: 30
   },
@@ -75,7 +75,7 @@ const MOCK_PRODUCTS = [
     brand: 'Kérastase',
     price: 220.00,
     category: 'Capilar',
-    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=400&auto=format&fit=crop&q=80',
     description: 'Mascarilla capilar revitalizante profunda enriquecida con ácido hialurónico.',
     stock: 10
   },
@@ -95,7 +95,7 @@ const MOCK_PRODUCTS = [
     brand: 'Maybelline New York',
     price: 55.00,
     category: 'Cosmeticos',
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1617897903246-719242758050?w=400&auto=format&fit=crop&q=80',
     description: 'Base de maquillaje de control de brillo y reducción de poros.',
     stock: 18
   },
