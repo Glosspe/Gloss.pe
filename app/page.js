@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import CategorySlider from '@/components/CategorySlider';
 import ProductCard from '@/components/ProductCard';
 import { useCart } from '@/context/CartContext';
 import { Sparkles, Loader2 } from 'lucide-react';
@@ -101,9 +100,6 @@ export default function HomePage() {
     <div style={styles.container}>
       {/* Cabecera Principal */}
       <Header />
-
-      {/* Selector de Categorías */}
-      <CategorySlider />
 
       {/* Banner de Sincronización / Catálogo de respaldo */}
       {isOffline && (
