@@ -379,7 +379,7 @@ ${formattedItems}
                 </div>
                 <div style={styles.totalRow}>
                   <span style={styles.totalLabel}>Envío</span>
-                  <span style={{ ...styles.totalValue, color: 'var(--accent-start)', fontWeight: '600' }}>Coordinar en chat</span>
+                  <span style={{ ...styles.totalValue, color: 'var(--accent-start)', fontWeight: '500' }}>Coordinar en chat</span>
                 </div>
                 <div style={{ ...styles.totalRow, ...styles.grandTotalRow }}>
                   <span style={styles.grandTotalLabel}>Total</span>
@@ -421,7 +421,7 @@ const styles = {
   },
   logo: {
     fontFamily: 'var(--font-logo)',
-    fontWeight: '700',
+    fontWeight: '500',
     fontSize: '1.4rem',
     color: 'var(--text-primary)',
     letterSpacing: '0.12em',
@@ -445,7 +445,7 @@ const styles = {
   },
   cardTitle: {
     fontSize: '1.25rem',
-    fontWeight: '700',
+    fontWeight: '500',
     marginBottom: '8px',
   },
   cardSubtitle: {
@@ -465,7 +465,7 @@ const styles = {
   },
   label: {
     fontSize: '0.85rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   inputIconWrapper: {
@@ -536,7 +536,7 @@ const styles = {
   errorText: {
     fontSize: '0.85rem',
     color: '#EB5E55',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   cartItemsContainer: {
     display: 'flex',
@@ -581,7 +581,7 @@ const styles = {
   },
   summaryItemName: {
     fontSize: '0.85rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     lineHeight: '1.2',
     display: '-webkit-box',
@@ -600,7 +600,7 @@ const styles = {
   },
   summaryItemPrice: {
     fontSize: '0.85rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   totalsContainer: {
@@ -619,7 +619,7 @@ const styles = {
   },
   totalValue: {
     fontSize: '0.95rem',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   grandTotalRow: {
     borderTop: '1px solid rgba(142, 154, 167, 0.08)',
@@ -628,12 +628,12 @@ const styles = {
   },
   grandTotalLabel: {
     fontSize: '1rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   grandTotalValue: {
     fontSize: '1.3rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-title)',
   },

@@ -147,7 +147,7 @@ const styles = {
   sectionTitle: {
     fontFamily: 'var(--font-title)',
     fontSize: '1.3rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     letterSpacing: '0.02em',
   },
@@ -167,7 +167,7 @@ const styles = {
   offlineText: {
     fontSize: '0.8rem',
     color: 'var(--accent-end)',
-    fontWeight: '600',
+    fontWeight: '500',
     fontFamily: 'var(--font-body)',
   },
   sectionCount: {

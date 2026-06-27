@@ -562,12 +562,12 @@ const styles = {
   },
   currency: {
     fontSize: '1.1rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   priceValue: {
     fontSize: '2rem',
-    fontWeight: '800',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     letterSpacing: '-0.02em',
   },
@@ -776,7 +776,7 @@ const styles = {
   },
   kitItemPrice: {
     fontSize: '0.88rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   kitItemBadgeMain: {
@@ -857,7 +857,7 @@ const styles = {
   },
   kitSummaryTotal: {
     fontSize: '1.6rem',
-    fontWeight: '800',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   kitSummaryIncludes: {

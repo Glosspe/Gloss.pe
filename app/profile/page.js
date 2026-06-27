@@ -359,14 +359,14 @@ const styles = {
   },
   backText: {
     fontSize: '0.9rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-body)',
   },
   title: {
     fontFamily: 'var(--font-title)',
     fontSize: '1.05rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     letterSpacing: '-0.01em',
     margin: 0,
@@ -396,7 +396,7 @@ const styles = {
     backgroundColor: 'var(--accent-start)',
     color: '#FFFFFF',
     fontSize: '0.65rem',
-    fontWeight: '700',
+    fontWeight: '500',
     width: '18px',
     height: '18px',
     borderRadius: '50%',
@@ -632,7 +632,7 @@ const styles = {
     display: 'block',
     fontFamily: 'var(--font-title)',
     fontSize: '0.95rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
   },
   orderDate: {
@@ -643,7 +643,7 @@ const styles = {
   },
   statusBadge: {
     fontSize: '0.72rem',
-    fontWeight: '700',
+    fontWeight: '500',
     backgroundColor: '#ECFDF5',
     color: '#047857',
     padding: '4px 10px',
@@ -658,7 +658,7 @@ const styles = {
   },
   bodyLabel: {
     fontSize: '0.78rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-secondary)',
   },
   itemsWrapper: {
@@ -681,7 +681,7 @@ const styles = {
   },
   itemPrice: {
     color: 'var(--text-secondary)',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   deliveryDetails: {
     display: 'flex',
@@ -691,7 +691,7 @@ const styles = {
   },
   deliveryLabel: {
     fontSize: '0.78rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-secondary)',
   },
   deliveryText: {
@@ -719,7 +719,7 @@ const styles = {
   totalValue: {
     fontFamily: 'var(--font-title)',
     fontSize: '1.15rem',
-    fontWeight: '800',
+    fontWeight: '500',
     color: 'var(--accent-start)',
   },
   reopenBtn: {

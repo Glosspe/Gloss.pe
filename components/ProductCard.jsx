@@ -306,7 +306,7 @@ const styles = {
   productName: {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '1.15rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#1F2937',
     lineHeight: '1.25',
     display: '-webkit-box',
@@ -356,13 +356,13 @@ const styles = {
   currency: {
     fontFamily: 'var(--font-title), sans-serif',
     fontSize: '0.8rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#1F2937',
   },
   priceValue: {
     fontFamily: 'var(--font-title), sans-serif',
     fontSize: '1.3rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#1F2937',
     letterSpacing: '-0.02em',
   },

@@ -158,7 +158,7 @@ const styles = {
   title: {
     fontFamily: 'var(--font-title)',
     fontSize: '1.25rem',
-    fontWeight: '700',
+    fontWeight: '500',
     letterSpacing: '0.01em',
   },
   closeButton: {
@@ -194,7 +194,7 @@ const styles = {
     borderRadius: '16px',
     padding: '10px 20px',
     fontFamily: 'var(--font-body)',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(142, 154, 167, 0.04)',
@@ -238,7 +238,7 @@ const styles = {
   },
   itemName: {
     fontSize: '0.9rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     lineHeight: '1.2',
     display: '-webkit-box',
@@ -272,7 +272,7 @@ const styles = {
   },
   itemPrice: {
     fontSize: '0.95rem',
-    fontWeight: '700',
+    fontWeight: '500',
     fontFamily: 'var(--font-title)',
   },
   qtyContainer: {
@@ -294,7 +294,7 @@ const styles = {
   },
   qtyValue: {
     fontSize: '0.85rem',
-    fontWeight: '600',
+    fontWeight: '500',
     padding: '0 8px',
     minWidth: '20px',
     textAlign: 'center',
@@ -314,12 +314,12 @@ const styles = {
   },
   summaryLabel: {
     fontSize: '1rem',
-    fontWeight: '600',
+    fontWeight: '500',
     color: 'var(--text-secondary)',
   },
   summaryValue: {
     fontSize: '1.4rem',
-    fontWeight: '700',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-title)',
   },
