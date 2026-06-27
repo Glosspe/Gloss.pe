@@ -506,14 +506,14 @@ a {
 
 /* Botón 'Ver Kit' de la tarjeta de producto */
 .equivalents-pill-btn {
-  background: rgba(0, 0, 0, 0.03) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #2563EB !important; /* Azul cobalto vibrante */
+  border: 1px solid #1D4ED8 !important;
   border-radius: 30px !important;
   padding: 6px 14px !important;
-  color: var(--text-primary) !important;
+  color: #FFFFFF !important;
   font-family: var(--font-body), sans-serif !important;
   font-size: 0.72rem !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important; /* Más elegante y suavizado */
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
   cursor: pointer !important;
@@ -525,13 +525,14 @@ a {
   width: fit-content !important;
   margin-top: 6px !important;
   margin-bottom: 4px !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
 }
 
 .equivalents-pill-btn:hover {
-  background: var(--text-primary) !important;
+  background: #1D4ED8 !important;
   color: #FFFFFF !important;
-  border-color: var(--text-primary) !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+  border-color: #1E40AF !important;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25) !important;
   transform: translateY(-1px) !important;
 }
 
