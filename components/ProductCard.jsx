@@ -69,6 +69,20 @@ export default function ProductCard({ product }) {
         </div>
       )}
 
+      {/* Badge de Categoría / Trending pegado al borde superior izquierdo de la tarjeta */}
+      {product.destacado || product.category === 'Trending' ? (
+        <div style={styles.trendingCardBadge}>
+          <Sparkles size={10} color="#FFFFFF" style={{ marginRight: '3px' }} />
+          <span style={styles.trendingCardText}>Top</span>
+        </div>
+      ) : (
+        product.category && (
+          <div style={styles.categoryCardBadge}>
+            <span style={styles.categoryCardText}>{product.category}</span>
+          </div>
+        )
+      )}
+
       {/* Zona clickable que redirige al detalle del producto */}
       <Link 
         href={`/product/${product.id}`} 
@@ -78,21 +92,6 @@ export default function ProductCard({ product }) {
         <div className="product-card-image-zone">
           {/* Shimmer / Brillo sutil animado */}
           <div style={styles.shimmer} className="card-shimmer" />
-
-          {/* Badge de Categoría con glassmorphism */}
-          {product.category && product.category !== 'Trending' && (
-            <div style={styles.categoryBadge}>
-              <span style={styles.categoryText}>{product.category}</span>
-            </div>
-          )}
-
-          {/* Badge Trending / Destacado */}
-          {(product.destacado || product.category === 'Trending') && (
-            <div style={styles.trendingBadge}>
-              <Sparkles size={10} color="#FFFFFF" />
-              <span style={styles.trendingText}>Top</span>
-            </div>
-          )}
 
           {/* Imagen del Producto */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,41 +216,43 @@ const styles = {
   },
 
   // ─── Badges ───
-  categoryBadge: {
+  categoryCardBadge: {
     position: 'absolute',
-    top: '10px',
-    left: '10px',
-    zIndex: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
-    padding: '3px 8px',
-    border: '1px solid rgba(255, 255, 255, 0.4)',
+    top: 0,
+    left: '24px',
+    zIndex: 10,
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '6px 12px',
+    backgroundColor: '#F3F4F6',
+    borderBottomLeftRadius: '10px',
+    borderBottomRightRadius: '10px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.02)',
   },
-  categoryText: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '0.58rem',
+  categoryCardText: {
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.62rem',
     fontWeight: '600',
     color: '#4B5563',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
-  trendingBadge: {
+  trendingCardBadge: {
     position: 'absolute',
-    top: '10px',
-    left: '10px',
-    zIndex: 5,
-    background: 'var(--accent-gradient)',
-    borderRadius: '20px',
-    padding: '3px 8px',
-    display: 'flex',
+    top: 0,
+    left: '24px',
+    zIndex: 10,
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: '3px',
-    boxShadow: '0 4px 10px rgba(255, 46, 147, 0.2)',
+    padding: '6px 12px',
+    background: 'var(--accent-gradient)',
+    borderBottomLeftRadius: '10px',
+    borderBottomRightRadius: '10px',
+    boxShadow: '0 4px 10px rgba(255, 46, 147, 0.15)',
   },
-  trendingText: {
-    fontFamily: 'var(--font-title)',
-    fontSize: '0.58rem',
+  trendingCardText: {
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.62rem',
     fontWeight: '700',
     color: '#FFFFFF',
     textTransform: 'uppercase',
