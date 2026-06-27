@@ -347,7 +347,7 @@ a {
 
 
 
-/* Zona de imagen de la tarjeta de producto responsiva */
+/* Zona de imagen de la tarjeta de producto responsiva (Fondo blanco para flotado premium) */
 .product-card-image-zone {
   position: relative;
   width: 100%;
@@ -357,7 +357,7 @@ a {
   justify-content: center;
   overflow: hidden;
   border-radius: 20px;
-  background-color: #F9FAFB;
+  background-color: #FFFFFF;
   margin-bottom: 14px;
 }
 
