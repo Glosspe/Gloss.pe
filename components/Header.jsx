@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, ShoppingBag, Menu, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import SedesModal from './SedesModal';
 
 export default function Header() {
   const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen, selectedWarehouseName } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSedesModalOpen, setIsSedesModalOpen] = useState(false);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -49,62 +51,65 @@ export default function Header() {
   };
 
   return (
-    <header style={headerStyle}>
-      {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
-      <div style={styles.topRow}>
-        <div style={styles.logoContainer}>
-          <h2 style={styles.logoText}>GLOSS</h2>
-          <button 
-            onClick={() => setIsMenuOpen(true)} 
-            style={styles.sedeSelectorBtn}
-            title="Seleccionar Sede"
-          >
-            <MapPin size={11} color="var(--accent-start)" />
-            <span style={styles.sedeText}>{selectedWarehouseName}</span>
-          </button>
+    <>
+      <header style={headerStyle}>
+        {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
+        <div style={styles.topRow}>
+          <div style={styles.logoContainer}>
+            <h2 style={styles.logoText}>GLOSS</h2>
+            <button 
+              onClick={() => setIsSedesModalOpen(true)} 
+              style={styles.sedeSelectorBtn}
+              title="Seleccionar Sede"
+            >
+              <MapPin size={11} color="var(--accent-start)" />
+              <span style={styles.sedeText}>{selectedWarehouseName}</span>
+            </button>
+          </div>
+          
+          <div style={styles.actions}>
+            {/* Botón Bolsa (Carrito) */}
+            <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
+              <ShoppingBag size={24} color="var(--accent-start)" />
+              {cartCount > 0 && (
+                <span style={styles.badge}>{cartCount}</span>
+              )}
+            </button>
+            
+            {/* Botón Menú Desplegable */}
+            <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
+              <Menu size={24} color="var(--accent-start)" />
+            </button>
+          </div>
         </div>
         
-        <div style={styles.actions}>
-          {/* Botón Bolsa (Carrito) */}
-          <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-            <ShoppingBag size={24} color="var(--accent-start)" />
-            {cartCount > 0 && (
-              <span style={styles.badge}>{cartCount}</span>
-            )}
-          </button>
-          
-          {/* Botón Menú Desplegable */}
-          <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-            <Menu size={24} color="var(--accent-start)" />
-          </button>
+        {/* Fila Inferior: Buscador Expandido */}
+        <div style={searchRowStyle}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (document.activeElement) {
+                document.activeElement.blur();
+              }
+            }}
+            style={{ width: '100%' }}
+          >
+            <div style={styles.searchBar}>
+              <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Buscar productos, marcas, cosméticos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={styles.searchInput}
+                className="search-input-premium"
+              />
+            </div>
+          </form>
         </div>
-      </div>
-      
-      {/* Fila Inferior: Buscador Expandido */}
-      <div style={searchRowStyle}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (document.activeElement) {
-              document.activeElement.blur();
-            }
-          }}
-          style={{ width: '100%' }}
-        >
-          <div style={styles.searchBar}>
-            <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Buscar productos, marcas, cosméticos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={styles.searchInput}
-              className="search-input-premium"
-            />
-          </div>
-        </form>
-      </div>
-    </header>
+      </header>
+      <SedesModal isOpen={isSedesModalOpen} onClose={() => setIsSedesModalOpen(false)} />
+    </>
   );
 }
 
