@@ -94,36 +94,10 @@ export async function GET(request) {
       });
     }
 
-    // Intentar conectar con el ERP para traer regiones y direcciones actualizadas para el panel de administración
-    let erpInfoMap = {};
-    try {
-      const pool = await getErpConnection();
-      const erpResult = await pool.request().query(`
-        SELECT 
-          RTRIM(a.codalm) as codalm, 
-          RTRIM(a.Diralm) as direccion,
-          RTRIM(s.NomSuc) as region
-        FROM tbl01alm a
-        LEFT JOIN Tbl_Sucursal s ON a.codsuc = s.CodSuc
-      `);
-      
-      if (erpResult.recordset.length > 0) {
-        erpResult.recordset.forEach(row => {
-          if (row.codalm) {
-            erpInfoMap[row.codalm] = {
-              region: row.region ? row.region.trim().toUpperCase() : 'CHICLAYO',
-              direccion: row.direccion ? row.direccion.trim() : ''
-            };
-          }
-        });
-      }
-    } catch (erpErr) {
-      console.warn('[Admin Warehouses API] No se pudo conectar al ERP para cruzar regiones/direcciones:', erpErr.message);
-    }
-
-    // Enriquecer almacenes con regiones y direcciones para el administrador
+    // Enriquecer almacenes con regiones y direcciones para el administrador usando la info local
+    // (Retirar llamada síncrona al ERP para evitar timeouts y esperas de 15 segundos en el panel administrador)
     let enrichedWarehouses = dbWarehouses.map(w => {
-      const info = erpInfoMap[w.codalm] || WAREHOUSE_FALLBACK_INFO[w.codalm] || { region: 'CHICLAYO', direccion: '' };
+      const info = WAREHOUSE_FALLBACK_INFO[w.codalm] || { region: 'CHICLAYO', direccion: '' };
       return {
         id: w.id,
         codalm: w.codalm,
