@@ -64,12 +64,24 @@ export async function GET(request) {
     const brand = searchParams.get('brand') || '';
     const warehouse = searchParams.get('warehouse') || '';
     
-    // 1. Intentar servir desde el caché en memoria (15 segundos)
+    // 1. Intentar servir desde el caché en memoria (asíncronamente)
     const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}`;
     const cachedData = await cache.get(cacheKey);
     if (cachedData) {
       console.log(`[API Products Search] Sirviendo desde caché para: ${cacheKey}`);
       return NextResponse.json(cachedData);
+    }
+
+    // Calcular el TTL dinámico para maximizar el aprovechamiento de Redis
+    let cacheTtl = 15; // 15 segundos por defecto para búsquedas de texto dinámicas (q)
+    if (query.trim() === '') {
+      if (category === 'Trending') {
+        cacheTtl = 180; // 3 minutos para productos destacados de la Home
+      } else if (category && category !== 'Todos') {
+        cacheTtl = 60; // 1 minuto para categorías fijas
+      } else {
+        cacheTtl = 45; // 45 segundos para el catálogo completo sin búsquedas
+      }
     }
 
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
@@ -89,8 +101,8 @@ export async function GET(request) {
         
         if (res.ok) {
           const data = await res.json();
-          // Guardar en caché de la nube por 15 segundos
-          await cache.set(cacheKey, data, 15);
+          // Guardar en caché de la nube usando el TTL dinámico optimizado
+          await cache.set(cacheKey, data, cacheTtl);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}.`);
@@ -362,8 +374,8 @@ export async function GET(request) {
       });
     }
 
-    // Guardar en caché por 15 segundos
-    await cache.set(cacheKey, finalProducts, 15);
+    // Guardar en caché en la DB local usando el TTL dinámico optimizado
+    await cache.set(cacheKey, finalProducts, cacheTtl);
     return NextResponse.json(finalProducts);
 
   } catch (error) {

@@ -15,6 +15,7 @@ export function CartProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
   const [selectedWarehouseName, setSelectedWarehouseName] = useState('Todas las sedes');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Cargar carrito, favoritos y sede desde localStorage al iniciar
   useEffect(() => {
@@ -27,23 +28,31 @@ export function CartProvider({ children }) {
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
     if (savedWh) setSelectedWarehouse(savedWh);
     if (savedWhName) setSelectedWarehouseName(savedWhName);
+    
+    setIsInitialized(true); // Indicar que la restauración inicial está lista
   }, []);
 
   // Guardar carrito en localStorage cuando cambie
   useEffect(() => {
-    localStorage.setItem('gloss_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (isInitialized) {
+      localStorage.setItem('gloss_cart', JSON.stringify(cart));
+    }
+  }, [cart, isInitialized]);
 
   // Guardar favoritos cuando cambie
   useEffect(() => {
-    localStorage.setItem('gloss_favorites', JSON.stringify(favorites));
-  }, [favorites]);
+    if (isInitialized) {
+      localStorage.setItem('gloss_favorites', JSON.stringify(favorites));
+    }
+  }, [favorites, isInitialized]);
 
   // Guardar sede en localStorage cuando cambie
   useEffect(() => {
-    localStorage.setItem('gloss_selected_warehouse', selectedWarehouse);
-    localStorage.setItem('gloss_selected_warehouse_name', selectedWarehouseName);
-  }, [selectedWarehouse, selectedWarehouseName]);
+    if (isInitialized) {
+      localStorage.setItem('gloss_selected_warehouse', selectedWarehouse);
+      localStorage.setItem('gloss_selected_warehouse_name', selectedWarehouseName);
+    }
+  }, [selectedWarehouse, selectedWarehouseName, isInitialized]);
 
   const addToCart = (product, quantity = 1) => {
     setCart((prevCart) => {
@@ -132,6 +141,7 @@ export function CartProvider({ children }) {
         setSelectedWarehouse,
         selectedWarehouseName,
         setSelectedWarehouseName,
+        isInitialized,
       }}
     >
       {children}

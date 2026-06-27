@@ -8,7 +8,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
-  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel, selectedWarehouse } = useCart();
+  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel, selectedWarehouse, isInitialized } = useCart();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,6 +20,8 @@ export default function HomePage() {
     let active = true;
     
     async function fetchProducts() {
+      if (!isInitialized) return; // Evitar llamadas fetch duplicadas/incompletas antes de cargar localStorage
+      
       setIsLoading(true);
       setError(null);
       
@@ -69,7 +71,7 @@ export default function HomePage() {
     return () => {
       active = false;
     };
-  }, [selectedCategory, searchQuery, selectedBrand, selectedWarehouse]);
+  }, [selectedCategory, searchQuery, selectedBrand, selectedWarehouse, isInitialized]);
 
   // Generar título de sección inteligente
   const getSectionTitle = () => {
