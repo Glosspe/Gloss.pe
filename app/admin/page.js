@@ -131,6 +131,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleToggleVisibilityFeatured = async (prod) => {
+    const token = localStorage.getItem('gloss_admin_token');
+    const newVisible = prod.visible === false ? true : false;
+    try {
+      const response = await fetch('/api/admin/products/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          codart: prod.id,
+          imagenes: prod.images || [],
+          descripcionEnriquecida: prod.description || '',
+          destacado: prod.destacado !== false,
+          visible: newVisible
+        })
+      });
+      if (response.ok) {
+        // Actualizar la lista local
+        setFeaturedProducts(prev => prev.map(p => p.id === prod.id ? { ...p, visible: newVisible } : p));
+        // Actualizar en el catálogo general
+        setProducts(prev => prev.map(p => p.id === prod.id ? { ...p, visible: newVisible } : p));
+        // Si estaba seleccionado, actualizar el editor
+        if (selectedProduct?.id === prod.id) {
+          setIsVisible(newVisible);
+        }
+      }
+    } catch (err) {
+      console.error('Error al cambiar visibilidad de destacado:', err);
+    }
+  };
+
   // ═══ Productos: Seleccionar ═══
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
@@ -801,29 +831,56 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleRemoveFeatured(prod)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#EF4444',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '0.8rem',
-                        fontWeight: '600',
-                        padding: '8px 12px',
-                        borderRadius: '10px',
-                        transition: 'background-color 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      title="Quitar de destacados"
-                    >
-                      <Trash2 size={16} />
-                      Quitar
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {/* Botón Habilitar/Deshabilitar Visibilidad */}
+                      <button
+                        onClick={() => handleToggleVisibilityFeatured(prod)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: prod.visible !== false ? '#22C55E' : '#EF4444',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          transition: 'all 0.2s',
+                          backgroundColor: prod.visible !== false ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                        }}
+                        title={prod.visible !== false ? 'Ocultar producto de la web' : 'Habilitar producto en la web'}
+                      >
+                        {prod.visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                        {prod.visible !== false ? 'Visible' : 'Oculto'}
+                      </button>
+
+                      {/* Botón Quitar de Destacados */}
+                      <button
+                        onClick={() => handleRemoveFeatured(prod)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#EF4444',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          transition: 'background-color 0.2s',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        title="Quitar de destacados"
+                      >
+                        <Trash2 size={16} />
+                        Quitar
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
