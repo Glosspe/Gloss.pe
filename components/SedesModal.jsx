@@ -208,13 +208,12 @@ const styles = {
     gap: '8px',
   },
   title: {
-    fontFamily: 'var(--font-logo)',
-    fontSize: '1.15rem',
-    fontWeight: '600',
+    fontFamily: 'var(--font-body)',
+    fontSize: '1.1rem',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     margin: 0,
-    letterSpacing: '0.04em',
-    textTransform: 'uppercase',
+    letterSpacing: '0.01em',
   },
   closeBtn: {
     background: 'none',
