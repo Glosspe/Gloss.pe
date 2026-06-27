@@ -153,6 +153,20 @@ export async function GET(request) {
       }
     } else {
       // Consultar directo a la base de datos Navasoft por ZeroTier
+      // 1. Obtener los códigos destacados de Postgres si la pestaña es Trending
+      let featuredCodes = [];
+      if (category === 'Trending') {
+        try {
+          const featuredConfigs = await prisma.webProductoImagen.findMany({
+            where: { destacado: true },
+            select: { codart: true }
+          });
+          featuredCodes = featuredConfigs.map(c => c.codart);
+        } catch (pgErr) {
+          console.warn('[API Products Search] Error fetching featured codes from Postgres:', pgErr.message);
+        }
+      }
+
       // Obtener las sedes activas desde Postgres
       let activeWarehouses = [];
       try {
@@ -228,7 +242,15 @@ export async function GET(request) {
       }
 
       let categoryFilter = "";
-      if (category && category !== 'Trending' && category !== 'Todos') {
+      if (category === 'Trending') {
+        if (featuredCodes.length > 0) {
+          // SQL Server: Filtrar estrictamente por los códigos que se marcaron como destacados en Postgres
+          categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
+        } else {
+          // Forzar que no devuelva nada si no hay destacados reales
+          categoryFilter = ` AND 1 = 0`;
+        }
+      } else if (category && category !== 'Todos') {
         if (category.startsWith('FAM:')) {
           // Filter by entire family (e.g., FAM:05 = all products in CABELLO)
           const familyCode = category.replace('FAM:', '');
@@ -355,11 +377,13 @@ export async function GET(request) {
     });
 
     let finalProducts = visibleProducts;
-    if (category === 'Trending') {
-      finalProducts = visibleProducts.filter(p => p.destacado || p.price > 80);
-      if (finalProducts.length === 0) {
-        finalProducts = visibleProducts.slice(0, 12);
-      }
+    if (useFallback && category === 'Trending') {
+      // Si el ERP local no está conectado y estamos en desarrollo local/fallback de mocks,
+      // filtramos la lista de mocks por los destacados reales del mock data
+      finalProducts = visibleProducts.filter(p => {
+        const originalMock = MOCK_PRODUCTS.find(m => m.id === p.id);
+        return originalMock?.destacado || originalMock?.category === 'Trending';
+      });
     }
 
     return NextResponse.json(finalProducts);
