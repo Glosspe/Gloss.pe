@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import cache from '@/lib/cache';
 
 export async function POST(request) {
   try {
@@ -38,6 +39,9 @@ export async function POST(request) {
         visible: visible !== undefined ? !!visible : true,
       }
     });
+
+    // Invalidar activamente todo el caché de la tienda para que el cambio de precio/foto/oferta sea visible de inmediato
+    cache.clear();
 
     return NextResponse.json({
       success: true,

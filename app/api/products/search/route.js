@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 import sql from 'mssql';
 import { getStockColumnName, getStockTableName } from '@/lib/erp-utils';
+import cache from '@/lib/cache';
 
 // Helper para retornar el nombre de categoría web del producto (nombre de subfamilia del ERP)
 export function mapSubfamilyToWebCategory(codsub, categoryName) {
@@ -63,6 +64,14 @@ export async function GET(request) {
     const brand = searchParams.get('brand') || '';
     const warehouse = searchParams.get('warehouse') || '';
     
+    // 1. Intentar servir desde el caché en memoria (15 segundos)
+    const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}`;
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      console.log(`[API Products Search] Sirviendo desde caché en memoria para: ${cacheKey}`);
+      return NextResponse.json(cachedData);
+    }
+
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
     // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
     const localApiUrl = process.env.LOCAL_API_URL;
@@ -80,6 +89,8 @@ export async function GET(request) {
         
         if (res.ok) {
           const data = await res.json();
+          // Guardar en caché de la nube por 15 segundos
+          cache.set(cacheKey, data, 15);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}.`);
@@ -113,197 +124,151 @@ export async function GET(request) {
     }
 
     let useFallback = false; // Mantenido por compatibilidad de tipos en la compilación
-
     let productsList = [];
 
-    if (useFallback) {
-      // MOCK_PRODUCTS locales
-      productsList = MOCK_PRODUCTS.map(p => {
-        let categoryCode = '05-05';
-        if (p.category === 'Facial') categoryCode = '04-04';
-        else if (p.category === 'Cosmeticos') categoryCode = '04-01';
-        else if (p.category === 'Corporal') categoryCode = '06-03';
-
-        return {
-          id: p.id,
-          userCode: p.id,
-          name: p.name,
-          brand: p.brand,
-          unit: 'UND',
-          price: p.price,
-          stock: p.stock,
-          categoryCode: categoryCode,
-          categoryName: p.category
-        };
-      });
-
-      if (query.trim() !== '') {
-        const q = query.toLowerCase();
-        productsList = productsList.filter(
-          p => p.name.toLowerCase().includes(q) || 
-               p.id.toLowerCase().includes(q) || 
-               p.brand.toLowerCase().includes(q)
-        );
+    // Consultar directo a la base de datos Navasoft por ZeroTier
+    // 1. Obtener los códigos destacados de Postgres si la pestaña es Trending
+    let featuredCodes = [];
+    if (category === 'Trending') {
+      try {
+        const featuredConfigs = await prisma.webProductoImagen.findMany({
+          where: { destacado: true },
+          select: { codart: true }
+        });
+        featuredCodes = featuredConfigs.map(c => c.codart);
+      } catch (pgErr) {
+        console.warn('[API Products Search] Error fetching featured codes from Postgres:', pgErr.message);
       }
+    }
 
-      if (category && category !== 'Trending' && category !== 'Todos') {
-        if (category.startsWith('FAM:')) {
-          // Filtrar por familia completa en mocks
-          const famCode = category.replace('FAM:', '');
-          productsList = productsList.filter(p => p.categoryCode && p.categoryCode.startsWith(famCode + '-'));
-        } else if (/^\d{2}-\d{2,}$/.test(category)) {
-          // Filtrar por codsub del mock
-          productsList = productsList.filter(p => p.categoryCode === category);
-        } else {
-          productsList = productsList.filter(p => mapSubfamilyToWebCategory(p.categoryCode, p.categoryName) === category);
+    // Obtener las sedes activas desde Postgres
+    let activeWarehouses = [];
+    try {
+      const dbAlmacenes = await prisma.webAlmacenConfig.findMany({
+        where: { visible: true }
+      });
+      activeWarehouses = dbAlmacenes.map(a => a.codalm);
+    } catch (err) {
+      console.warn('[API Products Search] Error fetching active warehouses from Postgres, falling back to 01:', err.message);
+    }
+
+    // Si por alguna razón no hay almacenes activos configurados, usar por defecto '01'
+    if (activeWarehouses.length === 0) {
+      activeWarehouses = ['01'];
+    }
+
+    // Si el cliente solicita filtrar por un almacén o región específica
+    const warehouseParam = request.nextUrl.searchParams.get('warehouse');
+    if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
+      const cleanParam = warehouseParam.trim();
+      // Verificar si es un almacén activo directo
+      if (activeWarehouses.includes(cleanParam)) {
+        activeWarehouses = [cleanParam];
+      } else {
+        // Si el parámetro corresponde a una región
+        const WAREHOUSE_REGIONS = {
+          'CHICLAYO': ['01', '02', '04', '06'],
+          'JAÉN': ['05'],
+          'JAEN': ['05']
+        };
+        const targetRegion = cleanParam.toUpperCase();
+        if (WAREHOUSE_REGIONS[targetRegion]) {
+          // Filtrar para quedarse solo con los almacenes activos de esa región
+          activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
         }
       }
       
-      if (brand && brand.trim() !== '') {
-        productsList = productsList.filter(p => p.brand && p.brand.toLowerCase() === brand.toLowerCase());
-      }
-    } else {
-      // Consultar directo a la base de datos Navasoft por ZeroTier
-      // 1. Obtener los códigos destacados de Postgres si la pestaña es Trending
-      let featuredCodes = [];
-      if (category === 'Trending') {
-        try {
-          const featuredConfigs = await prisma.webProductoImagen.findMany({
-            where: { destacado: true },
-            select: { codart: true }
-          });
-          featuredCodes = featuredConfigs.map(c => c.codart);
-        } catch (pgErr) {
-          console.warn('[API Products Search] Error fetching featured codes from Postgres:', pgErr.message);
-        }
-      }
-
-      // Obtener las sedes activas desde Postgres
-      let activeWarehouses = [];
-      try {
-        const dbAlmacenes = await prisma.webAlmacenConfig.findMany({
-          where: { visible: true }
-        });
-        activeWarehouses = dbAlmacenes.map(a => a.codalm);
-      } catch (err) {
-        console.warn('[API Products Search] Error fetching active warehouses from Postgres, falling back to 01:', err.message);
-      }
-
-      // Si por alguna razón no hay almacenes activos configurados, usar por defecto '01'
+      // Si después de filtrar la región no quedaron almacenes, forzar fallback
       if (activeWarehouses.length === 0) {
         activeWarehouses = ['01'];
       }
-
-      // Si el cliente solicita filtrar por un almacén o región específica
-      const warehouseParam = request.nextUrl.searchParams.get('warehouse');
-      if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
-        const cleanParam = warehouseParam.trim();
-        // Verificar si es un almacén activo directo
-        if (activeWarehouses.includes(cleanParam)) {
-          activeWarehouses = [cleanParam];
-        } else {
-          // Si el parámetro corresponde a una región
-          const WAREHOUSE_REGIONS = {
-            'CHICLAYO': ['01', '02', '04', '06'],
-            'JAÉN': ['05'],
-            'JAEN': ['05']
-          };
-          const targetRegion = cleanParam.toUpperCase();
-          if (WAREHOUSE_REGIONS[targetRegion]) {
-            // Filtrar para quedarse solo con los almacenes activos de esa región
-            activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
-          }
-        }
-        
-        // Si después de filtrar la región no quedaron almacenes, forzar fallback
-        if (activeWarehouses.length === 0) {
-          activeWarehouses = ['01'];
-        }
-      }
-
-      // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
-      let selectStockParts = [];
-      let joinParts = [];
-
-      activeWarehouses.forEach(wh => {
-        const alias = `p${wh}`;
-        if (wh === '01') {
-          selectStockParts.push(`ISNULL(p01.stoc, 0)`);
-        } else {
-          selectStockParts.push(`ISNULL(${alias}.stoc, 0)`);
-          joinParts.push(`LEFT JOIN prd01${wh} ${alias} WITH(nolock) ON p01.codi = ${alias}.codi`);
-        }
-      });
-
-      const stockExpression = `(${selectStockParts.join(' + ')})`;
-      const joinsSql = joinParts.join('\n          ');
-
-      const sqlRequest = pool.request();
-      
-      let brandFilter = "";
-      if (brand && brand.trim() !== '') {
-        sqlRequest.input('brandFilterName', sql.VarChar, brand);
-        brandFilter = ` AND LTRIM(RTRIM(p01.marc)) = @brandFilterName`;
-      }
-      
-      let queryFilter = "";
-      if (query.trim() !== '') {
-        sqlRequest.input('searchQuery', sql.VarChar, `%${query}%`);
-        queryFilter = ` AND (p01.descr LIKE @searchQuery OR p01.codi LIKE @searchQuery OR p01.codf LIKE @searchQuery OR p01.marc LIKE @searchQuery)`;
-      }
-
-      let categoryFilter = "";
-      if (category === 'Trending') {
-        if (featuredCodes.length > 0) {
-          // SQL Server: Filtrar estrictamente por los códigos que se marcaron como destacados en Postgres
-          categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
-        } else {
-          // Forzar que no devuelva nada si no hay destacados reales
-          categoryFilter = ` AND 1 = 0`;
-        }
-      } else if (category && category !== 'Todos') {
-        if (category.startsWith('FAM:')) {
-          // Filter by entire family (e.g., FAM:05 = all products in CABELLO)
-          const familyCode = category.replace('FAM:', '');
-          sqlRequest.input('familyCode', sql.VarChar, familyCode);
-          categoryFilter = ` AND LEFT(p01.codi, 2) = @familyCode`;
-        } else if (/^\d{2}-\d{2,}$/.test(category)) {
-          // Filtrar por codsub (mismo patrón que el POS Syscom.click)
-          sqlRequest.input('catRight', sql.VarChar, category.split('-')[1]);
-          sqlRequest.input('catLeft', sql.VarChar, category.split('-')[0]);
-          categoryFilter = ` AND SUBSTRING(p01.codi, 3, 2) = @catRight AND LEFT(p01.codi, 2) = @catLeft`;
-        } else {
-          // Filtrar por nombre de subfamilia (legacy/fallback)
-          sqlRequest.input('categoryFilterName', sql.VarChar, category);
-          categoryFilter = ` AND s.nomsub = @categoryFilterName`;
-        }
-      }
-
-      const sqlQuery = `
-        SELECT TOP 100 
-          RTRIM(p01.codi) as id, 
-          RTRIM(p01.codf) as userCode, 
-          RTRIM(p01.descr) as name, 
-          RTRIM(p01.marc) as brand, 
-          RTRIM(p01.umed) as unit, 
-          p01.pvns as price, 
-          ${stockExpression} as stock,
-          RTRIM(p01.obse) as observations,
-          RTRIM(s.codsub) as categoryCode,
-          RTRIM(s.nomsub) as categoryName,
-          CASE WHEN EXISTS (
-            SELECT 1 FROM dtl_item_equivalente eq WITH(nolock) WHERE eq.codi = p01.codi
-          ) THEN 1 ELSE 0 END as hasEquivalents
-        FROM prd0101 p01 WITH(nolock)
-        ${joinsSql}
-        LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
-        WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
-        ORDER BY p01.descr ASC
-      `;
-
-      const result = await sqlRequest.query(sqlQuery);
-      productsList = result.recordset;
     }
+
+    // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
+    let selectStockParts = [];
+    let joinParts = [];
+
+    activeWarehouses.forEach(wh => {
+      const alias = `p${wh}`;
+      if (wh === '01') {
+        selectStockParts.push(`ISNULL(p01.stoc, 0)`);
+      } else {
+        selectStockParts.push(`ISNULL(${alias}.stoc, 0)`);
+        joinParts.push(`LEFT JOIN prd01${wh} ${alias} WITH(nolock) ON p01.codi = ${alias}.codi`);
+      }
+    });
+
+    const stockExpression = `(${selectStockParts.join(' + ')})`;
+    const joinsSql = joinParts.join('\n          ');
+
+    const sqlRequest = pool.request();
+    
+    let brandFilter = "";
+    if (brand && brand.trim() !== '') {
+      sqlRequest.input('brandFilterName', sql.VarChar, brand);
+      brandFilter = ` AND LTRIM(RTRIM(p01.marc)) = @brandFilterName`;
+    }
+    
+    let queryFilter = "";
+    if (query.trim() !== '') {
+      sqlRequest.input('searchQuery', sql.VarChar, `%${query}%`);
+      queryFilter = ` AND (p01.descr LIKE @searchQuery OR p01.codi LIKE @searchQuery OR p01.codf LIKE @searchQuery OR p01.marc LIKE @searchQuery)`;
+    }
+
+    let categoryFilter = "";
+    if (category === 'Trending') {
+      if (featuredCodes.length > 0) {
+        // SQL Server: Filtrar estrictamente por los códigos que se marcaron como destacados en Postgres
+        categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
+      } else {
+        // Forzar que no devuelva nada si no hay destacados reales
+        categoryFilter = ` AND 1 = 0`;
+      }
+    } else if (category && category !== 'Todos') {
+      if (category.startsWith('FAM:')) {
+        // Filter by entire family (e.g., FAM:05 = all products in CABELLO)
+        const familyCode = category.replace('FAM:', '');
+        sqlRequest.input('familyCode', sql.VarChar, familyCode);
+        categoryFilter = ` AND p01.codi LIKE @familyCode + '%'`;
+      } else if (/^\d{2}-\d{2,}$/.test(category)) {
+        // Filtrar por codsub (mismo patrón que el POS Syscom.click)
+        // Optimizamos de SUBSTRING a un prefijo LIKE sargable
+        const family = category.split('-')[0];
+        const sub = category.split('-')[1];
+        sqlRequest.input('subfamilyPrefix', sql.VarChar, `${family}${sub}`);
+        categoryFilter = ` AND p01.codi LIKE @subfamilyPrefix + '%'`;
+      } else {
+        // Filtrar por nombre de subfamilia (legacy/fallback)
+        sqlRequest.input('categoryFilterName', sql.VarChar, category);
+        categoryFilter = ` AND s.nomsub = @categoryFilterName`;
+      }
+    }
+
+    // Consulta SQL Server con optimizaciones sargables y EXISTS
+    const sqlQuery = `
+      SELECT TOP 100 
+        RTRIM(p01.codi) as id, 
+        RTRIM(p01.codf) as userCode, 
+        RTRIM(p01.descr) as name, 
+        RTRIM(p01.marc) as brand, 
+        RTRIM(p01.umed) as unit, 
+        p01.pvns as price, 
+        ${stockExpression} as stock,
+        RTRIM(p01.obse) as observations,
+        RTRIM(s.codsub) as categoryCode,
+        RTRIM(s.nomsub) as categoryName,
+        CASE WHEN EXISTS (
+          SELECT 1 FROM dtl_item_equivalente eq WITH(nolock) WHERE eq.codi = p01.codi
+        ) THEN 1 ELSE 0 END as hasEquivalents
+      FROM prd0101 p01 WITH(nolock)
+      ${joinsSql}
+      LEFT JOIN tbl01sbf s WITH(nolock) ON s.codsub = LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2)
+      WHERE p01.estado = 1 ${categoryFilter} ${queryFilter} ${brandFilter}
+      ORDER BY p01.descr ASC
+    `;
+
+    const result = await sqlRequest.query(sqlQuery);
+    productsList = result.recordset;
 
     // Cruzar con PostgreSQL de Railway para jalar fotos, detalles y visibilidad
     let enrichedMap = {};
@@ -397,6 +362,8 @@ export async function GET(request) {
       });
     }
 
+    // Guardar en caché por 15 segundos
+    cache.set(cacheKey, finalProducts, 15);
     return NextResponse.json(finalProducts);
 
   } catch (error) {

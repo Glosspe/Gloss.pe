@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getErpConnection } from '@/lib/db';
 import prisma from '@/lib/prisma';
 import sql from 'mssql';
+import cache from '@/lib/cache';
 
 // Helper para retornar el nombre de categoría web del producto (nombre de subfamilia del ERP)
 function mapSubfamilyToWebCategory(codsub, categoryName) {
@@ -131,6 +132,14 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Falta el parámetro id del producto' }, { status: 400 });
     }
 
+    // 1. Intentar servir desde el caché en memoria
+    const cacheKey = `equivalents-${productId}-${warehouse || 'all'}`;
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      console.log(`[API Products Equivalents] Sirviendo desde caché en memoria para: ${productId}`);
+      return NextResponse.json(cachedData);
+    }
+
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
     // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
     const localApiUrl = process.env.LOCAL_API_URL;
@@ -148,6 +157,8 @@ export async function GET(request) {
         
         if (res.ok) {
           const data = await res.json();
+          // Guardar en caché de la nube por 3 minutos (180s)
+          cache.set(cacheKey, data, 180);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Products Equivalents - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
@@ -174,6 +185,8 @@ export async function GET(request) {
     if (useFallback) {
       // Buscar en los mocks mapeados
       productsList = MOCK_EQUIVALENTS[productId] || [];
+      // Guardar en caché por 1 minuto
+      cache.set(cacheKey, productsList, 60);
       return NextResponse.json(productsList);
     }
 
@@ -250,7 +263,7 @@ export async function GET(request) {
       FROM dtl_item_equivalente eq WITH(nolock)
       INNER JOIN prd0101 p01 WITH(nolock) ON eq.codiequi = p01.codi
       ${joinsSql}
-      LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
+      LEFT JOIN tbl01sbf s WITH(nolock) ON s.codsub = LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2)
       WHERE eq.codi = @targetId AND p01.estado = 1
       ORDER BY p01.descr ASC
     `;
@@ -259,6 +272,7 @@ export async function GET(request) {
     const erpProducts = result.recordset;
 
     if (erpProducts.length === 0) {
+      cache.set(cacheKey, [], 180);
       return NextResponse.json([]);
     }
 
@@ -331,6 +345,8 @@ export async function GET(request) {
       return true;
     });
 
+    // Guardar en caché por 3 minutos (180s)
+    cache.set(cacheKey, visibleProducts, 180);
     return NextResponse.json(visibleProducts);
 
   } catch (error) {

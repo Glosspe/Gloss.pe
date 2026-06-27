@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getErpConnection } from '@/lib/db';
 import sql from 'mssql';
+import cache from '@/lib/cache';
 
 export async function POST(request) {
   try {
@@ -205,6 +206,9 @@ export async function POST(request) {
       console.warn('[Checkout API] No se pudo sincronizar con Navasoft ERP en este momento. Sincronización diferida:', erpErr.message);
       // Guardamos la bitácora, el pedido sigue adelante con la info de PostgreSQL local
     }
+
+    // Invalidar activamente todo el caché de búsquedas y equivalentes para que el stock se actualice de inmediato en la web
+    cache.clear();
 
     // 5. Devolver la respuesta exitosa al cliente
     return NextResponse.json({
