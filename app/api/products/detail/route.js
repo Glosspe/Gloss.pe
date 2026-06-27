@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getErpConnection } from '@/lib/db';
 import prisma from '@/lib/prisma';
 import sql from 'mssql';
+import cache from '@/lib/cache';
 
 // Helper para formatear nombres de productos del ERP (todo mayúsculas a formato premium de mayúsculas y minúsculas)
 function formatProductName(name) {
@@ -109,6 +110,14 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Falta el parámetro id del producto' }, { status: 400 });
     }
 
+    // 1. Intentar servir desde el caché (asíncronamente)
+    const cacheKey = `product-detail-${productId}-${warehouse || 'all'}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      console.log(`[API Product Detail] Sirviendo desde caché para: ${productId}`);
+      return NextResponse.json(cachedData);
+    }
+
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
     // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
     const localApiUrl = process.env.LOCAL_API_URL;
@@ -126,6 +135,8 @@ export async function GET(request) {
         
         if (res.ok) {
           const data = await res.json();
+          // Guardar en caché de la nube por 3 minutos (180s)
+          await cache.set(cacheKey, data, 180);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Product Detail - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
@@ -149,10 +160,13 @@ export async function GET(request) {
 
     if (useFallback) {
       const mockProd = MOCK_SINGLE_PRODUCTS[productId];
-      if (mockProd) return NextResponse.json(mockProd);
+      if (mockProd) {
+        await cache.set(cacheKey, mockProd, 60);
+        return NextResponse.json(mockProd);
+      }
       
       // Fallback a mock general si no existe en los específicos
-      return NextResponse.json({
+      const fallbackMock = {
         id: productId,
         userCode: productId,
         name: `Producto de Prueba (${productId})`,
@@ -167,7 +181,9 @@ export async function GET(request) {
         destacado: false,
         hasEquivalents: false,
         isMock: true
-      });
+      };
+      await cache.set(cacheKey, fallbackMock, 60);
+      return NextResponse.json(fallbackMock);
     }
 
     // Consultar directo a la base de datos Navasoft por ZeroTier / Conexión local
@@ -244,7 +260,7 @@ export async function GET(request) {
         ) THEN 1 ELSE 0 END as hasEquivalents
       FROM prd0101 p01 WITH(nolock)
       ${joinsSql}
-      LEFT JOIN tbl01sbf s WITH(nolock) ON LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2) = s.codsub
+      LEFT JOIN tbl01sbf s WITH(nolock) ON s.codsub = LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2)
       WHERE p01.codi = @targetId AND p01.estado = 1
     `;
 
@@ -283,7 +299,7 @@ export async function GET(request) {
       webCategory = 'Trending';
     }
 
-    return NextResponse.json({
+    const productData = {
       id: p.id,
       userCode: p.userCode,
       name: formatProductName(p.name),
@@ -299,7 +315,11 @@ export async function GET(request) {
       hasEquivalents: p.hasEquivalents === 1 || p.hasEquivalents === true,
       visible: enrichment.visible !== false,
       isMock: false
-    });
+    };
+
+    // Guardar en caché por 3 minutos (180s)
+    await cache.set(cacheKey, productData, 180);
+    return NextResponse.json(productData);
 
   } catch (error) {
     console.error('[API Product Detail] ERROR CRÍTICO:', error);
