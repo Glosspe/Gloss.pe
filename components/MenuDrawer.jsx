@@ -29,10 +29,8 @@ export default function MenuDrawer() {
   const [isWarehousesOpen, setIsWarehousesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Cargar datos dinámicos del ERP
+  // Pre-cargar datos dinámicos del ERP una sola vez al montar la aplicación
   useEffect(() => {
-    if (!isMenuOpen) return;
-
     async function loadMenuData() {
       setIsLoading(true);
       try {
@@ -66,9 +64,7 @@ export default function MenuDrawer() {
     }
 
     loadMenuData();
-  }, [isMenuOpen]);
-
-  if (!isMenuOpen) return null;
+  }, []);
 
   // Formatear texto (Title Case para verse premium y no todo mayúsculas)
   function formatLabel(name) {
@@ -121,9 +117,22 @@ export default function MenuDrawer() {
 
   const hasActiveFilters = selectedBrand || selectedCategory !== 'Trending';
 
+  // Configurar estilos interactivos con transiciones suaves
+  const overlayStyle = {
+    ...styles.overlay,
+    opacity: isMenuOpen ? 1 : 0,
+    pointerEvents: isMenuOpen ? 'auto' : 'none',
+    visibility: isMenuOpen ? 'visible' : 'hidden',
+  };
+
+  const containerStyle = {
+    ...styles.menuContainer,
+    transform: isMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+  };
+
   return (
-    <div style={styles.overlay} onClick={() => setIsMenuOpen(false)}>
-      <div style={styles.menuContainer} onClick={(e) => e.stopPropagation()}>
+    <div style={overlayStyle} onClick={() => setIsMenuOpen(false)}>
+      <div style={containerStyle} onClick={(e) => e.stopPropagation()}>
         {/* Encabezado del Menú */}
         <div style={styles.header}>
           <div style={styles.logoGroup}>
@@ -136,14 +145,14 @@ export default function MenuDrawer() {
 
         {/* Contenido / Filtros */}
         <div style={styles.scrollArea}>
-          {isLoading && (
+          {isLoading && categoriesTree.length === 0 && (
             <div style={styles.loadingContainer}>
               <Loader2 style={styles.spinner} size={24} />
               <span style={styles.loadingText}>Cargando opciones...</span>
             </div>
           )}
 
-          {!isLoading && (
+          {(!isLoading || categoriesTree.length > 0) && (
             <div style={styles.filtersWrapper}>
               {/* Botón para Restablecer filtros */}
               {hasActiveFilters && (
@@ -282,71 +291,68 @@ export default function MenuDrawer() {
                       }}
                       onClick={() => {
                         setSelectedWarehouse('all');
-                        setSelectedWarehouseName('Todas las sedes');
+                        setSelectedWarehouseName('Todas las Sedes');
                         setIsMenuOpen(false);
                       }}
                     >
-                      Ver stock global (Todas las sedes)
+                      <MapPin size={14} />
+                      <span>Todas las Sedes (Consolidado)</span>
                     </button>
 
-                    {Object.keys(
-                      warehouses.reduce((acc, w) => {
-                        const reg = w.region ? w.region.trim().toUpperCase() : 'CHICLAYO';
-                        if (!acc[reg]) acc[reg] = [];
-                        acc[reg].push(w);
-                        return acc;
-                      }, {})
-                    ).map((region) => {
-                      const grouped = warehouses.reduce((acc, w) => {
-                        const reg = w.region ? w.region.trim().toUpperCase() : 'CHICLAYO';
-                        if (!acc[reg]) acc[reg] = [];
-                        acc[reg].push(w);
-                        return acc;
-                      }, {});
+                    {/* Agrupar por Región */}
+                    {['Chiclayo', 'Jaén'].map(region => {
+                      const WAREHOUSE_REGIONS = {
+                        'Chiclayo': ['01', '02', '04', '06'],
+                        'Jaén': ['05']
+                      };
+                      const regionWHs = warehouses.filter(w => WAREHOUSE_REGIONS[region].includes(w.codalm));
+                      if (regionWHs.length === 0) return null;
+
+                      const isRegionActive = selectedWarehouse === region;
+
                       return (
                         <div key={region} style={styles.regionGroup}>
-                          {/* Botón/Título para seleccionar toda la región */}
                           <button
-                            style={{
-                              ...styles.regionSelectBtn,
-                              color: selectedWarehouse === region ? 'var(--accent-start)' : 'var(--text-secondary)',
-                              fontWeight: selectedWarehouse === region ? '500' : '500'
-                            }}
+                            type="button"
                             onClick={() => {
                               setSelectedWarehouse(region);
-                              setSelectedWarehouseName(`Región: ${formatLabel(region)}`);
+                              setSelectedWarehouseName(region);
                               setIsMenuOpen(false);
                             }}
+                            style={{
+                              ...styles.regionSelectBtn,
+                              color: isRegionActive ? 'var(--accent-start)' : 'var(--text-primary)',
+                              fontWeight: isRegionActive ? '700' : '600'
+                            }}
                           >
-                            <span style={styles.regionTitleText}>{formatLabel(region)}</span>
-                            <span style={styles.regionSelectText}>
-                              {selectedWarehouse === region ? '✓ Seleccionado' : 'Ver stock región'}
-                            </span>
+                            <span style={styles.regionTitleText}>{region}</span>
+                            <span style={styles.regionSelectText}>Seleccionar Región</span>
                           </button>
-                          
+
                           <div style={styles.regionWarehousesGrid}>
-                            {grouped[region].map((w) => {
-                              const isSelected = selectedWarehouse === w.codalm;
+                            {regionWHs.map(w => {
+                              const isWarehouseActive = selectedWarehouse === w.codalm;
                               return (
                                 <button
                                   key={w.codalm}
-                                  style={{
-                                    ...styles.warehouseItemCard,
-                                    borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
-                                    backgroundColor: isSelected ? 'var(--accent-soft)' : '#FFFFFF'
-                                  }}
+                                  type="button"
                                   onClick={() => {
                                     setSelectedWarehouse(w.codalm);
-                                    setSelectedWarehouseName(formatLabel(w.nomalm));
+                                    setSelectedWarehouseName(w.descripcion);
                                     setIsMenuOpen(false);
+                                  }}
+                                  style={{
+                                    ...styles.warehouseItemCard,
+                                    borderColor: isWarehouseActive ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.08)',
+                                    backgroundColor: isWarehouseActive ? 'var(--accent-soft)' : '#FFFFFF',
+                                    color: isWarehouseActive ? 'var(--accent-start)' : 'var(--text-primary)'
                                   }}
                                 >
                                   <span style={{
                                     ...styles.warehouseItemName,
-                                    color: isSelected ? 'var(--accent-start)' : 'var(--text-primary)',
-                                    fontWeight: '500'
+                                    fontWeight: isWarehouseActive ? '700' : '600'
                                   }}>
-                                    {formatLabel(w.nomalm)}
+                                    {formatLabel(w.descripcion)}
                                   </span>
                                   {w.direccion && (
                                     <span style={styles.warehouseItemAddress}>
@@ -394,10 +400,12 @@ const styles = {
     width: '100vw',
     height: '100vh',
     backgroundColor: 'rgba(28, 42, 56, 0.4)',
-    backdropFilter: 'blur(4px)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     zIndex: 2000,
     display: 'flex',
     justifyContent: 'flex-end',
+    transition: 'opacity 0.28s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.28s cubic-bezier(0.25, 1, 0.5, 1)',
   },
   menuContainer: {
     backgroundColor: '#FFFFFF',
@@ -407,6 +415,7 @@ const styles = {
     boxShadow: '-10px 0 40px rgba(165, 177, 194, 0.15)',
     display: 'flex',
     flexDirection: 'column',
+    transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
   },
   header: {
     padding: '20px',
