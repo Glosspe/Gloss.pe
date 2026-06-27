@@ -3,8 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function MenuDrawer() {
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const { 
     isMenuOpen, 
     setIsMenuOpen, 
@@ -93,6 +97,11 @@ export default function MenuDrawer() {
     setSearchQuery('');
     setSelectedCategoryLabel('');
     setIsMenuOpen(false);
+    
+    // Si no estamos en la página de inicio, navegar a ella para ver los productos
+    if (pathname !== '/') {
+      router.push('/');
+    }
   };
 
   const handleSelectSubcategory = (subId, subName) => {
@@ -101,6 +110,11 @@ export default function MenuDrawer() {
     setSelectedBrand(''); // Limpiar marca al elegir categoría
     setSearchQuery(''); // Limpiar buscador
     setIsMenuOpen(false); // Cerrar sidebar
+    
+    // Si no estamos en la página de inicio, navegar a ella para ver los productos filtrados
+    if (pathname !== '/') {
+      router.push('/');
+    }
   };
 
   const handleSelectBrand = (brandName) => {
@@ -109,6 +123,11 @@ export default function MenuDrawer() {
     setSelectedCategoryLabel('');
     setSearchQuery(''); // Limpiar buscador
     setIsMenuOpen(false); // Cerrar sidebar
+    
+    // Si no estamos en la página de inicio, navegar a ella para ver los productos filtrados
+    if (pathname !== '/') {
+      router.push('/');
+    }
   };
 
   const toggleFamily = (famId) => {

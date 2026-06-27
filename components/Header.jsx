@@ -4,8 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, ShoppingBag, Menu, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SedesModal from './SedesModal';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Header() {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen, selectedWarehouseName } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isSedesModalOpen, setIsSedesModalOpen] = useState(false);
@@ -100,7 +104,13 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar productos, marcas, cosméticos..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Si el usuario escribe y no está en la página principal, redirigir a la Home para ver resultados
+                  if (pathname !== '/' && e.target.value.trim() !== '') {
+                    router.push('/');
+                  }
+                }}
                 style={styles.searchInput}
                 className="search-input-premium"
               />
