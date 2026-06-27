@@ -58,6 +58,17 @@ export default function ProductCard({ product }) {
           : '0 8px 24px rgba(0,0,0,0.02), 0 1px 4px rgba(0,0,0,0.01)',
       }}
     >
+      {/* Badge de Stock pegado al borde superior de la tarjeta */}
+      {stockBadge.label && stockBadge.label !== 'Disponible' && (
+        <div style={{
+          ...styles.stockCardBadge,
+          backgroundColor: stockBadge.bg,
+          color: stockBadge.color,
+        }}>
+          {stockBadge.label}
+        </div>
+      )}
+
       {/* Zona clickable que redirige al detalle del producto */}
       <Link 
         href={`/product/${product.id}`} 
@@ -82,15 +93,6 @@ export default function ProductCard({ product }) {
               <span style={styles.trendingText}>Top</span>
             </div>
           )}
-
-          {/* Badge de Stock en la esquina superior derecha */}
-          <div style={{
-            ...styles.stockImageBadge,
-            backgroundColor: stockBadge.bg,
-            color: stockBadge.color,
-          }}>
-            {stockBadge.label}
-          </div>
 
           {/* Imagen del Producto */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -270,22 +272,21 @@ const styles = {
     marginBottom: '2px',
     gap: '8px',
   },
-  stockImageBadge: {
+  stockCardBadge: {
     position: 'absolute',
-    top: '10px',
-    right: '10px',
-    zIndex: 5,
+    top: 0,
+    right: '24px',
+    zIndex: 10,
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '4px',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '0.58rem',
-    fontWeight: '700',
+    padding: '6px 12px',
+    borderBottomLeftRadius: '10px',
+    borderBottomRightRadius: '10px',
+    fontSize: '0.62rem',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.03)',
   },
   disabledAddToCartBtn: {
     backgroundColor: '#E5E7EB',
