@@ -41,7 +41,7 @@ export async function POST(request) {
     });
 
     // Invalidar activamente todo el caché de la tienda para que el cambio de precio/foto/oferta sea visible de inmediato
-    cache.clear();
+    await cache.clear();
 
     return NextResponse.json({
       success: true,

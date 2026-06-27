@@ -6,10 +6,10 @@ export async function GET() {
   try {
     const cacheKey = 'categories-tree';
     
-    // 1. Intentar servir desde el caché en memoria
-    const cachedData = cache.get(cacheKey);
+    // 1. Intentar servir desde el caché en memoria (asíncronamente)
+    const cachedData = await cache.get(cacheKey);
     if (cachedData) {
-      console.log('[API Categories Tree] Sirviendo desde caché en memoria.');
+      console.log('[API Categories Tree] Sirviendo desde caché.');
       return NextResponse.json(cachedData);
     }
 
@@ -26,7 +26,7 @@ export async function GET() {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             // Guardar en caché en Railway por 5 minutos (300s)
-            cache.set(cacheKey, data, 300);
+            await cache.set(cacheKey, data, 300);
             return NextResponse.json(data);
           }
         }
@@ -48,8 +48,6 @@ export async function GET() {
     if (!useFallback) {
       try {
         // Query jerárquica OPTIMIZADA de Familias y Subfamilias que tengan productos activos.
-        // Se reemplaza la subconsulta lenta IN (SELECT DISTINCT LEFT+SUBSTRING)
-        // por un filtro EXISTS que aprovecha el Index Seek sobre prd0101.codi.
         const result = await pool.request().query(`
           SELECT 
             RTRIM(f.codfam) as familyId, 
@@ -95,7 +93,7 @@ export async function GET() {
 
           const categoriesTree = Array.from(treeMap.values());
           // Guardar en caché local de la PC por 5 minutos
-          cache.set(cacheKey, categoriesTree, 300);
+          await cache.set(cacheKey, categoriesTree, 300);
           return NextResponse.json(categoriesTree);
         }
       } catch (dbErr) {
@@ -132,7 +130,7 @@ export async function GET() {
     ];
 
     // Guardar fallback en caché por 1 minuto para evitar re-intentar llamadas costosas
-    cache.set(cacheKey, mockTree, 60);
+    await cache.set(cacheKey, mockTree, 60);
     return NextResponse.json(mockTree);
 
   } catch (error) {

@@ -66,9 +66,9 @@ export async function GET(request) {
     
     // 1. Intentar servir desde el caché en memoria (15 segundos)
     const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}`;
-    const cachedData = cache.get(cacheKey);
+    const cachedData = await cache.get(cacheKey);
     if (cachedData) {
-      console.log(`[API Products Search] Sirviendo desde caché en memoria para: ${cacheKey}`);
+      console.log(`[API Products Search] Sirviendo desde caché para: ${cacheKey}`);
       return NextResponse.json(cachedData);
     }
 
@@ -90,7 +90,7 @@ export async function GET(request) {
         if (res.ok) {
           const data = await res.json();
           // Guardar en caché de la nube por 15 segundos
-          cache.set(cacheKey, data, 15);
+          await cache.set(cacheKey, data, 15);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}.`);
@@ -110,7 +110,7 @@ export async function GET(request) {
 
     // --- MODO LOCAL / API SERVER ---
     // Si LOCAL_API_URL no está definida, procesamos directamente contra la DB ERP local.
-    console.log(`[API Products Search - LOCAL MODE] Ejecutando consulta de base de datos local...`);
+    console.log(`[API Products Search - LOCAL MODE] Executing query on local database...`);
 
     let pool;
     try {
@@ -363,7 +363,7 @@ export async function GET(request) {
     }
 
     // Guardar en caché por 15 segundos
-    cache.set(cacheKey, finalProducts, 15);
+    await cache.set(cacheKey, finalProducts, 15);
     return NextResponse.json(finalProducts);
 
   } catch (error) {

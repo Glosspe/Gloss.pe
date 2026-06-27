@@ -132,11 +132,11 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Falta el parámetro id del producto' }, { status: 400 });
     }
 
-    // 1. Intentar servir desde el caché en memoria
+    // 1. Intentar servir desde el caché en memoria (asíncronamente)
     const cacheKey = `equivalents-${productId}-${warehouse || 'all'}`;
-    const cachedData = cache.get(cacheKey);
+    const cachedData = await cache.get(cacheKey);
     if (cachedData) {
-      console.log(`[API Products Equivalents] Sirviendo desde caché en memoria para: ${productId}`);
+      console.log(`[API Products Equivalents] Sirviendo desde caché para: ${productId}`);
       return NextResponse.json(cachedData);
     }
 
@@ -158,7 +158,7 @@ export async function GET(request) {
         if (res.ok) {
           const data = await res.json();
           // Guardar en caché de la nube por 3 minutos (180s)
-          cache.set(cacheKey, data, 180);
+          await cache.set(cacheKey, data, 180);
           return NextResponse.json(data);
         } else {
           console.warn(`[API Products Equivalents - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
@@ -186,7 +186,7 @@ export async function GET(request) {
       // Buscar en los mocks mapeados
       productsList = MOCK_EQUIVALENTS[productId] || [];
       // Guardar en caché por 1 minuto
-      cache.set(cacheKey, productsList, 60);
+      await cache.set(cacheKey, productsList, 60);
       return NextResponse.json(productsList);
     }
 
@@ -272,7 +272,7 @@ export async function GET(request) {
     const erpProducts = result.recordset;
 
     if (erpProducts.length === 0) {
-      cache.set(cacheKey, [], 180);
+      await cache.set(cacheKey, [], 180);
       return NextResponse.json([]);
     }
 
@@ -346,7 +346,7 @@ export async function GET(request) {
     });
 
     // Guardar en caché por 3 minutos (180s)
-    cache.set(cacheKey, visibleProducts, 180);
+    await cache.set(cacheKey, visibleProducts, 180);
     return NextResponse.json(visibleProducts);
 
   } catch (error) {
