@@ -74,17 +74,27 @@ export default function Header() {
       
       {/* Fila Inferior: Buscador Expandido */}
       <div style={searchRowStyle}>
-        <div style={styles.searchBar}>
-          <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Buscar productos, marcas, cosméticos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={styles.searchInput}
-            className="search-input-premium"
-          />
-        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (document.activeElement) {
+              document.activeElement.blur();
+            }
+          }}
+          style={{ width: '100%' }}
+        >
+          <div style={styles.searchBar}>
+            <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Buscar productos, marcas, cosméticos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={styles.searchInput}
+              className="search-input-premium"
+            />
+          </div>
+        </form>
       </div>
     </header>
   );
