@@ -388,7 +388,7 @@ a {
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 500; /* Tipografía más delgada y elegante */
   border: none;
   border-radius: 50px;
   padding: 12px 20px;
@@ -435,11 +435,35 @@ a {
   height: 42px;
   min-width: 42px;
   border-radius: 50%;
-  border: 2px solid var(--accent-start);
+  border: 1.5px solid var(--accent-start); /* Borde más delgado y elegante */
   background-color: transparent;
   cursor: pointer;
   outline: none;
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.product-favorite-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+/* Ajustes responsivos para pantallas medianas/grandes (grilla de múltiples columnas con tarjetas más estrechas) */
+@media (min-width: 768px) {
+  .product-add-to-cart-btn {
+    height: 36px;
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+  .product-favorite-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+  .product-favorite-btn svg {
+    width: 15px;
+    height: 15px;
+  }
 }
 
 .product-favorite-btn:hover {
