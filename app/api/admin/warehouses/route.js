@@ -34,7 +34,26 @@ export async function GET(request) {
       orderBy: { codalm: 'asc' }
     });
 
-    // Si no hay sedes en Postgres, intentamos poblar desde el ERP o fallback
+    // Si no es petición de administrador, retornamos de inmediato basándonos en Postgres y el Fallback en memoria (cero impacto/timeouts con el ERP)
+    if (!isAdmin) {
+      console.log('[Admin Warehouses API] Petición pública. Devolviendo sedes desde base de datos local y fallback de memoria.');
+      const publicWarehouses = dbWarehouses
+        .filter(w => w.visible)
+        .map(w => {
+          const info = WAREHOUSE_FALLBACK_INFO[w.codalm] || { region: 'CHICLAYO', direccion: '' };
+          return {
+            id: w.id,
+            codalm: w.codalm,
+            nomalm: w.nomalm,
+            visible: w.visible,
+            region: info.region,
+            direccion: info.direccion
+          };
+        });
+      return NextResponse.json({ success: true, warehouses: publicWarehouses });
+    }
+
+    // Si es petición de administrador y está vacía la tabla, poblar
     if (dbWarehouses.length === 0) {
       console.log('[Admin Warehouses API] Base de datos vacía. Población inicial...');
       let erpWarehouses = [];
@@ -49,18 +68,15 @@ export async function GET(request) {
           erpWarehouses = erpResult.recordset.map(alm => ({
             codalm: alm.codalm,
             nomalm: alm.nomalm,
-            visible: alm.codalm !== '03' // Deshabilitamos el almacén abastecedor por defecto
+            visible: alm.codalm !== '03'
           }));
-          console.log('[Admin Warehouses API] Sedes cargadas exitosamente del ERP:', erpWarehouses.length);
         }
       } catch (erpErr) {
         console.warn('[Admin Warehouses API] ERP no accesible para seed, usando fallback local:', erpErr.message);
       }
 
-      // Si no pudimos cargar del ERP, usamos el fallback
       const sourceList = erpWarehouses.length > 0 ? erpWarehouses : FALLBACK_ALMACENES;
 
-      // Guardar en Postgres
       await Promise.all(
         sourceList.map(alm =>
           prisma.webAlmacenConfig.create({
@@ -73,13 +89,12 @@ export async function GET(request) {
         )
       );
 
-      // Recargar de Postgres
       dbWarehouses = await prisma.webAlmacenConfig.findMany({
         orderBy: { codalm: 'asc' }
       });
     }
 
-    // Intentar conectar con el ERP para traer regiones y direcciones en tiempo real
+    // Intentar conectar con el ERP para traer regiones y direcciones actualizadas para el panel de administración
     let erpInfoMap = {};
     try {
       const pool = await getErpConnection();
@@ -106,7 +121,7 @@ export async function GET(request) {
       console.warn('[Admin Warehouses API] No se pudo conectar al ERP para cruzar regiones/direcciones:', erpErr.message);
     }
 
-    // Enriquecer almacenes con regiones y direcciones
+    // Enriquecer almacenes con regiones y direcciones para el administrador
     let enrichedWarehouses = dbWarehouses.map(w => {
       const info = erpInfoMap[w.codalm] || WAREHOUSE_FALLBACK_INFO[w.codalm] || { region: 'CHICLAYO', direccion: '' };
       return {
