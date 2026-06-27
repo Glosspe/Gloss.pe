@@ -14,6 +14,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
+  const [isErpUnavailable, setIsErpUnavailable] = useState(false);
 
   // Fetch dinámico de productos desde la API híbrida de la tienda
   useEffect(() => {
@@ -34,6 +35,14 @@ export default function HomePage() {
         const res = await fetch(`/api/products/search?${queryParams.toString()}`);
         
         if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.erpUnavailable || res.status === 503) {
+            if (active) {
+              setIsErpUnavailable(true);
+              setIsLoading(false);
+            }
+            return;
+          }
           throw new Error(`Error en el servidor: código ${res.status}`);
         }
         
@@ -41,24 +50,16 @@ export default function HomePage() {
         
         if (active) {
           setProducts(data);
-          const isMockData = data.length > 0 && data[0].isMock;
-          setIsOffline(!!isMockData);
+          setIsOffline(false);
+          setIsErpUnavailable(false);
           setIsLoading(false);
         }
       } catch (err) {
         console.error('[Frontend] Error fetching products:', err);
         if (active) {
-          // Fallback a mocks locales ante caídas para asegurar que la web siga activa
-          const localFallback = MOCK_PRODUCTS.filter(p => {
-            const matchesCat = selectedCategory === 'Trending' || p.category === selectedCategory;
-            const matchesBrand = !selectedBrand || p.brand.toLowerCase() === selectedBrand.toLowerCase();
-            const matchesQuery = searchQuery.trim() === '' || 
-              p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-              p.brand.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCat && matchesBrand && matchesQuery;
-          });
-          setProducts(localFallback.map(p => ({ ...p, isMock: true })));
-          setIsOffline(true);
+          // Si hay cualquier error de red o de carga del catálogo, consideramos que el ERP no está disponible
+          // para no confundir al cliente mostrando un catálogo mock desactualizado
+          setIsErpUnavailable(true);
           setIsLoading(false);
         }
       }
@@ -79,6 +80,22 @@ export default function HomePage() {
     if (selectedCategory === 'Todos') return 'Todos los Productos';
     return selectedCategory; // Fallback al ID crudo
   };
+
+  if (isErpUnavailable) {
+    return (
+      <div style={styles.unavailableContainer}>
+        <div style={styles.unavailableCard}>
+          <h1 style={styles.unavailableLogo}>GLOSS</h1>
+          <div style={styles.unavailableDivider} />
+          <h2 style={styles.unavailableTitle}>No estamos disponibles en este momento</h2>
+          <p style={styles.unavailableText}>
+            Estamos realizando labores de mantenimiento y sincronización con nuestro almacén central. 
+            Por favor, vuelve a ingresar en unos minutos. ¡Gracias por tu paciencia!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -205,5 +222,55 @@ const styles = {
     color: 'var(--text-secondary)',
     fontSize: '0.95rem',
     fontFamily: 'var(--font-body)',
+  },
+  unavailableContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    padding: '24px',
+    boxSizing: 'border-box',
+  },
+  unavailableCard: {
+    maxWidth: '460px',
+    width: '100%',
+    textAlign: 'center',
+    padding: '40px 30px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '16px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',
+    border: '1px solid rgba(142, 154, 167, 0.08)',
+  },
+  unavailableLogo: {
+    fontFamily: 'var(--font-logo)',
+    fontSize: '3rem',
+    fontWeight: 'normal',
+    color: '#000000',
+    letterSpacing: '0.25em',
+    margin: '0 0 0 0.25em', // Centrado compensando el letter-spacing
+    textTransform: 'uppercase',
+  },
+  unavailableDivider: {
+    width: '40px',
+    height: '2px',
+    backgroundColor: '#000000',
+    margin: '24px auto',
+  },
+  unavailableTitle: {
+    fontFamily: 'var(--font-title)',
+    fontSize: '1.25rem',
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: '12px',
+    lineHeight: '1.4',
+  },
+  unavailableText: {
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.88rem',
+    lineHeight: '1.6',
+    color: '#6B7280',
+    margin: 0,
   },
 };

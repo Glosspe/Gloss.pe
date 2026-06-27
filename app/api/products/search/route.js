@@ -82,26 +82,37 @@ export async function GET(request) {
           const data = await res.json();
           return NextResponse.json(data);
         } else {
-          console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
+          console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}.`);
+          return NextResponse.json(
+            { error: 'El almacén central no está disponible en este momento', erpUnavailable: true },
+            { status: 503 }
+          );
         }
       } catch (proxyErr) {
         console.error(`[API Products Search - PROXY MODE] Error conectando a la API local de ngrok:`, proxyErr.message);
-        // Continuar al fallback de mocks locales para mantener la tienda activa
+        return NextResponse.json(
+          { error: 'El almacén central no está disponible en este momento', erpUnavailable: true },
+          { status: 503 }
+        );
       }
     }
 
     // --- MODO LOCAL / API SERVER ---
-    // Si LOCAL_API_URL no está definida (o el proxy falló), procesamos directamente contra la DB ERP local.
+    // Si LOCAL_API_URL no está definida, procesamos directamente contra la DB ERP local.
     console.log(`[API Products Search - LOCAL MODE] Ejecutando consulta de base de datos local...`);
 
     let pool;
-    let useFallback = false;
     try {
       pool = await getErpConnection();
     } catch (dbErr) {
-      console.warn('[API Products Search - LOCAL MODE] ERP no accesible, usando MOCK_PRODUCTS como fallback:', dbErr.message);
-      useFallback = true;
+      console.warn('[API Products Search - LOCAL MODE] ERP no accesible:', dbErr.message);
+      return NextResponse.json(
+        { error: 'La base de datos del almacén no está accesible en este momento', erpUnavailable: true },
+        { status: 503 }
+      );
     }
+
+    let useFallback = false; // Mantenido por compatibilidad de tipos en la compilación
 
     let productsList = [];
 
