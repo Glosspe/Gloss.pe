@@ -192,6 +192,28 @@ export async function GET(request) {
       activeWarehouses = ['01'];
     }
 
+    // Filtrar por sede si se recibe el parámetro en la URL
+    const warehouseParam = request.nextUrl.searchParams.get('warehouse');
+    if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
+      const cleanParam = warehouseParam.trim();
+      if (activeWarehouses.includes(cleanParam)) {
+        activeWarehouses = [cleanParam];
+      } else {
+        const WAREHOUSE_REGIONS = {
+          'CHICLAYO': ['01', '02', '04', '06'],
+          'JAÉN': ['05'],
+          'JAEN': ['05']
+        };
+        const targetRegion = cleanParam.toUpperCase();
+        if (WAREHOUSE_REGIONS[targetRegion]) {
+          activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
+        }
+      }
+      if (activeWarehouses.length === 0) {
+        activeWarehouses = ['01'];
+      }
+    }
+
     // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
     let selectStockParts = [];
     let joinParts = [];

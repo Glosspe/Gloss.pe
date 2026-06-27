@@ -33,7 +33,7 @@ export default function ProductDetailPage({ params }) {
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
 
-  const { cart, addToCart, toggleFavorite, favorites, setIsCartOpen } = useCart();
+  const { cart, addToCart, toggleFavorite, favorites, setIsCartOpen, selectedWarehouse } = useCart();
 
   const [product, setProduct] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
@@ -52,7 +52,7 @@ export default function ProductDetailPage({ params }) {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/products/detail?id=${id}`);
+        const res = await fetch(`/api/products/detail?id=${id}&warehouse=${selectedWarehouse || ''}`);
         if (!res.ok) throw new Error('Producto no encontrado');
         const data = await res.json();
         setProduct(data);
@@ -67,14 +67,14 @@ export default function ProductDetailPage({ params }) {
     if (id) {
       fetchProductDetail();
     }
-  }, [id]);
+  }, [id, selectedWarehouse]);
 
   // Fetch de productos complementarios (Kit)
   useEffect(() => {
     async function fetchEquivalents() {
       setIsLoadingEqui(true);
       try {
-        const res = await fetch(`/api/products/equivalents?id=${id}`);
+        const res = await fetch(`/api/products/equivalents?id=${id}&warehouse=${selectedWarehouse || ''}`);
         if (res.ok) {
           const data = await res.json();
           setEquivalents(data);
@@ -89,7 +89,7 @@ export default function ProductDetailPage({ params }) {
     if (product && product.hasEquivalents) {
       fetchEquivalents();
     }
-  }, [product, id]);
+  }, [product, id, selectedWarehouse]);
 
   const handleAddToCart = () => {
     if (!product) return;

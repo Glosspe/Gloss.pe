@@ -9,7 +9,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
-  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel } = useCart();
+  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel, selectedWarehouse } = useCart();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +28,7 @@ export default function HomePage() {
         if (selectedCategory) queryParams.append('category', selectedCategory);
         if (searchQuery.trim() !== '') queryParams.append('q', searchQuery.trim());
         if (selectedBrand) queryParams.append('brand', selectedBrand);
+        if (selectedWarehouse) queryParams.append('warehouse', selectedWarehouse);
         
         console.log(`[Frontend] Fetching products with: ${queryParams.toString()}`);
         const res = await fetch(`/api/products/search?${queryParams.toString()}`);
@@ -68,7 +69,7 @@ export default function HomePage() {
     return () => {
       active = false;
     };
-  }, [selectedCategory, searchQuery, selectedBrand]);
+  }, [selectedCategory, searchQuery, selectedBrand, selectedWarehouse]);
 
   // Generar título de sección inteligente
   const getSectionTitle = () => {

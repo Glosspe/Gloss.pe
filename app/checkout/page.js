@@ -7,7 +7,7 @@ import { ShoppingBag, ArrowLeft, Loader2, CheckCircle2, User, Phone, MapPin, Fil
 import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal, clearCart, selectedWarehouse } = useCart();
   const router = useRouter();
 
   // Estados del Formulario
@@ -108,6 +108,7 @@ export default function CheckoutPage() {
           name,
           address,
           notes,
+          warehouse: selectedWarehouse,
           items: cart.map(item => ({
             id: item.id,
             name: item.name,

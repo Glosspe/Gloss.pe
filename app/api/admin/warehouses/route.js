@@ -12,7 +12,17 @@ const FALLBACK_ALMACENES = [
   { codalm: '06', nomalm: 'GLOSS ARICA 1114', visible: true }
 ];
 
-// GET: Obtener todas las sedes con su estado de visibilidad/activación
+// Fallback de regiones y direcciones por almacén si la DB ERP no está disponible
+const WAREHOUSE_FALLBACK_INFO = {
+  '01': { region: 'CHICLAYO', direccion: 'AV. ALFONSO UGARTE 1339' },
+  '02': { region: 'CHICLAYO', direccion: 'CALLE ARICA 870' },
+  '03': { region: 'CHICLAYO', direccion: 'ALMACEN ABASTECEDOR' },
+  '04': { region: 'CHICLAYO', direccion: 'AV. JOSE BALTA NRO. 1362 CERCADO DE CHICLAYO' },
+  '05': { region: 'JAÉN', direccion: 'AV. MESONES MURO NRO. 180 SEC. MORRO S.' },
+  '06': { region: 'CHICLAYO', direccion: 'CALLE ARICA 1114' }
+};
+
+// GET: Obtener todas las sedes con su estado de visibilidad/activación, región y dirección
 export async function GET(request) {
   try {
     // Validar token de administrador
@@ -69,12 +79,52 @@ export async function GET(request) {
       });
     }
 
-    // Si es petición pública (no admin), solo retornar las que están visibles
-    if (!isAdmin) {
-      dbWarehouses = dbWarehouses.filter(w => w.visible);
+    // Intentar conectar con el ERP para traer regiones y direcciones en tiempo real
+    let erpInfoMap = {};
+    try {
+      const pool = await getErpConnection();
+      const erpResult = await pool.request().query(`
+        SELECT 
+          RTRIM(a.codalm) as codalm, 
+          RTRIM(a.Diralm) as direccion,
+          RTRIM(s.NomSuc) as region
+        FROM tbl01alm a
+        LEFT JOIN Tbl_Sucursal s ON a.codsuc = s.CodSuc
+      `);
+      
+      if (erpResult.recordset.length > 0) {
+        erpResult.recordset.forEach(row => {
+          if (row.codalm) {
+            erpInfoMap[row.codalm] = {
+              region: row.region ? row.region.trim().toUpperCase() : 'CHICLAYO',
+              direccion: row.direccion ? row.direccion.trim() : ''
+            };
+          }
+        });
+      }
+    } catch (erpErr) {
+      console.warn('[Admin Warehouses API] No se pudo conectar al ERP para cruzar regiones/direcciones:', erpErr.message);
     }
 
-    return NextResponse.json({ success: true, warehouses: dbWarehouses });
+    // Enriquecer almacenes con regiones y direcciones
+    let enrichedWarehouses = dbWarehouses.map(w => {
+      const info = erpInfoMap[w.codalm] || WAREHOUSE_FALLBACK_INFO[w.codalm] || { region: 'CHICLAYO', direccion: '' };
+      return {
+        id: w.id,
+        codalm: w.codalm,
+        nomalm: w.nomalm,
+        visible: w.visible,
+        region: info.region,
+        direccion: info.direccion
+      };
+    });
+
+    // Si es petición pública (no admin), solo retornar las que están visibles
+    if (!isAdmin) {
+      enrichedWarehouses = enrichedWarehouses.filter(w => w.visible);
+    }
+
+    return NextResponse.json({ success: true, warehouses: enrichedWarehouses });
   } catch (error) {
     console.error('[Admin Warehouses GET] ERROR:', error);
     return NextResponse.json({ error: 'Error al obtener almacenes', details: error.message }, { status: 500 });

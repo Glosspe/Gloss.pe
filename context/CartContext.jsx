@@ -13,13 +13,20 @@ export function CartProvider({ children }) {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState('');
   const [favorites, setFavorites] = useState([]);
+  const [selectedWarehouse, setSelectedWarehouse] = useState('all');
+  const [selectedWarehouseName, setSelectedWarehouseName] = useState('Todas las sedes');
 
-  // Cargar carrito y favoritos desde localStorage al iniciar
+  // Cargar carrito, favoritos y sede desde localStorage al iniciar
   useEffect(() => {
     const savedCart = localStorage.getItem('gloss_cart');
     const savedFavorites = localStorage.getItem('gloss_favorites');
+    const savedWh = localStorage.getItem('gloss_selected_warehouse');
+    const savedWhName = localStorage.getItem('gloss_selected_warehouse_name');
+    
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    if (savedWh) setSelectedWarehouse(savedWh);
+    if (savedWhName) setSelectedWarehouseName(savedWhName);
   }, []);
 
   // Guardar carrito en localStorage cuando cambie
@@ -31,6 +38,12 @@ export function CartProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('gloss_favorites', JSON.stringify(favorites));
   }, [favorites]);
+
+  // Guardar sede en localStorage cuando cambie
+  useEffect(() => {
+    localStorage.setItem('gloss_selected_warehouse', selectedWarehouse);
+    localStorage.setItem('gloss_selected_warehouse_name', selectedWarehouseName);
+  }, [selectedWarehouse, selectedWarehouseName]);
 
   const addToCart = (product, quantity = 1) => {
     setCart((prevCart) => {
@@ -115,6 +128,10 @@ export function CartProvider({ children }) {
         clearCart,
         cartTotal,
         cartCount,
+        selectedWarehouse,
+        setSelectedWarehouse,
+        selectedWarehouseName,
+        setSelectedWarehouseName,
       }}
     >
       {children}

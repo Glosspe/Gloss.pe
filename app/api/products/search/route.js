@@ -168,6 +168,33 @@ export async function GET(request) {
         activeWarehouses = ['01'];
       }
 
+      // Si el cliente solicita filtrar por un almacén o región específica
+      const warehouseParam = request.nextUrl.searchParams.get('warehouse');
+      if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
+        const cleanParam = warehouseParam.trim();
+        // Verificar si es un almacén activo directo
+        if (activeWarehouses.includes(cleanParam)) {
+          activeWarehouses = [cleanParam];
+        } else {
+          // Si el parámetro corresponde a una región
+          const WAREHOUSE_REGIONS = {
+            'CHICLAYO': ['01', '02', '04', '06'],
+            'JAÉN': ['05'],
+            'JAEN': ['05']
+          };
+          const targetRegion = cleanParam.toUpperCase();
+          if (WAREHOUSE_REGIONS[targetRegion]) {
+            // Filtrar para quedarse solo con los almacenes activos de esa región
+            activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
+          }
+        }
+        
+        // Si después de filtrar la región no quedaron almacenes, forzar fallback
+        if (activeWarehouses.length === 0) {
+          activeWarehouses = ['01'];
+        }
+      }
+
       // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
       let selectStockParts = [];
       let joinParts = [];

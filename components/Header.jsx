@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, ShoppingBag, Menu } from 'lucide-react';
+import { Search, SlidersHorizontal, ShoppingBag, Menu, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function Header() {
-  const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen } = useCart();
+  const { searchQuery, setSearchQuery, cartCount, setIsCartOpen, setIsMenuOpen, selectedWarehouseName } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -54,6 +54,14 @@ export default function Header() {
       <div style={styles.topRow}>
         <div style={styles.logoContainer}>
           <h2 style={styles.logoText}>GLOSS</h2>
+          <button 
+            onClick={() => setIsMenuOpen(true)} 
+            style={styles.sedeSelectorBtn}
+            title="Seleccionar Sede"
+          >
+            <MapPin size={11} color="var(--accent-start)" />
+            <span style={styles.sedeText}>{selectedWarehouseName}</span>
+          </button>
         </div>
         
         <div style={styles.actions}>
@@ -126,6 +134,29 @@ const styles = {
   logoContainer: {
     display: 'flex',
     alignItems: 'center',
+    gap: '10px',
+  },
+  sedeSelectorBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: '#FAF9F8',
+    border: '1px solid rgba(142, 154, 167, 0.1)',
+    borderRadius: '12px',
+    padding: '4px 8px',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.72rem',
+    fontWeight: '500',
+    color: 'var(--text-secondary)',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  },
+  sedeText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '120px',
   },
   logoText: {
     fontFamily: 'var(--font-logo)',

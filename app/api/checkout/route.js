@@ -6,14 +6,24 @@ import sql from 'mssql';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { phone, docType, docNumber, name, address, notes, items, total } = body;
+    const { phone, docType, docNumber, name, address, notes, items, total, warehouse } = body;
 
     // 1. Validaciones básicas de entrada
     if (!phone || !docNumber || !name || !address || !items || items.length === 0) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
-    console.log(`[Checkout API] Iniciando procesamiento de pedido para: ${name} (${phone})`);
+    console.log(`[Checkout API] Iniciando procesamiento de pedido para: ${name} (${phone}), sede: ${warehouse}`);
+
+    // Determinar el almacén físico final en el ERP
+    let finalCodAlm = '01'; // Por defecto Alfonso Ugarte
+    const cleanWh = (warehouse || '').toString().trim();
+    const validAlmacenes = ['01', '02', '04', '05', '06'];
+    if (validAlmacenes.includes(cleanWh)) {
+      finalCodAlm = cleanWh;
+    } else if (cleanWh.toUpperCase() === 'JAÉN' || cleanWh.toUpperCase() === 'JAEN') {
+      finalCodAlm = '05';
+    }
 
     // 2. Generar un número de pedido correlativo web único (secuencial)
     // Envolvemos esto en un flujo robusto en PostgreSQL
@@ -118,7 +128,7 @@ export async function POST(request) {
           .input('mone', 'S')
           .input('tcam', sql.Decimal(18, 4), 1.0)
           .input('Codpto', erpPto)
-          .input('CodAlm', '01')
+          .input('CodAlm', finalCodAlm)
           .input('codusu', 'WEB')
           .input('flag', '0')
           .input('compro', formattedCompro)
@@ -148,7 +158,7 @@ export async function POST(request) {
             .input('preu', sql.Decimal(18, 4), item.price / 1.18)
             .input('tota', sql.Decimal(18, 4), (item.price * item.quantity) / 1.18)
             .input('totn', sql.Decimal(18, 4), item.price * item.quantity)
-            .input('Codalm', '01')
+            .input('Codalm', finalCodAlm)
             .query(`
               IF OBJECT_ID('dbo.ped01det') IS NOT NULL
               BEGIN

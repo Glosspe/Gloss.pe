@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2 } from 'lucide-react';
+import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function MenuDrawer() {
@@ -13,14 +13,20 @@ export default function MenuDrawer() {
     selectedBrand,
     setSelectedBrand,
     setSearchQuery,
-    setSelectedCategoryLabel
+    setSelectedCategoryLabel,
+    selectedWarehouse,
+    setSelectedWarehouse,
+    selectedWarehouseName,
+    setSelectedWarehouseName
   } = useCart();
 
   const [categoriesTree, setCategoriesTree] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
   const [activeFamily, setActiveFamily] = useState(null); // ID de familia desplegada
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
+  const [isWarehousesOpen, setIsWarehousesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Cargar datos dinámicos del ERP
@@ -43,8 +49,17 @@ export default function MenuDrawer() {
           const brandData = await brandRes.json();
           setBrands(brandData);
         }
+
+        // Cargar sedes
+        const whRes = await fetch('/api/admin/warehouses');
+        if (whRes.ok) {
+          const whData = await whRes.json();
+          if (whData.success) {
+            setWarehouses(whData.warehouses);
+          }
+        }
       } catch (err) {
-        console.error('[MenuDrawer] Error cargando árbol y marcas:', err);
+        console.error('[MenuDrawer] Error cargando árbol, marcas y sedes:', err);
       } finally {
         setIsLoading(false);
       }
@@ -231,6 +246,118 @@ export default function MenuDrawer() {
                         >
                           {formatLabel(brand.name)}
                         </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* SECCIÓN SEDES */}
+              <div style={styles.sectionCard}>
+                <button 
+                  style={styles.sectionHeader}
+                  onClick={() => setIsWarehousesOpen(!isWarehousesOpen)}
+                >
+                  <div style={styles.sectionTitleGroup}>
+                    <MapPin size={18} color="var(--accent-start)" />
+                    <span style={styles.sectionTitle}>Nuestras Sedes</span>
+                  </div>
+                  {isWarehousesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+
+                {isWarehousesOpen && (
+                  <div style={styles.warehousesList}>
+                    {/* Opción para Ver Todas */}
+                    <button
+                      style={{
+                        ...styles.warehouseBtn,
+                        borderColor: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
+                        backgroundColor: selectedWarehouse === 'all' ? 'var(--accent-soft)' : '#FAF9F8',
+                        color: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'var(--text-primary)',
+                        fontWeight: '500',
+                        marginBottom: '12px',
+                        width: '100%',
+                        justifyContent: 'center',
+                        border: '1px solid',
+                      }}
+                      onClick={() => {
+                        setSelectedWarehouse('all');
+                        setSelectedWarehouseName('Todas las sedes');
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Ver stock global (Todas las sedes)
+                    </button>
+
+                    {Object.keys(
+                      warehouses.reduce((acc, w) => {
+                        const reg = w.region ? w.region.trim().toUpperCase() : 'CHICLAYO';
+                        if (!acc[reg]) acc[reg] = [];
+                        acc[reg].push(w);
+                        return acc;
+                      }, {})
+                    ).map((region) => {
+                      const grouped = warehouses.reduce((acc, w) => {
+                        const reg = w.region ? w.region.trim().toUpperCase() : 'CHICLAYO';
+                        if (!acc[reg]) acc[reg] = [];
+                        acc[reg].push(w);
+                        return acc;
+                      }, {});
+                      return (
+                        <div key={region} style={styles.regionGroup}>
+                          {/* Botón/Título para seleccionar toda la región */}
+                          <button
+                            style={{
+                              ...styles.regionSelectBtn,
+                              color: selectedWarehouse === region ? 'var(--accent-start)' : 'var(--text-secondary)',
+                              fontWeight: selectedWarehouse === region ? '500' : '500'
+                            }}
+                            onClick={() => {
+                              setSelectedWarehouse(region);
+                              setSelectedWarehouseName(`Región: ${formatLabel(region)}`);
+                              setIsMenuOpen(false);
+                            }}
+                          >
+                            <span style={styles.regionTitleText}>{formatLabel(region)}</span>
+                            <span style={styles.regionSelectText}>
+                              {selectedWarehouse === region ? '✓ Seleccionado' : 'Ver stock región'}
+                            </span>
+                          </button>
+                          
+                          <div style={styles.regionWarehousesGrid}>
+                            {grouped[region].map((w) => {
+                              const isSelected = selectedWarehouse === w.codalm;
+                              return (
+                                <button
+                                  key={w.codalm}
+                                  style={{
+                                    ...styles.warehouseItemCard,
+                                    borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
+                                    backgroundColor: isSelected ? 'var(--accent-soft)' : '#FFFFFF'
+                                  }}
+                                  onClick={() => {
+                                    setSelectedWarehouse(w.codalm);
+                                    setSelectedWarehouseName(formatLabel(w.nomalm));
+                                    setIsMenuOpen(false);
+                                  }}
+                                >
+                                  <span style={{
+                                    ...styles.warehouseItemName,
+                                    color: isSelected ? 'var(--accent-start)' : 'var(--text-primary)',
+                                    fontWeight: '500'
+                                  }}>
+                                    {formatLabel(w.nomalm)}
+                                  </span>
+                                  {w.direccion && (
+                                    <span style={styles.warehouseItemAddress}>
+                                      {formatLabel(w.direccion)}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -483,5 +610,77 @@ const styles = {
     fontSize: '0.65rem',
     color: 'var(--text-secondary)',
     marginTop: '4px',
+  },
+  warehousesList: {
+    padding: '0 12px 16px 12px',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  warehouseBtn: {
+    padding: '10px 14px',
+    borderRadius: '12px',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-body)',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  regionGroup: {
+    marginTop: '6px',
+    marginBottom: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  regionSelectBtn: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    background: 'none',
+    border: 'none',
+    padding: '4px 2px',
+    cursor: 'pointer',
+    width: '100%',
+    textAlign: 'left',
+    outline: 'none',
+    borderBottom: '1px solid rgba(142, 154, 167, 0.08)',
+    paddingBottom: '6px',
+    marginBottom: '6px',
+  },
+  regionTitleText: {
+    fontSize: '0.85rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  regionSelectText: {
+    fontSize: '0.72rem',
+    textTransform: 'none',
+  },
+  regionWarehousesGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  warehouseItemCard: {
+    padding: '10px 12px',
+    borderRadius: '14px',
+    border: '1px solid',
+    cursor: 'pointer',
+    textAlign: 'left',
+    fontFamily: 'var(--font-body)',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  warehouseItemName: {
+    fontSize: '0.82rem',
+  },
+  warehouseItemAddress: {
+    fontSize: '0.72rem',
+    color: 'var(--text-secondary)',
+    lineHeight: '1.3',
   },
 };
