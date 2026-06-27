@@ -72,7 +72,6 @@ export default function ProductCard({ product }) {
       {/* Badge de Categoría / Trending pegado al borde superior izquierdo de la tarjeta */}
       {product.destacado || product.category === 'Trending' ? (
         <div style={styles.trendingCardBadge}>
-          <Sparkles size={10} color="#FFFFFF" style={{ marginRight: '3px' }} />
           <span style={styles.trendingCardText}>Top</span>
         </div>
       ) : (
@@ -245,15 +244,15 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '6px 12px',
-    background: 'var(--accent-gradient)',
+    backgroundColor: '#1D242D', // Negro carbón sofisticado para evitar el exceso de rosa
     borderBottomLeftRadius: '10px',
     borderBottomRightRadius: '10px',
-    boxShadow: '0 4px 10px rgba(255, 46, 147, 0.15)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
   },
   trendingCardText: {
     fontFamily: 'var(--font-body)',
     fontSize: '0.62rem',
-    fontWeight: '700',
+    fontWeight: '600', // Suavizado
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
