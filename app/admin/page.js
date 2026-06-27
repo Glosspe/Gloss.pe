@@ -11,7 +11,7 @@ import {
 export default function AdminDashboard() {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'categories'
+  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'featured' | 'categories' | 'warehouses'
 
   // ── Productos ──
   const [products, setProducts] = useState([]);
@@ -29,6 +29,10 @@ export default function AdminDashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
+
+  // ── Destacados ──
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [isFeatLoading, setIsFeatLoading] = useState(false);
 
   // ── Categorías ──
   const [categories, setCategories] = useState([]);
@@ -51,6 +55,7 @@ export default function AdminDashboard() {
     } else {
       setAdminUser(user ? JSON.parse(user) : { nombre: 'Administrador' });
       loadProducts('');
+      loadFeaturedProducts();
       loadCategories();
       loadWarehouses();
     }
@@ -78,6 +83,52 @@ export default function AdminDashboard() {
   const handleSearch = (e) => {
     e.preventDefault();
     loadProducts(searchQuery);
+  };
+
+  // ═══ Destacados: Cargar ═══
+  const loadFeaturedProducts = async () => {
+    setIsFeatLoading(true);
+    try {
+      const response = await fetch('/api/products/search?category=Trending&q=');
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedProducts(data);
+      }
+    } catch (err) {
+      console.error('Error al cargar destacados:', err);
+    } finally {
+      setIsFeatLoading(false);
+    }
+  };
+
+  // ═══ Destacados: Quitar de Destacados ═══
+  const handleRemoveFeatured = async (prod) => {
+    const token = localStorage.getItem('gloss_admin_token');
+    try {
+      const response = await fetch('/api/admin/products/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          codart: prod.id,
+          imagenes: prod.images || [],
+          descripcionEnriquecida: prod.description || '',
+          destacado: false,
+          visible: prod.visible !== false
+        })
+      });
+      if (response.ok) {
+        // Quitar de la lista local
+        setFeaturedProducts(prev => prev.filter(p => p.id !== prod.id));
+        // Actualizar en el catálogo general
+        setProducts(prev => prev.map(p => p.id === prod.id ? { ...p, destacado: false, category: p.category === 'Trending' ? 'Otros' : p.category } : p));
+        // Si estaba seleccionado, actualizar el editor
+        if (selectedProduct?.id === prod.id) {
+          setIsTrending(false);
+        }
+      }
+    } catch (err) {
+      console.error('Error al remover destacado:', err);
+    }
   };
 
   // ═══ Productos: Seleccionar ═══
@@ -198,6 +249,37 @@ export default function AdminDashboard() {
           visible: isVisible,
           category: isTrending ? 'Trending' : prev.category
         }));
+
+        // Sincronizar en la pestaña de destacados
+        if (isTrending) {
+          setFeaturedProducts(prev => {
+            const exists = prev.some(p => p.id === selectedProduct.id);
+            if (exists) {
+              return prev.map(p => p.id === selectedProduct.id ? {
+                ...p,
+                image: uploadedImages.length > 0 ? uploadedImages[0] : p.image,
+                images: uploadedImages,
+                description: richDescription,
+                destacado: true,
+                visible: isVisible
+              } : p);
+            } else {
+              return [...prev, {
+                id: selectedProduct.id,
+                name: selectedProduct.name,
+                brand: selectedProduct.brand,
+                price: selectedProduct.price,
+                image: uploadedImages.length > 0 ? uploadedImages[0] : selectedProduct.image,
+                images: uploadedImages,
+                description: richDescription,
+                destacado: true,
+                visible: isVisible
+              }];
+            }
+          });
+        } else {
+          setFeaturedProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
+        }
       } else {
         setMessage({ type: 'error', text: data.error || 'Error al guardar.' });
       }
@@ -367,6 +449,12 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('products')}
         >
           <Package size={16} /> Productos
+        </button>
+        <button
+          style={{ ...s.tab, ...(activeTab === 'featured' ? s.tabActive : {}) }}
+          onClick={() => { setActiveTab('featured'); loadFeaturedProducts(); }}
+        >
+          <Star size={16} /> Destacados
         </button>
         <button
           style={{ ...s.tab, ...(activeTab === 'categories' ? s.tabActive : {}) }}
@@ -634,6 +722,110 @@ export default function AdminDashboard() {
                 <Package size={48} color="var(--text-tertiary)" />
                 <h4 style={{ marginTop: '16px' }}>Selecciona un producto</h4>
                 <p style={s.emptyText}>Elige un artículo de la lista para editar sus imágenes, descripción y visibilidad.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════ */}
+      {/* ═══ TAB: DESTACADOS ═══ */}
+      {/* ══════════════════════════════════════════ */}
+      {activeTab === 'featured' && (
+        <div style={s.catContainer}>
+          <div style={s.catCard} className="soft-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div>
+                <h3 style={s.panelTitle}>Productos Destacados</h3>
+                <p style={s.panelSub}>
+                  Estos productos se muestran en el carrusel principal "Destacados" y llevan el badge "Top".
+                </p>
+              </div>
+              <span style={{
+                fontSize: '0.8rem',
+                backgroundColor: 'var(--accent-soft)',
+                color: 'var(--accent-start)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontWeight: '600'
+              }}>
+                {featuredProducts.length} productos
+              </span>
+            </div>
+
+            {isFeatLoading ? (
+              <div style={s.centerState}>
+                <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+                <p style={s.stateText}>Cargando destacados...</p>
+              </div>
+            ) : featuredProducts.length === 0 ? (
+              <div style={{ ...s.centerState, padding: '40px 0' }}>
+                <Star size={48} color="var(--text-tertiary)" />
+                <p style={{ ...s.stateText, marginTop: '16px' }}>No tienes ningún producto marcado como destacado.</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '300px', textAlign: 'center', marginTop: '4px' }}>
+                  Ve a la pestaña "Productos", selecciona un artículo y activa la casilla "Producto Destacado".
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                {featuredProducts.map((prod) => (
+                  <div key={prod.id} style={{
+                    ...s.catItem,
+                    borderColor: 'rgba(255, 46, 147, 0.15)',
+                    padding: '12px 16px',
+                  }}>
+                    <div style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid rgba(142, 154, 167, 0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={prod.image} alt={prod.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    </div>
+                    
+                    <div style={{ ...s.catInfo, marginLeft: '4px' }}>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '600', color: 'var(--text-primary)' }}>{prod.name}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', gap: '8px', marginTop: '2px' }}>
+                        <span>Código: <strong>{prod.id}</strong></span>
+                        <span>|</span>
+                        <span>Marca: <strong>{prod.brand || 'Gloss Beauty'}</strong></span>
+                        <span>|</span>
+                        <span>Precio: <strong>S/ {prod.price}</strong></span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleRemoveFeatured(prod)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#EF4444',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      title="Quitar de destacados"
+                    >
+                      <Trash2 size={16} />
+                      Quitar
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
