@@ -61,16 +61,17 @@ export async function GET(request) {
     const query = searchParams.get('q') || '';
     const category = searchParams.get('category') || 'Trending';
     const brand = searchParams.get('brand') || '';
+    const warehouse = searchParams.get('warehouse') || '';
     
     // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
     // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
     const localApiUrl = process.env.LOCAL_API_URL;
     
     if (localApiUrl) {
-      console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search`);
+      console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search?warehouse=${warehouse}`);
       try {
         const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}`;
+        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}`;
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },

@@ -125,6 +125,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('id') || '';
+    const warehouse = searchParams.get('warehouse') || '';
     
     if (!productId) {
       return NextResponse.json({ error: 'Falta el parámetro id del producto' }, { status: 400 });
@@ -135,10 +136,10 @@ export async function GET(request) {
     const localApiUrl = process.env.LOCAL_API_URL;
     
     if (localApiUrl) {
-      console.log(`[API Products Equivalents - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/equivalents`);
+      console.log(`[API Products Equivalents - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/equivalents?id=${productId}&warehouse=${warehouse}`);
       try {
         const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/equivalents?id=${encodeURIComponent(productId)}`;
+        const targetUrl = `${cleanApiUrl}/api/products/equivalents?id=${encodeURIComponent(productId)}&warehouse=${encodeURIComponent(warehouse)}`;
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },
