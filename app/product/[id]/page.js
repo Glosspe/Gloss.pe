@@ -527,7 +527,7 @@ const styles = {
   },
   productName: {
     fontSize: '1.6rem',
-    fontWeight: '800',
+    fontWeight: '500',
     color: 'var(--text-primary)',
     lineHeight: '1.25',
   },
