@@ -201,30 +201,31 @@ export async function GET(request) {
       take: topLimit
     });
 
-    // Fallback inteligente para la Home (Trending) si no hay productos marcados como destacados en la base de datos
-    if (category === 'Trending' && productsFromDb.length === 0) {
-      console.log('[API Products Search] No hay productos destacados en base de datos. Cargando catálogo de fallback para la Home...');
+    // Fallback inteligente para la Home (Trending) si no hay suficientes productos destacados en la base de datos
+    if (category === 'Trending' && productsFromDb.length < 24) {
+      console.log('[API Products Search] Pocos o ningún producto destacado en base de datos. Autocompletando catálogo de fallback para la Home...');
       const fallbackCondition = { ...whereCondition };
       delete fallbackCondition.destacado; // Quitamos el filtro de destacado
       fallbackCondition.visible = true;
-      fallbackCondition.stock = { gt: 0 }; // Priorizar productos con stock disponible
+      
+      // Excluir productos ya cargados para evitar duplicidad
+      if (productsFromDb.length > 0) {
+        fallbackCondition.codart = {
+          notIn: productsFromDb.map(p => p.codart)
+        };
+      }
 
-      productsFromDb = await prisma.webProductoImagen.findMany({
+      const neededCount = 24 - productsFromDb.length;
+
+      const additionalProducts = await prisma.webProductoImagen.findMany({
         where: fallbackCondition,
-        take: topLimit,
+        take: neededCount,
         orderBy: {
           fechaActualizacion: 'desc'
         }
       });
 
-      // Si tampoco hay con stock, traer cualquier producto visible
-      if (productsFromDb.length === 0) {
-        delete fallbackCondition.stock;
-        productsFromDb = await prisma.webProductoImagen.findMany({
-          where: fallbackCondition,
-          take: topLimit
-        });
-      }
+      productsFromDb = [...productsFromDb, ...additionalProducts];
     }
 
     const formattedProducts = productsFromDb.map(p => {
