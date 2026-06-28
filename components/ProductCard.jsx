@@ -181,7 +181,7 @@ export default function ProductCard({ product }) {
           >
             <Heart
               size={24}
-              color={isFavorite ? '#FFFFFF' : '#FF8EBA'}
+              color={isFavorite ? '#FFFFFF' : '#FF74A3'}
               fill={isFavorite ? '#FFFFFF' : 'none'}
               strokeWidth={2}
             />
