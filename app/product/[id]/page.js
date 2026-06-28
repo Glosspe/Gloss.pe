@@ -247,14 +247,14 @@ export default function ProductDetailPage({ params }) {
               <button 
                 style={{
                   ...styles.favBtn,
-                  backgroundColor: isFavorite ? '#FF6584' : '#FFE6EC',
+                  backgroundColor: isFavorite ? '#FF9EBA' : '#FFE6EC',
                   border: 'none', // Quitar línea de contorno
                 }}
                 onClick={() => toggleFavorite(product)}
               >
                 <Heart 
                   size={20} 
-                  color={isFavorite ? '#FFFFFF' : '#FF6584'} 
+                  color={isFavorite ? '#FFFFFF' : '#FF9EBA'} 
                   fill={isFavorite ? '#FFFFFF' : 'none'} 
                 />
               </button>
