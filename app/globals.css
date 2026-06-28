@@ -655,6 +655,10 @@ a {
   height: 32px !important;
 }
 
+.header-cart-button {
+  display: none !important; /* Ocultar la bolsa del Header en versión móvil */
+}
+
 .header-icon-svg {
   width: 20px !important;
   height: 20px !important;
@@ -699,6 +703,10 @@ a {
   .header-icon-button {
     width: 36px !important;
     height: 36px !important;
+  }
+
+  .header-cart-button {
+    display: flex !important; /* Mostrar la bolsa del Header en computadoras */
   }
 
   .header-icon-svg {

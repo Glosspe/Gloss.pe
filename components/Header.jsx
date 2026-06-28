@@ -73,7 +73,7 @@ export default function Header() {
           
           <div style={styles.actions}>
             {/* Botón Bolsa (Carrito) */}
-            <button style={styles.iconButton} className="header-icon-button" onClick={() => setIsCartOpen(true)}>
+            <button style={styles.iconButton} className="header-icon-button header-cart-button" onClick={() => setIsCartOpen(true)}>
               <ShoppingBag size={24} color="var(--accent-start)" className="header-icon-svg" />
               {cartCount > 0 && (
                 <span style={styles.badge} className="header-cart-badge">{cartCount}</span>
