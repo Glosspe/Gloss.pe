@@ -407,8 +407,8 @@ export async function POST(request) {
         }, { status: 503 });
       }
 
-      // Consultar parejas de productos comprados juntos de los últimos 180 días
-      // Filtramos para coincidencia >= 2 para asegurar relevancia real
+      // Consultar parejas de productos comprados juntos de los últimos 90 días
+      // Filtramos para coincidencia >= 3 para asegurar relevancia real y optimizar velocidad
       const query = `
         SELECT 
           RTRIM(d1.codi) as base_product, 
@@ -418,13 +418,15 @@ export async function POST(request) {
         INNER JOIN dtl01fac d2 WITH(nolock) ON d1.ndocu = d2.ndocu AND d1.cdocu = d2.cdocu
         INNER JOIN prd0101 p1 WITH(nolock) ON p1.codi = d1.codi
         INNER JOIN prd0101 p2 WITH(nolock) ON p2.codi = d2.codi
-        WHERE d1.fecha >= DATEADD(day, -180, GETDATE())
+        WHERE d1.fecha >= DATEADD(day, -90, GETDATE())
+          AND d2.fecha >= DATEADD(day, -90, GETDATE())
           AND d1.codi <> d2.codi
           AND p1.estado = 1
           AND p2.estado = 1
           AND d1.cdocu IN ('01', '03', '65')
+          AND d2.cdocu IN ('01', '03', '65')
         GROUP BY d1.codi, d2.codi
-        HAVING COUNT(*) >= 2
+        HAVING COUNT(*) >= 3
         ORDER BY base_product, coincidencia DESC
       `;
       const res = await pool.request().query(query);
