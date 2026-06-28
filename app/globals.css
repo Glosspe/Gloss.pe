@@ -98,7 +98,7 @@ html, body {
 
 /* Botón neumórfico con color fucsia plano */
 .soft-button {
-  background: #FF9EBA; /* Rosado pastel de marca */
+  background: #FF5CA6; /* Rosado pastel derivado del logo */
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
@@ -116,15 +116,15 @@ html, body {
 }
 
 .soft-button:hover {
-  background: #FF7FA2;
+  background: #FF3593;
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(255, 158, 186, 0.15);
+  box-shadow: 0 10px 24px rgba(255, 92, 166, 0.15);
 }
 
 .soft-button:active {
-  background: #FF7FA2;
+  background: #FF3593;
   transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(255, 158, 186, 0.08);
+  box-shadow: 0 4px 10px rgba(255, 92, 166, 0.08);
 }
 
 .soft-button:disabled {
@@ -378,13 +378,13 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Rosado pastel) */
+/* Botón Agregar al Carrito (Rosado pastel derivado del logo) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #FF9EBA; /* Rosado pastel */
+  background-color: #FF5CA6; /* Rosado pastel derivado del logo */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 0.82rem;
@@ -401,9 +401,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #FF7FA2;
+  background-color: #FF3593;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 158, 186, 0.25);
+  box-shadow: 0 6px 16px rgba(255, 92, 166, 0.25);
 }
 
 .product-add-to-cart-btn:active {
@@ -477,12 +477,12 @@ a {
 
 /* Cuando el favorito está activo — fondo rosado pastel con corazón blanco */
 .product-favorite-btn.active {
-  background-color: #FF9EBA;
+  background-color: #FF5CA6;
   border: none;
 }
 
 .product-favorite-btn.active:hover {
-  background-color: #FF7FA2;
+  background-color: #FF3593;
   border: none;
 }
 
