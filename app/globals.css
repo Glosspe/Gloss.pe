@@ -369,18 +369,22 @@ a {
 }
 
 /* ═══ Nuevas clases para división en dos del área superior (Imagen a la izq, precio/kit a la der) ═══ */
+.gloss-product-card {
+  padding: 12px !important; /* Tarjeta más compacta en celular */
+}
+
 .product-card-top-row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  gap: 10px; /* Reducido en móvil */
   width: 100%;
-  margin-bottom: 12px;
-  min-height: 110px;
+  margin-bottom: 8px; /* Reducido en móvil */
+  min-height: 92px; /* Reducido en móvil */
 }
 
 .product-card-left-side {
-  width: 52%;
+  width: 50%; /* Reducido en móvil */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -395,18 +399,18 @@ a {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 12px; /* Reducido en móvil */
   background-color: #FFFFFF;
 }
 
 .product-card-right-side {
-  width: 48%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: 12px;
-  padding-left: 4px;
+  gap: 6px; /* Reducido en móvil para disminuir altura */
+  padding-left: 2px;
 }
 
 /* Botón Ver Kit al costado de la imagen (Estilo Outline minimalista) */
@@ -415,10 +419,10 @@ a {
   color: #334155; /* Azul pizarra elegante */
   border: 1px solid rgba(51, 65, 85, 0.25); /* Línea de contorno suave */
   font-family: var(--font-body), sans-serif;
-  font-size: 0.76rem;
+  font-size: 0.68rem; /* Reducido en móvil */
   font-weight: 700;
-  border-radius: 12px;
-  padding: 7px 9px; /* Ajuste por el borde de 1px */
+  border-radius: 10px; /* Reducido en móvil */
+  padding: 5px 8px; /* Más compacto en móvil */
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -539,6 +543,29 @@ a {
   /* Agrandar la tarjeta físicamente aumentando el padding interior */
   .gloss-product-card {
     padding: 22px !important;
+  }
+
+  /* Ajustes más amplios para el layout dividido en desktop */
+  .product-card-top-row {
+    min-height: 110px !important;
+    gap: 14px !important;
+    margin-bottom: 12px !important;
+  }
+  .product-card-left-side {
+    width: 52% !important;
+  }
+  .product-card-image-wrapper {
+    border-radius: 16px !important;
+  }
+  .product-card-right-side {
+    width: 48% !important;
+    gap: 12px !important;
+    padding-left: 4px !important;
+  }
+  .equivalents-pill-btn-side {
+    padding: 7px 9px !important;
+    font-size: 0.76rem !important;
+    border-radius: 12px !important;
   }
 
   /* Refinar y achicar el texto dentro de la tarjeta en desktop para un look premium */
