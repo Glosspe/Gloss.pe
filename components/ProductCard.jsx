@@ -197,9 +197,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     borderRadius: '28px',
-    backgroundColor: '#FFF8FA', // Hermoso rosa pastel ultra pálido que resalta la tarjeta de forma premium
+    backgroundColor: '#FFFFFF', // Restaurado a blanco puro para flotar sobre el nuevo fondo
     padding: '16px',
-    border: '1px solid rgba(255, 92, 166, 0.05)', // Línea de contorno rosada sutil en lugar de negro
+    border: '1px solid rgba(0, 0, 0, 0.025)', // Borde sutil original
     transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease',
     cursor: 'pointer',
     position: 'relative',

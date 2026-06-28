@@ -2,7 +2,7 @@
 
 :root {
   /* Paleta Clean Beauty / Fondo Blanco y Tonos Suaves */
-  --bg-primary: #FFFFFF;
+  --bg-primary: #FFF6F8; /* Rosa cosmético ultra pastel que resalta las tarjetas blancas flotantes */
   --bg-card: #FFFFFF;
   --bg-card-rgb: 255, 255, 255;
   --text-primary: #1C2B38;
