@@ -1,107 +1,72 @@
 import { NextResponse } from 'next/server';
-import { getErpConnection } from '@/lib/db';
+import prisma from '@/lib/prisma';
 import cache from '@/lib/cache';
 
 export async function GET() {
   try {
     const cacheKey = 'categories-tree';
     
-    // 1. Intentar servir desde el caché en memoria (asíncronamente)
+    // 1. Intentar servir desde el caché en memoria
     const cachedData = await cache.get(cacheKey);
     if (cachedData) {
       console.log('[API Categories Tree] Sirviendo desde caché.');
       return NextResponse.json(cachedData);
     }
 
-    // Modo Proxy (Nube / Railway -> Redirige al túnel local)
-    const localApiUrl = process.env.LOCAL_API_URL;
-    if (localApiUrl) {
-      const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-      try {
-        const res = await fetch(`${cleanApiUrl}/api/products/categories-tree`, {
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            // Guardar en caché en Railway por 5 minutos (300s)
-            await cache.set(cacheKey, data, 300);
-            return NextResponse.json(data);
-          }
-        }
-      } catch (proxyErr) {
-        console.warn('[API Categories Tree - PROXY] Proxy no disponible:', proxyErr.message);
-      }
-    }
-
-    // Modo local / ERP (PC de la tienda)
-    let pool;
-    let useFallback = false;
+    // 2. Intentar cargar el árbol jerárquico guardado en PostgreSQL
+    console.log('[API Categories Tree] Consultando árbol en PostgreSQL...');
     try {
-      pool = await getErpConnection();
-    } catch (dbErr) {
-      console.warn('[API Categories Tree] ERP no disponible, usando fallback mock');
-      useFallback = true;
-    }
+      const treeConfig = await prisma.webGlobalConfig.findUnique({
+        where: { clave: 'CATEGORIES_TREE' }
+      });
 
-    if (!useFallback) {
-      try {
-        // Query jerárquica OPTIMIZADA de Familias y Subfamilias que tengan productos activos.
-        const result = await pool.request().query(`
-          SELECT 
-            RTRIM(f.codfam) as familyId, 
-            RTRIM(f.nomfam) as familyName,
-            RTRIM(s.codsub) as subfamilyId, 
-            RTRIM(s.nomsub) as subfamilyName
-          FROM tbl01fam f WITH(nolock)
-          INNER JOIN tbl01sbf s WITH(nolock) ON f.codfam = s.codfam
-          WHERE EXISTS (
-            SELECT 1 
-            FROM prd0101 p WITH(nolock)
-            WHERE p.estado = 1 
-              AND p.codi LIKE f.codfam + SUBSTRING(s.codsub, 4, 2) + '%'
-          )
-          ORDER BY f.nomfam ASC, s.nomsub ASC
-        `);
-
-        if (result.recordset.length > 0) {
-          const treeMap = new Map();
-
-          result.recordset.forEach(row => {
-            const famId = row.familyId;
-            const famName = row.familyName;
-            const subId = row.subfamilyId;
-            const subName = row.subfamilyName;
-
-            // Ignorar categoría 'CONTABLE' si existiese
-            if (famId === '00' || famName.toLowerCase().includes('contable')) return;
-
-            if (!treeMap.has(famId)) {
-              treeMap.set(famId, {
-                id: famId,
-                name: famName,
-                subcategories: []
-              });
-            }
-
-            treeMap.get(famId).subcategories.push({
-              id: subId,
-              name: subName
-            });
-          });
-
-          const categoriesTree = Array.from(treeMap.values());
-          // Guardar en caché local de la PC por 5 minutos
-          await cache.set(cacheKey, categoriesTree, 300);
+      if (treeConfig && treeConfig.valor) {
+        const categoriesTree = JSON.parse(treeConfig.valor);
+        if (Array.isArray(categoriesTree) && categoriesTree.length > 0) {
+          console.log(`[API Categories Tree] Retornando árbol de categorías leído de base de datos.`);
+          await cache.set(cacheKey, categoriesTree, 300); // Guardar en caché por 5 minutos
           return NextResponse.json(categoriesTree);
         }
-      } catch (dbErr) {
-        console.error('[API Categories Tree] Error en query ERP:', dbErr.message);
       }
+    } catch (pgErr) {
+      console.warn('[API Categories Tree] Error leyendo CATEGORIES_TREE de PostgreSQL:', pgErr.message);
     }
 
-    // Fallback Mock de emergencia si falla la base de datos
+    // 3. Fallback dinámico: Generar árbol plano desde productos sincronizados en base de datos
+    try {
+      const distinctCategories = await prisma.webProductoImagen.findMany({
+        select: { categoria: true },
+        where: {
+          visible: true,
+          categoria: { not: null }
+        },
+        distinct: ['categoria']
+      });
+
+      if (distinctCategories.length > 0) {
+        const subcategories = distinctCategories
+          .map(c => c.categoria.trim())
+          .filter(c => c !== '' && c !== 'Otros')
+          .map(c => ({ id: `05-${c.substring(0,2).toUpperCase()}`, name: c }));
+
+        const flatTree = [
+          {
+            id: 'CATALOGO',
+            name: 'CATÁLOGO',
+            subcategories: subcategories
+          }
+        ];
+
+        console.log('[API Categories Tree] Retornando árbol de categorías generado dinámicamente.');
+        await cache.set(cacheKey, flatTree, 180);
+        return NextResponse.json(flatTree);
+      }
+    } catch (dynErr) {
+      console.warn('[API Categories Tree] Error en generación dinámica:', dynErr.message);
+    }
+
+    // 4. Fallback Mock de emergencia de último nivel
+    console.log('[API Categories Tree] Usando fallback mock de categorías de emergencia');
     const mockTree = [
       {
         id: '05',
@@ -129,7 +94,6 @@ export async function GET() {
       }
     ];
 
-    // Guardar fallback en caché por 1 minuto para evitar re-intentar llamadas costosas
     await cache.set(cacheKey, mockTree, 60);
     return NextResponse.json(mockTree);
 

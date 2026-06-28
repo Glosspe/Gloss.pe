@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { products } = body;
+    const { products, brands, categoriesTree } = body;
 
     if (!products || !Array.isArray(products)) {
       return NextResponse.json({ error: 'Formato inválido. Se requiere un array de productos.' }, { status: 400 });
@@ -55,6 +55,26 @@ export async function POST(request) {
       });
 
       await prisma.$transaction(upsertOperations);
+    }
+
+    // Si vienen marcas en el payload (primer lote), las guardamos en web_global_config
+    if (brands && Array.isArray(brands)) {
+      console.log(`[API Catalog Sync] Guardando lista de ${brands.length} marcas en base de datos...`);
+      await prisma.webGlobalConfig.upsert({
+        where: { clave: 'BRANDS_LIST' },
+        update: { valor: JSON.stringify(brands) },
+        create: { clave: 'BRANDS_LIST', valor: JSON.stringify(brands) }
+      });
+    }
+
+    // Si viene el árbol de categorías en el payload (primer lote), lo guardamos en web_global_config
+    if (categoriesTree && Array.isArray(categoriesTree)) {
+      console.log(`[API Catalog Sync] Guardando árbol de categorías en base de datos...`);
+      await prisma.webGlobalConfig.upsert({
+        where: { clave: 'CATEGORIES_TREE' },
+        update: { valor: JSON.stringify(categoriesTree) },
+        create: { clave: 'CATEGORIES_TREE', valor: JSON.stringify(categoriesTree) }
+      });
     }
 
     return NextResponse.json({ 

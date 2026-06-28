@@ -1,181 +1,95 @@
 import { NextResponse } from 'next/server';
-import { getErpConnection } from '@/lib/db';
 import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente,
-    // redirige la petición a la API local a través de ngrok/tunnel.
-    const localApiUrl = process.env.LOCAL_API_URL;
+    console.log('[API Categories] Consultando categorías en PostgreSQL...');
 
-    if (localApiUrl) {
-      const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-
-      // --- INTENTO 1: Proxy directo a /api/products/categories ---
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000); // 8s max
-
-        const res = await fetch(`${cleanApiUrl}/api/products/categories`, {
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-          cache: 'no-store'
-        });
-        clearTimeout(timeout);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            return NextResponse.json(data);
-          }
-        }
-      } catch (proxyErr) {
-        console.warn('[API Categories - PROXY] Proxy de categorías no disponible:', proxyErr.message);
-      }
-
-      // --- INTENTO 2: Derivar categorías desde el proxy de búsqueda ---
-      // El proxy de búsqueda (search) SÍ funciona. Pedimos todos los productos
-      // y extraemos las categorías únicas que realmente tienen productos.
-      try {
-        console.log('[API Categories] Derivando categorías desde proxy de búsqueda...');
-        const searchRes = await fetch(`${cleanApiUrl}/api/products/search?category=Todos`, {
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store'
-        });
-
-        if (searchRes.ok) {
-          const products = await searchRes.json();
-          if (Array.isArray(products) && products.length > 0) {
-            // Extraer categorías únicas con conteo de productos
-            const catCount = new Map();
-            products.forEach(p => {
-              const cat = p.category;
-              if (cat && cat !== 'Trending' && cat !== 'Otros') {
-                catCount.set(cat, (catCount.get(cat) || 0) + 1);
-              }
-            });
-
-            // Ordenar por cantidad de productos (más populares primero)
-            const derivedCategories = Array.from(catCount.entries())
-              .sort((a, b) => b[1] - a[1])
-              .map(([name]) => ({ id: name, name }));
-
-            if (derivedCategories.length > 0) {
-              console.log(`[API Categories] Derivadas ${derivedCategories.length} categorías desde productos:`, derivedCategories.map(c => c.name).join(', '));
-              
-              // Cruzar con PostgreSQL para respetar visibilidad del admin
-              try {
-                const catConfigs = await prisma.webCategoriaConfig.findMany();
-                if (catConfigs.length > 0) {
-                  const configMap = {};
-                  catConfigs.forEach(c => { configMap[c.categoria] = c; });
-
-                  const filtered = derivedCategories.filter(cat => {
-                    const config = configMap[cat.id] || configMap[cat.name];
-                    if (!config) return true;
-                    return config.visible !== false;
-                  });
-
-                  if (filtered.length > 0) {
-                    return NextResponse.json(filtered);
-                  }
-                }
-              } catch (pgErr) {
-                console.warn('[API Categories] No se pudo cruzar con PostgreSQL:', pgErr.message);
-              }
-
-              return NextResponse.json(derivedCategories);
-            }
-          }
-        }
-      } catch (searchErr) {
-        console.warn('[API Categories] Error derivando desde búsqueda:', searchErr.message);
-      }
-    }
-
-    // --- MODO LOCAL (sin proxy): Consulta directa al ERP ---
-    if (!localApiUrl) {
-      try {
-        const pool = await getErpConnection();
-
-        // Estrategia 1: Subfamilias marcadas para POS/Web (restpos = 'S' o '1')
-        let result = await pool.request().query(`
-          SELECT DISTINCT 
-            LTRIM(RTRIM(codsub)) as id, 
-            LTRIM(RTRIM(nomsub)) as name 
-          FROM tbl01sbf 
-          WHERE LTRIM(RTRIM(CAST(restpos AS VARCHAR))) IN ('S', '1')
-          ORDER BY name ASC
-        `);
-
-        // Estrategia 2 (fallback): Todas las subfamilias que tengan productos activos
-        if (result.recordset.length === 0) {
-          result = await pool.request().query(`
-            SELECT DISTINCT 
-              LTRIM(RTRIM(s.codsub)) as id, 
-              LTRIM(RTRIM(s.nomsub)) as name 
-            FROM tbl01sbf s
-            INNER JOIN prd0101 p ON LTRIM(RTRIM(s.codsub)) = LEFT(p.codi, 2) + '-' + SUBSTRING(p.codi, 3, 2)
-            WHERE p.estado = 1
-            ORDER BY name ASC
-          `);
-        }
-
-        if (result.recordset.length > 0) {
-          let visibleCategories = result.recordset;
-
-          // Cruzar con PostgreSQL para respetar visibilidad
-          try {
-            const catConfigs = await prisma.webCategoriaConfig.findMany();
-            if (catConfigs.length > 0) {
-              const configMap = {};
-              catConfigs.forEach(c => { configMap[c.categoria] = c; });
-
-              visibleCategories = result.recordset.filter(cat => {
-                const config = configMap[cat.id] || configMap[cat.name];
-                if (!config) return true;
-                return config.visible !== false;
-              });
-
-              visibleCategories.sort((a, b) => {
-                const orderA = (configMap[a.id] || configMap[a.name])?.orden ?? 999;
-                const orderB = (configMap[b.id] || configMap[b.name])?.orden ?? 999;
-                if (orderA !== orderB) return orderA - orderB;
-                return a.name.localeCompare(b.name);
-              });
-            }
-          } catch (pgErr) {
-            console.warn('[API Categories] PostgreSQL no accesible para visibilidad:', pgErr.message);
-          }
-
-          return NextResponse.json(visibleCategories);
-        }
-      } catch (dbErr) {
-        console.warn('[API Categories] ERP no accesible:', dbErr.message);
-      }
-    }
-
-    // --- ÚLTIMO FALLBACK: PostgreSQL ---
-    console.log('[API Categories] Usando categorías de PostgreSQL como último fallback');
+    // 1. Intentar obtener las categorías configuradas por el administrador en WebCategoriaConfig
     try {
       const pgCategories = await prisma.webCategoriaConfig.findMany({
         where: { visible: true },
         orderBy: { orden: 'asc' }
       });
 
-      const formatted = pgCategories.map(c => ({
-        id: c.categoria,
-        name: c.categoria
-      }));
-
-      if (formatted.length > 0) {
+      if (pgCategories.length > 0) {
+        const formatted = pgCategories.map(c => ({
+          id: c.categoria,
+          name: c.categoria
+        }));
+        console.log(`[API Categories] Retornando ${formatted.length} categorías de web_categorias_config.`);
         return NextResponse.json(formatted);
       }
     } catch (pgErr) {
-      console.warn('[API Categories] PostgreSQL fallback también falló:', pgErr.message);
+      console.warn('[API Categories] Error leyendo web_categorias_config:', pgErr.message);
     }
 
-    // Hardcoded de emergencia
+    // 2. Fallback: Extraer las categorías planas de la clave 'CATEGORIES_TREE' en WebGlobalConfig
+    try {
+      const treeConfig = await prisma.webGlobalConfig.findUnique({
+        where: { clave: 'CATEGORIES_TREE' }
+      });
+
+      if (treeConfig && treeConfig.valor) {
+        const categoriesTree = JSON.parse(treeConfig.valor);
+        if (Array.isArray(categoriesTree) && categoriesTree.length > 0) {
+          // Extraer todas las subcategorías de las familias
+          const flatCategoriesMap = new Map();
+          categoriesTree.forEach(fam => {
+            if (fam.subcategories && Array.isArray(fam.subcategories)) {
+              fam.subcategories.forEach(sub => {
+                if (sub.name) {
+                  const cleanedName = sub.name.trim();
+                  flatCategoriesMap.set(cleanedName, {
+                    id: cleanedName,
+                    name: cleanedName
+                  });
+                }
+              });
+            }
+          });
+
+          const derivedList = Array.from(flatCategoriesMap.values())
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          if (derivedList.length > 0) {
+            console.log(`[API Categories] Retornando ${derivedList.length} categorías derivadas de CATEGORIES_TREE.`);
+            return NextResponse.json(derivedList);
+          }
+        }
+      }
+    } catch (treeErr) {
+      console.warn('[API Categories] Error derivando de CATEGORIES_TREE:', treeErr.message);
+    }
+
+    // 3. Fallback dinámico secundario: Agrupar directamente desde productos en base de datos
+    try {
+      const distinctCategories = await prisma.webProductoImagen.findMany({
+        select: { categoria: true },
+        where: {
+          visible: true,
+          categoria: { not: null }
+        },
+        distinct: ['categoria']
+      });
+
+      if (distinctCategories.length > 0) {
+        const formatted = distinctCategories
+          .map(c => ({ id: c.categoria.trim(), name: c.categoria.trim() }))
+          .filter(c => c.name !== '' && c.name !== 'Otros')
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        if (formatted.length > 0) {
+          console.log(`[API Categories] Retornando ${formatted.length} categorías leídas dinámicamente de productos.`);
+          return NextResponse.json(formatted);
+        }
+      }
+    } catch (dynErr) {
+      console.warn('[API Categories] Error en consulta dinámica de categorías:', dynErr.message);
+    }
+
+    // 4. Hardcoded de emergencia
+    console.log('[API Categories] Usando fallback mock de categorías de emergencia');
     return NextResponse.json([
       { id: 'UÑAS', name: 'UÑAS' },
       { id: 'PESTAÑAS', name: 'PESTAÑAS' },

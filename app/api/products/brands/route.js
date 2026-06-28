@@ -1,58 +1,55 @@
 import { NextResponse } from 'next/server';
-import { getErpConnection } from '@/lib/db';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // Modo Proxy
-    const localApiUrl = process.env.LOCAL_API_URL;
-    if (localApiUrl) {
-      const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-      try {
-        const res = await fetch(`${cleanApiUrl}/api/products/brands`, {
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            return NextResponse.json(data);
-          }
-        }
-      } catch (proxyErr) {
-        console.warn('[API Brands - PROXY] Proxy no disponible:', proxyErr.message);
-      }
-    }
-
-    // Modo local / ERP
-    let pool;
-    let useFallback = false;
+    // 1. Intentar cargar la lista de marcas guardada por el agente de sincronización en PostgreSQL
+    console.log('[API Brands] Consultando lista de marcas en PostgreSQL...');
+    
     try {
-      pool = await getErpConnection();
-    } catch (dbErr) {
-      console.warn('[API Brands] ERP no disponible, usando fallback mock');
-      useFallback = true;
-    }
+      const brandsConfig = await prisma.webGlobalConfig.findUnique({
+        where: { clave: 'BRANDS_LIST' }
+      });
 
-    if (!useFallback) {
-      try {
-        // Query de marcas únicas de productos activos
-        const result = await pool.request().query(`
-          SELECT DISTINCT 
-            RTRIM(marc) as name
-          FROM prd0101 WITH(nolock)
-          WHERE estado = 1 AND marc IS NOT NULL AND LTRIM(RTRIM(marc)) != '' AND LTRIM(RTRIM(marc)) != 'ND'
-          ORDER BY name ASC
-        `);
-
-        if (result.recordset.length > 0) {
-          return NextResponse.json(result.recordset);
+      if (brandsConfig && brandsConfig.valor) {
+        const brands = JSON.parse(brandsConfig.valor);
+        if (Array.isArray(brands) && brands.length > 0) {
+          console.log(`[API Brands] Retornando ${brands.length} marcas leídas de base de datos.`);
+          return NextResponse.json(brands);
         }
-      } catch (dbErr) {
-        console.error('[API Brands] Error en query ERP:', dbErr.message);
       }
+    } catch (pgErr) {
+      console.warn('[API Brands] Error leyendo BRANDS_LIST de PostgreSQL, intentando consulta dinámica:', pgErr.message);
     }
 
-    // Fallback Mock de emergencia si falla la base de datos
+    // 2. Fallback dinámico: Extraer marcas directamente de los productos sincronizados en base de datos
+    try {
+      const distinctBrands = await prisma.webProductoImagen.findMany({
+        select: { marca: true },
+        where: {
+          visible: true,
+          marca: { not: null }
+        },
+        distinct: ['marca']
+      });
+
+      if (distinctBrands.length > 0) {
+        const formattedBrands = distinctBrands
+          .map(b => ({ name: b.marca.trim() }))
+          .filter(b => b.name !== '' && b.name !== 'ND')
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        if (formattedBrands.length > 0) {
+          console.log(`[API Brands] Retornando ${formattedBrands.length} marcas leídas dinámicamente de productos.`);
+          return NextResponse.json(formattedBrands);
+        }
+      }
+    } catch (dynErr) {
+      console.warn('[API Brands] Error en consulta dinámica de marcas:', dynErr.message);
+    }
+
+    // 3. Fallback Mock de emergencia de último nivel
+    console.log('[API Brands] Usando fallback mock de marcas de emergencia');
     return NextResponse.json([
       { name: 'CHERIMOYA' },
       { name: 'ACRY LOVE' },

@@ -129,7 +129,68 @@ async function runSync() {
       return;
     }
 
-    // 4. Dividir en lotes de 100 productos y enviar a la nube
+    // 4. Obtener marcas y árbol de categorías fresca para enviar de forma asíncrona
+    let brands = [];
+    let categoriesTree = [];
+    try {
+      writeLog('Consultando marcas activas en Navasoft...');
+      const brandsResult = await mssqlPool.request().query(`
+        SELECT DISTINCT 
+          RTRIM(marc) as name
+        FROM prd0101 WITH(nolock)
+        WHERE estado = 1 AND marc IS NOT NULL AND LTRIM(RTRIM(marc)) != '' AND LTRIM(RTRIM(marc)) != 'ND'
+        ORDER BY name ASC
+      `);
+      brands = brandsResult.recordset;
+      writeLog(`Leídas ${brands.length} marcas activas.`);
+
+      writeLog('Consultando árbol de categorías en Navasoft...');
+      const catTreeResult = await mssqlPool.request().query(`
+        SELECT 
+          RTRIM(f.codfam) as familyId, 
+          RTRIM(f.nomfam) as familyName,
+          RTRIM(s.codsub) as subfamilyId, 
+          RTRIM(s.nomsub) as subfamilyName
+        FROM tbl01fam f WITH(nolock)
+        INNER JOIN tbl01sbf s WITH(nolock) ON f.codfam = s.codfam
+        WHERE EXISTS (
+          SELECT 1 
+          FROM prd0101 p WITH(nolock)
+          WHERE p.estado = 1 
+            AND p.codi LIKE f.codfam + SUBSTRING(s.codsub, 4, 2) + '%'
+        )
+        ORDER BY f.nomfam ASC, s.nomsub ASC
+      `);
+      
+      const treeMap = new Map();
+      catTreeResult.recordset.forEach(row => {
+        const famId = row.familyId;
+        const famName = row.familyName;
+        const subId = row.subfamilyId;
+        const subName = row.subfamilyName;
+
+        if (famId === '00' || famName.toLowerCase().includes('contable')) return;
+
+        if (!treeMap.has(famId)) {
+          treeMap.set(famId, {
+            id: famId,
+            name: famName,
+            subcategories: []
+          });
+        }
+
+        treeMap.get(famId).subcategories.push({
+          id: subId,
+          name: subName
+        });
+      });
+      categoriesTree = Array.from(treeMap.values());
+      writeLog(`Generadas ${categoriesTree.length} familias con sus subcategorías para la nube.`);
+    } catch (metadataErr) {
+      writeLog(`[ERROR METADATOS] No se pudieron obtener marcas o categorías del ERP: ${metadataErr.message}`);
+    }
+
+    // 5. Dividir en lotes de 100 productos y enviar a la nube
     const batchSize = 100;
     const cleanUrl = RAILWAY_URL.replace(/\/$/, '');
     const syncApiUrl = `${cleanUrl}/api/sync/catalog`;
@@ -151,6 +212,12 @@ async function runSync() {
           equivalents: equivalentsMap[p.id] || []
         }))
       };
+
+      // Incluir metadatos de marcas y categorías en el primer lote
+      if (i === 0) {
+        payload.brands = brands;
+        payload.categoriesTree = categoriesTree;
+      }
 
       try {
         const response = await global.fetch(syncApiUrl, {
