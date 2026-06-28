@@ -300,7 +300,7 @@ const styles = {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '0.62rem',
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: '#B8BFC6', // Aclarado a gris plata fino
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '2px',
@@ -309,7 +309,7 @@ const styles = {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '1.15rem',
     fontWeight: '500',
-    color: '#1F2937',
+    color: '#4B5563', // Aclarado a gris intermedio elegante
     lineHeight: '1.25',
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -321,7 +321,7 @@ const styles = {
   descriptionLabel: {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '0.78rem',
-    color: '#6B7280',
+    color: '#8E9AA7', // Aclarado a gris azulado suave
     lineHeight: '1.35',
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -339,7 +339,7 @@ const styles = {
   priceLabelSide: {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '0.68rem',
-    color: '#9CA3AF',
+    color: '#B8BFC6', // Aclarado a gris plata fino
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
@@ -348,7 +348,7 @@ const styles = {
     fontFamily: 'var(--font-title), sans-serif',
     fontSize: '1.25rem',
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#4B5563', // Aclarado a gris intermedio elegante
     letterSpacing: '-0.02em',
   },
   priceValueBlock: {
@@ -360,7 +360,7 @@ const styles = {
     fontFamily: 'var(--font-title), sans-serif',
     fontSize: '0.8rem',
     fontWeight: '500',
-    color: '#1F2937',
+    color: '#8E9AA7', // Aclarado a gris azulado suave
   },
 
   // ─── Fila inferior de botones expandidos ───
