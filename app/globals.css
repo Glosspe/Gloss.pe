@@ -422,13 +422,14 @@ a {
   font-size: 0.68rem; /* Reducido en móvil */
   font-weight: 700;
   border-radius: 10px; /* Reducido en móvil */
-  padding: 5px 8px; /* Más compacto en móvil */
+  padding: 4px 10px; /* Más compacto en móvil */
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  width: 100%;
+  width: fit-content; /* Ancho ajustado al texto (reducido) */
+  align-self: flex-start; /* Evita estirarse al 100% de la columna */
   text-align: center;
   box-shadow: none;
 }
