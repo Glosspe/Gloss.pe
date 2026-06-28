@@ -188,10 +188,10 @@ export default function ProductDetailPage({ params }) {
       {/* Cabecera Fija Simplificada */}
       <header style={styles.header}>
         <Link href="/" style={styles.backBtn} title="Volver al catálogo">
-          <ArrowLeft size={22} color="var(--accent-start)" />
+          <ArrowLeft size={22} color="#334155" />
         </Link>
         <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)}>
-          <ShoppingBag size={22} color="var(--accent-start)" />
+          <ShoppingBag size={22} color="#334155" />
         </button>
       </header>
 

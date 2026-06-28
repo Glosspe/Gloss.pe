@@ -29,7 +29,7 @@ export default function FavoritesPage() {
           <div style={styles.actions}>
             {/* Carrito */}
             <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-              <ShoppingBag size={22} color="var(--accent-start)" />
+              <ShoppingBag size={22} color="#334155" />
               {cartCount > 0 && (
                 <span style={styles.badge}>{cartCount}</span>
               )}
@@ -37,7 +37,7 @@ export default function FavoritesPage() {
             
             {/* Menú */}
             <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-              <Menu size={22} color="var(--accent-start)" />
+              <Menu size={22} color="#334155" />
             </button>
           </div>
         </div>
