@@ -248,7 +248,7 @@ export default function ProductDetailPage({ params }) {
                 style={{
                   ...styles.favBtn,
                   backgroundColor: isFavorite ? '#FF6584' : '#FFE6EC',
-                  borderColor: isFavorite ? '#FF6584' : '#FF6584',
+                  border: 'none', // Quitar línea de contorno
                 }}
                 onClick={() => toggleFavorite(product)}
               >

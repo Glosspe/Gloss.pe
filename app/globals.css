@@ -426,7 +426,7 @@ a {
   box-shadow: none !important;
 }
 
-/* Botón Favorito (Corazón con borde fucsia pastel y fondo rosa ultra suave) */
+/* Botón Favorito (Corazón sin borde y fondo rosa ultra suave) */
 .product-favorite-btn {
   display: flex;
   align-items: center;
@@ -435,11 +435,11 @@ a {
   height: 42px;
   min-width: 42px;
   border-radius: 50%;
-  border: 1.5px solid #FF6584; /* Borde fucsia pastel */
-  background-color: #FFE6EC; /* Fondo rosa ultra suave para quitar la línea de fondo gris */
+  border: none; /* Sin contorno */
+  background-color: #FFE6EC; /* Fondo rosa ultra suave */
   cursor: pointer;
   outline: none;
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .product-favorite-btn svg {
@@ -478,12 +478,12 @@ a {
 /* Cuando el favorito está activo — fondo fucsia sólido con corazón blanco */
 .product-favorite-btn.active {
   background-color: #FF6584;
-  border-color: #FF6584;
+  border: none;
 }
 
 .product-favorite-btn.active:hover {
   background-color: #FF4D70;
-  border-color: #FF4D70;
+  border: none;
 }
 
 /* Select neumórfico premium */
