@@ -53,6 +53,183 @@ export async function GET(request) {
       return NextResponse.json(allCrossSells);
     }
 
+    // Acción 5: Ejecutar la auditoría inteligente de categorías y discrepancias con el ERP
+    if (action === 'category-audit') {
+      console.log('[API Admin Intelligence] Iniciando Auditoría de Categorías...');
+
+      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
+      // redirige la petición a la API local que corre en la PC del usuario a través del túnel de ngrok.
+      const localApiUrl = process.env.LOCAL_API_URL;
+      if (localApiUrl) {
+        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo category-audit a la API local: ${localApiUrl}/api/admin/intelligence?action=category-audit`);
+        try {
+          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
+          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=category-audit`;
+          
+          const authHeader = request.headers.get('Authorization') || '';
+
+          const res = await fetch(targetUrl, {
+            method: 'GET',
+            headers: { 
+              'Authorization': authHeader 
+            },
+            cache: 'no-store'
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            return NextResponse.json(data);
+          } else {
+            const errorText = await res.text();
+            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}: ${errorText}`);
+            return NextResponse.json(
+              { error: 'La API local del ERP retornó un error durante la auditoría', details: errorText },
+              { status: res.status }
+            );
+          }
+        } catch (proxyErr) {
+          console.error(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local a través del túnel:`, proxyErr.message);
+          return NextResponse.json(
+            { error: 'El servidor local del ERP no está disponible para auditoría a través del túnel', details: proxyErr.message },
+            { status: 503 }
+          );
+        }
+      }
+
+      // Modo Local: Se ejecuta en la PC del usuario conectando al ERP local (SQL Server)
+      let pool;
+      try {
+        pool = await getErpConnection();
+      } catch (err) {
+        console.error('[API Admin Intelligence] Error al obtener conexion del ERP:', err);
+        return NextResponse.json({ 
+          error: 'ERP no accesible para auditoría de categorías', 
+          details: err.message 
+        }, { status: 503 });
+      }
+
+      // Cargar productos del ERP con su subfamilia
+      const query = `
+        SELECT 
+          RTRIM(p01.codi) as id,
+          RTRIM(p01.codart) as userCode,
+          RTRIM(p01.descr) as name,
+          RTRIM(p01.codcat) as categoryCode,
+          RTRIM(s.nomsub) as categoryName
+        FROM prd0101 p01 WITH(nolock)
+        LEFT JOIN tbl01sbf s WITH(nolock) ON (LEFT(p01.codi, 2) + '-' + LTRIM(RTRIM(p01.codcat))) = s.codsub
+        WHERE p01.estado = 1
+      `;
+      const res = await pool.request().query(query);
+      const erpProducts = res.recordset;
+
+      // Obtener enriquecimiento de Postgres (Railway) para saber si tienen fotos o si están ocultos
+      let enrichedMap = {};
+      try {
+        const productCodes = erpProducts.map(p => p.id);
+        if (productCodes.length > 0) {
+          // Dividir en bloques de 2000 para evitar que Prisma falle si hay miles de productos
+          const chunkSize = 2000;
+          for (let i = 0; i < productCodes.length; i += chunkSize) {
+            const chunk = productCodes.slice(i, i + chunkSize);
+            const webImages = await prisma.webProductoImagen.findMany({
+              where: {
+                codart: { in: chunk }
+              }
+            });
+            webImages.forEach(img => {
+              let imgs = [];
+              try { imgs = JSON.parse(img.imagenes || '[]'); } catch (errJson) { imgs = []; }
+              enrichedMap[img.codart] = {
+                image: imgs.length > 0 ? imgs[0] : null,
+                visible: img.visible !== false
+              };
+            });
+          }
+        }
+      } catch (pgErr) {
+        console.warn('[API Admin Intelligence - category-audit] Error conectando a Postgres para enriquecimiento:', pgErr.message);
+      }
+
+      // Lógica de auditoría
+      const auditedProducts = erpProducts.map(p => {
+        const nameLower = p.name.toLowerCase();
+        const catName = p.categoryName ? p.categoryName.trim() : '';
+        const catNameLower = catName.toLowerCase();
+        
+        let status = 'CORRECT';
+        let alertMessage = '';
+        let suggestedCategory = '';
+        let suggestedSubcategory = '';
+
+        // Diccionario de categorías sugeridas
+        // Regla 1: Capilar/Cabello
+        const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar/i.test(nameLower);
+        const isCapilarCategory = /cabello|capilar|shampoo|acondicionador/i.test(catNameLower);
+
+        // Regla 2: Rostro/Facial/Skin Care
+        const isFacialName = /crema facial|serum|suero|limpiador facial|tonico|facial|rostro|contorno de ojos|bloqueador facial|gel limpiador|antiarrugas|antiedad/i.test(nameLower);
+        const isFacialCategory = /rostro|facial|cutis|piel/i.test(catNameLower);
+
+        // Regla 3: Uñas
+        const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico/i.test(nameLower);
+        const isUñasCategory = /uñas|manicure|pedicure|esmalte/i.test(catNameLower);
+
+        // Evaluar discrepancias
+        if (isCapilarName && !isCapilarCategory && !catNameLower.includes('cabello') && !catNameLower.includes('capilar')) {
+          status = 'INCONSISTENT';
+          alertMessage = `El nombre contiene palabras capilares, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          suggestedCategory = 'Cabello';
+          suggestedSubcategory = 'Cuidado Capilar';
+        } else if (isFacialName && !isFacialCategory && !catNameLower.includes('facial') && !catNameLower.includes('rostro')) {
+          status = 'INCONSISTENT';
+          alertMessage = `El nombre del producto sugiere cuidado facial, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          suggestedCategory = 'Rostro';
+          suggestedSubcategory = 'Cuidado Facial';
+        } else if (isUñasName && !isUñasCategory && !catNameLower.includes('uñas') && !catNameLower.includes('esmalte')) {
+          status = 'INCONSISTENT';
+          alertMessage = `El producto sugiere manicure/uñas, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          suggestedCategory = 'Uñas';
+          suggestedSubcategory = 'Esmaltes y Manicure';
+        } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '') {
+          status = 'UNASSIGNED';
+          alertMessage = `El producto está en una categoría genérica ("${catName || 'Vacía'}"). Debería asignarse a una categoría de venta final.`;
+          
+          // Sugerir en base al nombre
+          if (isCapilarName) {
+            suggestedCategory = 'Cabello';
+            suggestedSubcategory = 'Cuidado Capilar';
+          } else if (isFacialName) {
+            suggestedCategory = 'Rostro';
+            suggestedSubcategory = 'Cuidado Facial';
+          } else if (isUñasName) {
+            suggestedCategory = 'Uñas';
+            suggestedSubcategory = 'Esmaltes y Manicure';
+          } else {
+            suggestedCategory = 'Por Definir';
+            suggestedSubcategory = 'Pendiente Clasificación';
+          }
+        }
+
+        const enrichment = enrichedMap[p.id] || {};
+
+        return {
+          id: p.id,
+          userCode: p.userCode,
+          name: p.name,
+          categoryName: catName || '(Sin categoría)',
+          status,
+          alertMessage,
+          suggestedCategory,
+          suggestedSubcategory,
+          image: enrichment.image || null,
+          visible: enrichment.visible !== false
+        };
+      });
+
+      return NextResponse.json(auditedProducts);
+    }
+
     return NextResponse.json({ error: 'Acción GET no válida' }, { status: 400 });
   } catch (err) {
     console.error('[API Admin Intelligence GET] Error:', err);

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Save, Trash2, Plus, RefreshCw, 
-  HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2 
+  HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
+  ShieldAlert, Search
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
@@ -20,6 +21,12 @@ export default function IntelligenceTab({ activeSubSection }) {
 
   // Modal para ver productos asociados a las etiquetas
   const [tagProductsModal, setTagProductsModal] = useState({ isOpen: false, tag: null });
+
+  // Estados para Auditoría de Categorías
+  const [auditProducts, setAuditProducts] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditSearch, setAuditSearch] = useState('');
+  const [auditFilter, setAuditFilter] = useState('ALL'); // ALL, ALERT, CORRECT, UNASSIGNED
 
   // Confirm Modal local
   const [confirmModal, setConfirmModal] = useState({
@@ -46,6 +53,29 @@ export default function IntelligenceTab({ activeSubSection }) {
   useEffect(() => {
     loadIntelData();
   }, []);
+
+  const loadAuditData = async () => {
+    setAuditLoading(true);
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const res = await fetch('/api/admin/intelligence?action=category-audit', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setAuditProducts(data);
+      }
+    } catch (err) {
+      console.error('[loadAuditData] Error:', err);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSubSection === 'intel-audit') {
+      loadAuditData();
+    }
+  }, [activeSubSection]);
 
   const loadIntelData = async () => {
     setIsLoading(true);
@@ -656,6 +686,268 @@ export default function IntelligenceTab({ activeSubSection }) {
     </div>
   );
 
+  const filteredAudit = React.useMemo(() => {
+    return auditProducts.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(auditSearch.toLowerCase()) || 
+                          p.id.toLowerCase().includes(auditSearch.toLowerCase()) ||
+                          (p.userCode && p.userCode.toLowerCase().includes(auditSearch.toLowerCase()));
+      
+      const matchFilter = auditFilter === 'ALL' || 
+                          (auditFilter === 'ALERT' && (p.status === 'INCONSISTENT' || p.status === 'UNASSIGNED')) ||
+                          p.status === auditFilter;
+      
+      return matchSearch && matchFilter;
+    });
+  }, [auditProducts, auditSearch, auditFilter]);
+
+  const auditStats = React.useMemo(() => {
+    const stats = { total: 0, inconsistent: 0, unassigned: 0, correct: 0 };
+    auditProducts.forEach(p => {
+      stats.total++;
+      if (p.status === 'INCONSISTENT') stats.inconsistent++;
+      else if (p.status === 'UNASSIGNED') stats.unassigned++;
+      else if (p.status === 'CORRECT') stats.correct++;
+    });
+    return stats;
+  }, [auditProducts]);
+
+  const renderCategoryAudit = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+      {/* Cabecera & Controles de Auditoría */}
+      <div style={styles.card} className="soft-card">
+        <div style={styles.cardHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShieldAlert size={20} color="var(--accent-start)" />
+            <h3 style={styles.cardTitle}>Auditoría de Categorías e Inconsistencias</h3>
+          </div>
+          <button 
+            onClick={loadAuditData} 
+            disabled={auditLoading}
+            style={{
+              ...styles.openFormBtn,
+              backgroundColor: 'rgba(255, 46, 147, 0.05)',
+              color: 'var(--accent-start)',
+              borderColor: 'rgba(255, 46, 147, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 600,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.05)'; }}
+          >
+            <RefreshCw size={14} style={{ animation: auditLoading ? 'spin 1s linear infinite' : 'none' }} /> 
+            {auditLoading ? 'Analizando ERP...' : 'Refrescar Auditoría'}
+          </button>
+        </div>
+        <p style={styles.cardSub}>
+          Esta herramienta analiza de forma pasiva el catálogo de productos del ERP local (Navasoft) buscando discrepancias lógicas de clasificación (ej: un shampoo clasificado en la categoría "Rostro"). Corrige la subfamilia en tu ERP para resolver las alertas.
+        </p>
+      </div>
+
+      {/* KPI Cards Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: '16px',
+        width: '100%'
+      }}>
+        {/* KPI 1: Total */}
+        <div style={{ ...styles.card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }} className="soft-card">
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B' }}>Productos ERP</span>
+          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0F172A' }}>{auditStats.total}</span>
+        </div>
+        {/* KPI 2: Inconsistentes */}
+        <div style={{ ...styles.card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '4px solid #EF4444' }} className="soft-card">
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#EF4444' }}>⚠️ Inconsistentes</span>
+          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#EF4444' }}>{auditStats.inconsistent}</span>
+        </div>
+        {/* KPI 3: Sin Categoría */}
+        <div style={{ ...styles.card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '4px solid #F59E0B' }} className="soft-card">
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#F59E0B' }}>❓ Categorías Genéricas</span>
+          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#F59E0B' }}>{auditStats.unassigned}</span>
+        </div>
+        {/* KPI 4: Correctos */}
+        <div style={{ ...styles.card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '4px solid #10B981' }} className="soft-card">
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10B981' }}>✅ Correctos</span>
+          <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10B981' }}>{auditStats.correct}</span>
+        </div>
+      </div>
+
+      {/* Filtros e Inputs de Búsqueda */}
+      <div style={{
+        ...styles.card,
+        padding: '14px 20px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '12px',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }} className="soft-card">
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, minWidth: '260px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', color: '#94A3B8' }} />
+          <input 
+            type="text"
+            placeholder="Buscar por ID de producto o nombre..."
+            value={auditSearch}
+            onChange={(e) => setAuditSearch(e.target.value)}
+            style={{
+              ...styles.input,
+              paddingLeft: '38px',
+              margin: 0,
+              height: '38px',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>Filtro de Estado:</span>
+          <select 
+            value={auditFilter}
+            onChange={(e) => setAuditFilter(e.target.value)}
+            style={{
+              ...styles.input,
+              margin: 0,
+              width: '180px',
+              height: '38px',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+              padding: '0 10px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              backgroundColor: '#FFFFFF',
+              color: '#334155',
+            }}
+          >
+            <option value="ALL">Todos los Productos</option>
+            <option value="ALERT">⚠️ Solo Alertas (Todas)</option>
+            <option value="INCONSISTENT">❌ Solo Inconsistentes</option>
+            <option value="UNASSIGNED">❓ Categoría Genérica</option>
+            <option value="CORRECT">✅ Solo Correctos</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Lista de Auditoría */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxHeight: '500px', overflowY: 'auto', paddingRight: '4px' }}>
+        {auditLoading ? (
+          <div style={{ ...styles.card, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }} className="soft-card">
+            <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Analizando consistencia del catálogo en el ERP local...</span>
+          </div>
+        ) : filteredAudit.length === 0 ? (
+          <div style={{ ...styles.card, padding: '50px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', textAlign: 'center' }} className="soft-card">
+            <CheckCircle size={36} color="#10B981" />
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155', margin: 0 }}>¡Todo Correcto!</h4>
+            <p style={{ fontSize: '0.78rem', color: '#64748B', margin: 0, maxWidth: '300px' }}>
+              No se encontraron discrepancias con los filtros y la búsqueda aplicados.
+            </p>
+          </div>
+        ) : (
+          filteredAudit.map(p => (
+            <div 
+              key={p.id}
+              style={{
+                ...styles.card,
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                borderLeft: p.status === 'INCONSISTENT' 
+                  ? '4px solid #EF4444' 
+                  : p.status === 'UNASSIGNED' 
+                  ? '4px solid #F59E0B' 
+                  : '4px solid #10B981',
+                transition: 'all 0.15s ease'
+              }}
+              className="soft-card"
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.03)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              {/* Imagen */}
+              {p.image ? (
+                <img src={p.image} alt={p.name} style={{ width: '42px', height: '42px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #F1F5F9' }} />
+              ) : (
+                <div style={{ width: '42px', height: '42px', borderRadius: '8px', backgroundColor: 'rgba(255, 46, 147, 0.03)', border: '1px dashed rgba(255, 46, 147, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-start)' }}>
+                  <Package size={16} />
+                </div>
+              )}
+
+              {/* Detalles */}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1E293B', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h4>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.68rem', color: '#64748B' }}>
+                  <span>ID: {p.id}</span>
+                  <div style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: '#CBD5E1' }} />
+                  <span>ERP: <strong style={{ color: '#475569' }}>{p.categoryName}</strong></span>
+                </div>
+              </div>
+
+              {/* Explicación / Alerta IA */}
+              <div style={{ flex: 1.2, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {p.status !== 'CORRECT' ? (
+                  <>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: p.status === 'INCONSISTENT' ? '#C5221F' : '#B06000' }}>
+                      {p.status === 'INCONSISTENT' ? '❌ Anomalía Detectada:' : '❓ Categoría Genérica:'}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#475569', lineHeight: '1.3' }}>
+                      {p.alertMessage}
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ fontSize: '0.72rem', color: '#137333', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CheckCircle size={14} color="#10B981" /> Categorización Óptima
+                  </span>
+                )}
+              </div>
+
+              {/* Propuesta IA */}
+              <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
+                {p.status !== 'CORRECT' && p.suggestedCategory && (
+                  <>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#1E3A8A' }}>
+                      💡 Sugerencia Web:
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#1E3A8A', fontWeight: 600, backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #DBEAFE', display: 'inline-block', width: 'fit-content' }}>
+                      {p.suggestedCategory} &gt; {p.suggestedSubcategory}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Estado */}
+              <div style={{ flexShrink: 0 }}>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  backgroundColor: p.status === 'INCONSISTENT' 
+                    ? '#FCE8E6' 
+                    : p.status === 'UNASSIGNED' 
+                    ? '#FEF3C7' 
+                    : '#E6F4EA',
+                  color: p.status === 'INCONSISTENT' 
+                    ? '#C5221F' 
+                    : p.status === 'UNASSIGNED' 
+                    ? '#D97706' 
+                    : '#137333',
+                }}>
+                  {p.status === 'INCONSISTENT' 
+                    ? 'Inconsistente' 
+                    : p.status === 'UNASSIGNED' 
+                    ? 'Sin Categoría' 
+                    : 'Correcto'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   const renderAutoTag = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
       {/* Cabecera de Procesos */}
@@ -781,6 +1073,7 @@ export default function IntelligenceTab({ activeSubSection }) {
             {activeSubSection === 'intel-shortcuts' && renderShortcuts()}
             {activeSubSection === 'intel-tags' && renderTags()}
             {activeSubSection === 'intel-crosssell' && renderCrossSell()}
+            {activeSubSection === 'intel-audit' && renderCategoryAudit()}
             {activeSubSection === 'intel-autotag' && renderAutoTag()}
           </div>
         ) : (

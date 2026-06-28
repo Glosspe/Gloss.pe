@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Package, Box, Star, Tags, LayoutGrid, Store,
-  Brain, Settings, Zap, Tag, Shuffle, Wand2,
+  Brain, Settings, Zap, Tag, Shuffle, Wand2, ShieldAlert,
   ChevronDown, ChevronRight, LogOut, Sparkles, X, Menu
 } from 'lucide-react';
 
@@ -32,6 +32,7 @@ const menuItems = [
       { id: 'intel-shortcuts', label: 'Atajos Búsqueda', icon: Zap },
       { id: 'intel-tags', label: 'Etiquetas', icon: Tag },
       { id: 'intel-crosssell', label: 'Venta Cruzada', icon: Shuffle },
+      { id: 'intel-audit', label: 'Auditoría Catálogo', icon: ShieldAlert },
       { id: 'intel-autotag', label: 'Procesos IA', icon: Wand2 },
     ]
   },
