@@ -680,13 +680,13 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Lila pastel premium) */
+/* Botón Agregar al Carrito (Rosa bebé premium) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #A78BFA; /* Lila pastel suave */
+  background-color: #FFB3D1; /* Rosa bebé suave */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -703,9 +703,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #8B5CF6; /* Lila un poco más oscuro al hover */
+  background-color: #FF8EBA; /* Rosa un poco más intenso al hover */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 179, 209, 0.4);
 }
 
 .product-add-to-cart-btn:active {
