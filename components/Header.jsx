@@ -4,11 +4,30 @@ import React, { useState, useEffect } from 'react';
 import { Search, ShoppingBag, Menu, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SedesModal from './SedesModal';
+import Link from 'next/link';
 
 export default function Header() {
-  const { cartCount, setIsCartOpen, setIsMenuOpen, selectedWarehouseName, setIsSearchOpen } = useCart();
+  const { 
+    cartCount, 
+    setIsCartOpen, 
+    setIsMenuOpen, 
+    selectedWarehouseName, 
+    setIsSearchOpen,
+    setSelectedCategory,
+    setSelectedBrand,
+    setSearchQuery,
+    setSelectedCategoryLabel
+  } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isSedesModalOpen, setIsSedesModalOpen] = useState(false);
+
+  const handleHomeClick = () => {
+    // Restablecer filtros del catálogo al hacer clic en el logo
+    setSelectedCategory('Trending');
+    setSelectedBrand('');
+    setSearchQuery('');
+    setSelectedCategoryLabel('');
+  };
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -45,7 +64,9 @@ export default function Header() {
         {/* Fila Superior Unificada: Logo, Sede, Buscar, Carrito, Menú */}
         <div style={styles.topRow}>
           <div style={styles.logoContainer}>
-            <h2 style={styles.logoText} className="header-logo">GLOSS</h2>
+            <Link href="/" onClick={handleHomeClick} style={{ textDecoration: 'none' }}>
+              <h2 style={styles.logoText} className="header-logo">GLOSS</h2>
+            </Link>
             <button 
               onClick={() => setIsSedesModalOpen(true)} 
               style={styles.sedeSelectorBtn}

@@ -7,7 +7,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function BottomBar() {
-  const { cartCount, favorites, setIsCartOpen } = useCart();
+  const { 
+    cartCount, 
+    favorites, 
+    setIsCartOpen,
+    setSelectedCategory,
+    setSelectedBrand,
+    setSearchQuery,
+    setSelectedCategoryLabel
+  } = useCart();
   const pathname = usePathname();
 
   const isHomeActive = pathname === '/';
@@ -15,11 +23,19 @@ export default function BottomBar() {
   const isProfileActive = pathname === '/profile';
   const favCount = favorites.length;
 
+  const handleHomeClick = () => {
+    // Restablecer todos los filtros de búsqueda y categorías para volver a la Home limpia
+    setSelectedCategory('Trending');
+    setSelectedBrand('');
+    setSearchQuery('');
+    setSelectedCategoryLabel('');
+  };
+
   return (
     <div style={styles.container} className="mobile-only-bar">
       <nav style={styles.navBar}>
         {/* Botón Home */}
-        <Link href="/" style={styles.navItem}>
+        <Link href="/" onClick={handleHomeClick} style={styles.navItem}>
           <div style={{
             ...styles.iconWrapper,
             ...(isHomeActive ? styles.activeIcon : {})
