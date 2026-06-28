@@ -291,6 +291,11 @@ const styles = {
     flexDirection: 'column',
     fontFamily: 'var(--font-body)',
     userSelect: 'none',
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 50,
   },
 
   // Header
