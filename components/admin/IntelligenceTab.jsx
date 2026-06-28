@@ -729,7 +729,8 @@ const styles = {
     gap: '12px'
   },
   input: {
-    flex: 1,
+    width: '100%',
+    boxSizing: 'border-box',
     height: '42px',
     padding: '0 12px',
     borderRadius: '8px',
@@ -740,6 +741,8 @@ const styles = {
     fontFamily: 'var(--font-body)',
   },
   select: {
+    width: '100%',
+    boxSizing: 'border-box',
     height: '42px',
     padding: '0 12px',
     paddingRight: '36px',
