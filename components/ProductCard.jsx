@@ -110,10 +110,10 @@ export default function ProductCard({ product }) {
         <div className="product-card-right-side">
           {/* Bloque de Precio */}
           <div style={styles.priceBlockSide}>
-            <span style={styles.priceLabelSide}>Precio</span>
+            <span style={styles.priceLabelSide} className="product-card-price-label">Precio</span>
             <div style={styles.priceValueBlock}>
-              <span style={styles.currency}>S/</span>
-              <span style={styles.priceValueSide}>{parseFloat(product.price || 0).toFixed(2)}</span>
+              <span style={styles.currency} className="product-card-currency">S/</span>
+              <span style={styles.priceValueSide} className="product-card-price-value">{parseFloat(product.price || 0).toFixed(2)}</span>
             </div>
           </div>
 
@@ -137,18 +137,18 @@ export default function ProductCard({ product }) {
       >
         <div style={styles.infoZone}>
           {/* Marca en mayúsculas, ultra ligero */}
-          <span style={styles.brandLabel}>
+          <span style={styles.brandLabel} className="product-card-brand">
             {product.brand || 'Gloss Beauty'}
           </span>
 
           {/* Nombre del producto */}
-          <h3 style={styles.productName}>
+          <h3 style={styles.productName} className="product-card-name">
             {product.name}
           </h3>
 
           {/* Descripción / Observaciones del ERP */}
           {product.description && (
-            <p style={styles.descriptionLabel}>
+            <p style={styles.descriptionLabel} className="product-card-desc">
               {product.description}
             </p>
           )}
