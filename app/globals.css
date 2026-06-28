@@ -389,7 +389,7 @@ a {
   justify-content: center;
   align-items: center;
   text-decoration: none;
-  padding: 6px 0; /* Espacio de aire hacia arriba y hacia abajo de la imagen */
+  padding: 22px 0 10px 0; /* Padding superior mayor (22px) para evitar el choque con el badge "Top" absolute, y 10px inferior */
 }
 
 .product-card-image-wrapper {
@@ -555,6 +555,7 @@ a {
   }
   .product-card-left-side {
     width: 52% !important;
+    padding: 8px 0 !important; /* Padding optimizado para PC */
   }
   .product-card-image-wrapper {
     border-radius: 16px !important;
