@@ -409,16 +409,16 @@ a {
   padding-left: 4px;
 }
 
-/* Botón Ver Kit al costado de la imagen (Azul noche premium y gris frío elegante) */
+/* Botón Ver Kit al costado de la imagen (Estilo Outline minimalista) */
 .equivalents-pill-btn-side {
-  background-color: #F1F5F9; /* Gris frío neutro suave (slate-100) */
-  color: #334155; /* Azul pizarra oscuro sobrio y premium (slate-700) */
+  background-color: transparent; /* Sin fondo de base */
+  color: #334155; /* Azul pizarra elegante */
+  border: 1px solid rgba(51, 65, 85, 0.25); /* Línea de contorno suave */
   font-family: var(--font-body), sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
-  border: none;
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 7px 9px; /* Ajuste por el borde de 1px */
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -426,12 +426,13 @@ a {
   transition: all 0.2s ease;
   width: 100%;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(51, 65, 85, 0.03);
+  box-shadow: none;
 }
 
 .equivalents-pill-btn-side:hover {
-  background-color: #334155; /* Azul pizarra oscuro */
+  background-color: #334155; /* Fondo azul pizarra al pasar el mouse */
   color: #FFFFFF;
+  border-color: #334155;
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(51, 65, 85, 0.12);
 }
