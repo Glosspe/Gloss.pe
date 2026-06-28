@@ -141,6 +141,7 @@ export async function GET(request) {
     // Consultar directo a la base de datos Navasoft por ZeroTier
     // 1. Obtener los códigos destacados de Postgres si la pestaña es Trending
     let featuredCodes = [];
+    let topCodes = []; // Códigos de más vendidos (Trending) del ERP
     if (category === 'Trending') {
       try {
         const featuredConfigs = await prisma.webProductoImagen.findMany({
@@ -243,8 +244,8 @@ export async function GET(request) {
       if (query.trim() !== '') {
         categoryFilter = "";
       } else {
-        // Consultar dinámicamente los productos más vendidos en el ERP en los últimos 90 días (por región/almacén si se solicita)
-        let topCodes = [];
+        // Consultar dinámicamente los productos más vendidos en el ERP en los últimos 90 días
+        // Balanceando la landing: 10 productos de Bajo Precio (< S/ 15) y 10 de Alto Precio (>= S/ 15)
         try {
           const topSalesRequest = pool.request();
           const targetWarehouse = activeWarehouses.length === 1 ? activeWarehouses[0] : '';
@@ -256,21 +257,54 @@ export async function GET(request) {
           }
           
           const topSalesQuery = `
-            SELECT TOP 20 
-              RTRIM(d.codi) as id,
-              SUM(d.cant) as unidades_vendidas
-            FROM dtl01fac d WITH(nolock)
-            INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = d.codi
-            WHERE d.fecha >= DATEADD(day, -90, GETDATE())
-              AND p01.estado = 1
-              ${warehouseFilter}
-            GROUP BY d.codi
-            ORDER BY unidades_vendidas DESC
+            SELECT id, tier, unidades_vendidas FROM (
+              SELECT TOP 10 
+                RTRIM(d.codi) as id,
+                'LOW' as tier,
+                SUM(d.cant) as unidades_vendidas
+              FROM dtl01fac d WITH(nolock)
+              INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = d.codi
+              WHERE d.fecha >= DATEADD(day, -90, GETDATE())
+                AND p01.estado = 1
+                AND p01.pvns < 15
+                ${warehouseFilter}
+              GROUP BY d.codi
+              ORDER BY unidades_vendidas DESC
+            ) lowTier
+            
+            UNION ALL
+            
+            SELECT id, tier, unidades_vendidas FROM (
+              SELECT TOP 10 
+                RTRIM(d.codi) as id,
+                'HIGH' as tier,
+                SUM(d.cant) as unidades_vendidas
+              FROM dtl01fac d WITH(nolock)
+              INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = d.codi
+              WHERE d.fecha >= DATEADD(day, -90, GETDATE())
+                AND p01.estado = 1
+                AND p01.pvns >= 15
+                ${warehouseFilter}
+              GROUP BY d.codi
+              ORDER BY unidades_vendidas DESC
+            ) highTier
           `;
           
           const topSalesResult = await topSalesRequest.query(topSalesQuery);
-          topCodes = topSalesResult.recordset.map(r => r.id);
-          console.log(`[API Products Search - MAS VENDIDOS] Sede: ${targetWarehouse || 'GLOBAL'}. Más vendidos del ERP encontrados: ${topCodes.length}`);
+          const records = topSalesResult.recordset;
+          
+          const lowTier = records.filter(r => r.tier === 'LOW').map(r => r.id);
+          const highTier = records.filter(r => r.tier === 'HIGH').map(r => r.id);
+          
+          // Entrelazar alternadamente: [high[0], low[0], high[1], low[1]...]
+          const maxLen = Math.max(lowTier.length, highTier.length);
+          topCodes = [];
+          for (let i = 0; i < maxLen; i++) {
+            if (i < highTier.length) topCodes.push(highTier[i]);
+            if (i < lowTier.length) topCodes.push(lowTier[i]);
+          }
+          
+          console.log(`[API Products Search - MAS VENDIDOS] Sede: ${targetWarehouse || 'GLOBAL'}. Balanceados del ERP (Alto: ${highTier.length}, Bajo: ${lowTier.length})`);
         } catch (errTopSales) {
           console.error('[API Products Search - MAS VENDIDOS] Error consultando más vendidos del ERP:', errTopSales.message);
         }
@@ -436,13 +470,20 @@ export async function GET(request) {
     });
 
     let finalProducts = visibleProducts;
-    if (useFallback && category === 'Trending') {
-      // Si el ERP local no está conectado y estamos en desarrollo local/fallback de mocks,
-      // filtramos la lista de mocks por los destacados reales del mock data
-      finalProducts = visibleProducts.filter(p => {
-        const originalMock = MOCK_PRODUCTS.find(m => m.id === p.id);
-        return originalMock?.destacado || originalMock?.category === 'Trending';
-      });
+    if (category === 'Trending') {
+      if (useFallback) {
+        // Si el ERP local no está conectado y estamos en desarrollo local/fallback de mocks,
+        // filtramos la lista de mocks por los destacados reales del mock data
+        finalProducts = visibleProducts.filter(p => {
+          const originalMock = MOCK_PRODUCTS.find(m => m.id === p.id);
+          return originalMock?.destacado || originalMock?.category === 'Trending';
+        });
+      } else if (topCodes && topCodes.length > 0) {
+        // Ordenar en memoria respetando el orden alternado (entrelazado) de Alto y Bajo precio
+        finalProducts = topCodes.map(code => {
+          return visibleProducts.find(p => p.id === code);
+        }).filter(Boolean);
+      }
     }
 
     // Guardar en caché en la DB local usando el TTL dinámico optimizado
