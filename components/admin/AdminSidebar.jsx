@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Package, Box, Star, Tags, LayoutGrid, Store,
   Brain, Settings, Zap, Tag, Shuffle, Wand2, ShieldAlert,
-  ChevronDown, ChevronRight, LogOut, Sparkles, X, Menu
+  ChevronDown, ChevronRight, LogOut, X, Menu
 } from 'lucide-react';
 
 const menuItems = [

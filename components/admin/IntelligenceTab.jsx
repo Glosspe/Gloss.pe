@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Sparkles, Save, Trash2, Plus, RefreshCw, 
+  Save, Trash2, Plus, RefreshCw, 
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
-  ShieldAlert, Search, Package
+  ShieldAlert, Search, Package, Zap, Eye, Brain
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
@@ -433,7 +433,7 @@ export default function IntelligenceTab({ activeSubSection }) {
     <div style={styles.card} className="soft-card">
       <div style={styles.cardHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles size={18} color="var(--accent-start)" />
+          <Zap size={18} color="#475569" />
           <h3 style={styles.cardTitle}>Atajos de Búsqueda Rápida</h3>
         </div>
         <button 
@@ -614,7 +614,7 @@ export default function IntelligenceTab({ activeSubSection }) {
                 }}
                 title="Ver Productos Asociados"
               >
-                <Sparkles size={12} />
+                <Eye size={12} />
                 <span style={{ fontSize: '0.72rem', fontWeight: 600 }}>Ver Lista</span>
               </button>
               <button onClick={() => handleDeleteTag(tg.id)} style={styles.deleteBtn} title="Eliminar Etiqueta">
@@ -1016,7 +1016,7 @@ export default function IntelligenceTab({ activeSubSection }) {
       <div style={styles.card} className="soft-card">
         <div style={styles.cardHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={20} color="var(--accent-start)" />
+            <Brain size={20} color="#475569" />
             <h3 style={styles.cardTitle}>Automatizaciones e Inteligencia (IA)</h3>
           </div>
         </div>
