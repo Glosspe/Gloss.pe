@@ -149,174 +149,42 @@ export async function GET(request) {
       }
     }
 
-    // --- MODO LOCAL / API SERVER ---
-    console.log(`[API Product Detail - LOCAL MODE] Consultando detalles para el producto: ${productId}`);
+    // --- MODO LOCAL / API SERVER (ASÍNCRONO - DESACOPLADO) ---
+    console.log(`[API Product Detail - LOCAL MODE] Consultando detalles para el producto: ${productId} en PostgreSQL...`);
 
-    let pool;
-    let useFallback = false;
-    try {
-      pool = await getErpConnection();
-    } catch (dbErr) {
-      console.warn('[API Product Detail - LOCAL MODE] ERP no accesible, usando MOCKS como fallback:', dbErr.message);
-      useFallback = true;
-    }
-
-    if (useFallback) {
-      const mockProd = MOCK_SINGLE_PRODUCTS[productId];
-      if (mockProd) {
-        await cache.set(cacheKey, mockProd, 60);
-        return NextResponse.json(mockProd);
-      }
-      
-      // Fallback a mock general si no existe en los específicos
-      const fallbackMock = {
-        id: productId,
-        userCode: productId,
-        name: `Producto de Prueba (${productId})`,
-        brand: 'Marca Importada',
-        unit: 'UND',
-        price: 99.90,
-        stock: 5,
-        category: 'Otros',
-        image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>',
-        images: [],
-        description: 'Descripción simulada de respaldo para desarrollo local.',
-        destacado: false,
-        hasEquivalents: false,
-        isMock: true
-      };
-      await cache.set(cacheKey, fallbackMock, 60);
-      return NextResponse.json(fallbackMock);
-    }
-
-    // Consultar directo a la base de datos Navasoft por ZeroTier / Conexión local
-    let activeWarehouses = [];
-    try {
-      const dbAlmacenes = await prisma.webAlmacenConfig.findMany({
-        where: { visible: true }
-      });
-      activeWarehouses = dbAlmacenes.map(a => a.codalm);
-    } catch (err) {
-      console.warn('[API Product Detail] Error fetching active warehouses from Postgres, falling back to 01:', err.message);
-    }
-
-    if (activeWarehouses.length === 0) {
-      activeWarehouses = ['01'];
-    }
-
-    // Filtrar por sede si se recibe el parámetro en la URL
-    const warehouseParam = request.nextUrl.searchParams.get('warehouse');
-    if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
-      const cleanParam = warehouseParam.trim();
-      if (activeWarehouses.includes(cleanParam)) {
-        activeWarehouses = [cleanParam];
-      } else {
-        const WAREHOUSE_REGIONS = {
-          'CHICLAYO': ['01', '02', '04', '06'],
-          'JAÉN': ['05'],
-          'JAEN': ['05']
-        };
-        const targetRegion = cleanParam.toUpperCase();
-        if (WAREHOUSE_REGIONS[targetRegion]) {
-          activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
-        }
-      }
-      if (activeWarehouses.length === 0) {
-        activeWarehouses = ['01'];
-      }
-    }
-
-    // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
-    let selectStockParts = [];
-    let joinParts = [];
-
-    activeWarehouses.forEach(wh => {
-      const alias = `p${wh}`;
-      if (wh === '01') {
-        selectStockParts.push(`ISNULL(p01.stoc, 0)`);
-      } else {
-        selectStockParts.push(`ISNULL(${alias}.stoc, 0)`);
-        joinParts.push(`LEFT JOIN prd01${wh} ${alias} WITH(nolock) ON p01.codi = ${alias}.codi`);
-      }
+    const product = await prisma.webProductoImagen.findUnique({
+      where: { codart: productId }
     });
 
-    const stockExpression = `(${selectStockParts.join(' + ')})`;
-    const joinsSql = joinParts.join('\n          ');
-
-    const sqlRequest = pool.request();
-    sqlRequest.input('targetId', sql.Char(11), productId);
-
-    const sqlQuery = `
-      SELECT TOP 1
-        RTRIM(p01.codi) as id, 
-        RTRIM(p01.codf) as userCode, 
-        RTRIM(p01.descr) as name, 
-        RTRIM(p01.marc) as brand, 
-        RTRIM(p01.umed) as unit, 
-        p01.pvns as price, 
-        ${stockExpression} as stock,
-        RTRIM(p01.obse) as observations,
-        RTRIM(s.codsub) as categoryCode,
-        RTRIM(s.nomsub) as categoryName,
-        CASE WHEN EXISTS (
-          SELECT 1 FROM dtl_item_equivalente eq WITH(nolock) WHERE eq.codi = p01.codi
-        ) THEN 1 ELSE 0 END as hasEquivalents
-      FROM prd0101 p01 WITH(nolock)
-      ${joinsSql}
-      LEFT JOIN tbl01sbf s WITH(nolock) ON s.codsub = LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2)
-      WHERE p01.codi = @targetId AND p01.estado = 1
-    `;
-
-    const result = await sqlRequest.query(sqlQuery);
-    if (result.recordset.length === 0) {
+    if (!product) {
       return NextResponse.json({ error: 'Producto no encontrado en el catálogo' }, { status: 404 });
     }
 
-    const p = result.recordset[0];
-
-    // Cruzar con PostgreSQL de Railway para jalar fotos, detalles y visibilidad
-    let enrichment = {};
-    try {
-      const imgConfig = await prisma.webProductoImagen.findUnique({
-        where: { codart: p.id }
-      });
-      
-      if (imgConfig) {
-        enrichment = {
-          imagenes: JSON.parse(imgConfig.imagenes || '[]'),
-          descripcionEnriquecida: imgConfig.descripcionEnriquecida,
-          destacado: imgConfig.destacado,
-          visible: imgConfig.visible
-        };
-      }
-    } catch (pgErr) {
-      console.warn('[API Product Detail] Error al conectar con PostgreSQL:', pgErr.message);
-    }
-
     const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
-    const imagesArray = enrichment.imagenes || [];
-    const mainImage = imagesArray.length > 0 ? imagesArray[0] : PLACEHOLDER_IMAGE;
     
-    let webCategory = p.categoryName?.trim() || 'Otros';
-    if (enrichment.destacado) {
-      webCategory = 'Trending';
+    let imagesArray = [];
+    try {
+      imagesArray = JSON.parse(product.imagenes || '[]');
+    } catch (errJson) {
+      imagesArray = [];
     }
+    const mainImage = imagesArray.length > 0 ? imagesArray[0] : PLACEHOLDER_IMAGE;
 
     const productData = {
-      id: p.id,
-      userCode: p.userCode,
-      name: formatProductName(p.name),
-      brand: p.brand?.trim() || 'Importado',
-      unit: p.unit?.trim() || 'UND',
-      price: parseFloat(p.price || 0),
-      stock: parseFloat(p.stock || 0),
-      category: webCategory,
+      id: product.codart,
+      userCode: product.codart,
+      name: formatProductName(product.nombre || ''),
+      brand: product.marca || 'Importado',
+      unit: 'UND',
+      price: parseFloat(product.precio || 0),
+      stock: parseFloat(product.stock || 0),
+      category: product.destacado ? 'Trending' : (product.categoria || 'Otros'),
       image: mainImage,
       images: imagesArray,
-      description: enrichment.descripcionEnriquecida || p.observations?.trim() || null,
-      destacado: !!enrichment.destacado,
-      hasEquivalents: p.hasEquivalents === 1 || p.hasEquivalents === true,
-      visible: enrichment.visible !== false,
+      description: product.descripcionEnriquecida || null,
+      destacado: product.destacado,
+      hasEquivalents: product.hasEquivalents,
+      visible: product.visible,
       isMock: false
     };
 

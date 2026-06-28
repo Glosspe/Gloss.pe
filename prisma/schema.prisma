@@ -26,6 +26,14 @@ model WebProductoImagen {
   descripcionEnriquecida String?  @db.Text // Descripción enriquecida para el e-commerce
   destacado             Boolean  @default(false)
   visible               Boolean  @default(true) // Controla si el producto se muestra en la web
+  precio                Decimal  @default(0) @db.Decimal(18, 4) // Precio transaccional del ERP
+  stock                 Float    @default(0) // Stock consolidado del ERP
+  nombre                String?  // Nombre del producto del ERP
+  marca                 String?  // Marca del ERP
+  categoria             String?  // Subfamilia o categoría del ERP
+  hasEquivalents        Boolean  @default(false) // Indica si tiene productos equivalentes/alternativos en el ERP
+  equivalentes          String   @db.Text @default("[]") // Códigos equivalentes en formato JSON array ["0505-xxx", ...]
+  sincronizadoEn        DateTime? // Última fecha de sincronización por lote
   fechaActualizacion    DateTime @updatedAt
 
   @@map("web_producto_imagenes")

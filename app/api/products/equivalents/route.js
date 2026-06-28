@@ -171,179 +171,80 @@ export async function GET(request) {
       }
     }
 
-    // --- MODO LOCAL / API SERVER ---
-    console.log(`[API Products Equivalents - LOCAL MODE] Consultando equivalentes para el producto: ${productId}`);
+    // --- MODO LOCAL / API SERVER (ASÍNCRONO - DESACOPLADO) ---
+    console.log(`[API Products Equivalents - LOCAL MODE] Consultando equivalentes para el producto: ${productId} en PostgreSQL...`);
 
-    let pool;
-    let useFallback = false;
-    try {
-      pool = await getErpConnection();
-    } catch (dbErr) {
-      console.warn('[API Products Equivalents - LOCAL MODE] ERP no accesible, usando MOCKS como fallback:', dbErr.message);
-      useFallback = true;
-    }
-
-    let productsList = [];
-
-    if (useFallback) {
-      // Buscar en los mocks mapeados
-      productsList = MOCK_EQUIVALENTS[productId] || [];
-      // Guardar en caché por 1 minuto
-      await cache.set(cacheKey, productsList, 60);
-      return NextResponse.json(productsList);
-    }
-
-    // Consultar directo a la base de datos Navasoft por ZeroTier / Conexión local
-    // 1. Obtener las sedes activas desde Postgres para consolidar el stock real
-    let activeWarehouses = [];
-    try {
-      const dbAlmacenes = await prisma.webAlmacenConfig.findMany({
-        where: { visible: true }
-      });
-      activeWarehouses = dbAlmacenes.map(a => a.codalm);
-    } catch (err) {
-      console.warn('[API Products Equivalents] Error fetching active warehouses from Postgres, falling back to 01:', err.message);
-    }
-
-    if (activeWarehouses.length === 0) {
-      activeWarehouses = ['01'];
-    }
-
-    // Filtrar por sede si se recibe el parámetro en la URL
-    const warehouseParam = request.nextUrl.searchParams.get('warehouse');
-    if (warehouseParam && warehouseParam !== 'all' && warehouseParam !== 'null') {
-      const cleanParam = warehouseParam.trim();
-      if (activeWarehouses.includes(cleanParam)) {
-        activeWarehouses = [cleanParam];
-      } else {
-        const WAREHOUSE_REGIONS = {
-          'CHICLAYO': ['01', '02', '04', '06'],
-          'JAÉN': ['05'],
-          'JAEN': ['05']
-        };
-        const targetRegion = cleanParam.toUpperCase();
-        if (WAREHOUSE_REGIONS[targetRegion]) {
-          activeWarehouses = activeWarehouses.filter(wh => WAREHOUSE_REGIONS[targetRegion].includes(wh));
-        }
-      }
-      if (activeWarehouses.length === 0) {
-        activeWarehouses = ['01'];
-      }
-    }
-
-    // Construir la consulta SQL dinámica para consolidar el stock de las sedes activas
-    let selectStockParts = [];
-    let joinParts = [];
-
-    activeWarehouses.forEach(wh => {
-      const alias = `p${wh}`;
-      if (wh === '01') {
-        selectStockParts.push(`ISNULL(p01.stoc, 0)`);
-      } else {
-        selectStockParts.push(`ISNULL(${alias}.stoc, 0)`);
-        joinParts.push(`LEFT JOIN prd01${wh} ${alias} WITH(nolock) ON p01.codi = ${alias}.codi`);
-      }
+    const product = await prisma.webProductoImagen.findUnique({
+      where: { codart: productId }
     });
 
-    const stockExpression = `(${selectStockParts.join(' + ')})`;
-    const joinsSql = joinParts.join('\n          ');
-
-    const sqlRequest = pool.request();
-    sqlRequest.input('targetId', sql.Char(11), productId);
-
-    const sqlQuery = `
-      SELECT 
-        RTRIM(p01.codi) as id, 
-        RTRIM(p01.codf) as userCode, 
-        RTRIM(p01.descr) as name, 
-        RTRIM(p01.marc) as brand, 
-        RTRIM(p01.umed) as unit, 
-        p01.pvns as price, 
-        ${stockExpression} as stock,
-        RTRIM(p01.obse) as observations,
-        RTRIM(s.codsub) as categoryCode,
-        RTRIM(s.nomsub) as categoryName
-      FROM dtl_item_equivalente eq WITH(nolock)
-      INNER JOIN prd0101 p01 WITH(nolock) ON eq.codiequi = p01.codi
-      ${joinsSql}
-      LEFT JOIN tbl01sbf s WITH(nolock) ON s.codsub = LEFT(p01.codi, 2) + '-' + SUBSTRING(p01.codi, 3, 2)
-      WHERE eq.codi = @targetId AND p01.estado = 1
-      ORDER BY p01.descr ASC
-    `;
-
-    const result = await sqlRequest.query(sqlQuery);
-    const erpProducts = result.recordset;
-
-    if (erpProducts.length === 0) {
+    if (!product) {
       await cache.set(cacheKey, [], 180);
       return NextResponse.json([]);
     }
 
-    // Cruzar con PostgreSQL de Railway para jalar fotos, detalles y visibilidad
-    let enrichedMap = {};
+    let equivalentCodes = [];
+    try {
+      equivalentCodes = JSON.parse(product.equivalentes || '[]');
+    } catch (e) {
+      equivalentCodes = [];
+    }
+
+    if (!Array.isArray(equivalentCodes) || equivalentCodes.length === 0) {
+      await cache.set(cacheKey, [], 180);
+      return NextResponse.json([]);
+    }
+
+    // Consultar detalles de los productos equivalentes en PostgreSQL
+    const dbEquivalents = await prisma.webProductoImagen.findMany({
+      where: {
+        codart: { in: equivalentCodes },
+        visible: true
+      }
+    });
+
+    // Obtener categorías deshabilitadas
     let disabledCategories = [];
     try {
-      const productCodes = erpProducts.map(p => p.id);
-      if (productCodes.length > 0) {
-        const webImages = await prisma.webProductoImagen.findMany({
-          where: {
-            codart: { in: productCodes }
-          }
-        });
-        
-        webImages.forEach(img => {
-          enrichedMap[img.codart] = {
-            imagenes: JSON.parse(img.imagenes || '[]'),
-            descripcionEnriquecida: img.descripcionEnriquecida,
-            destacado: img.destacado,
-            visible: img.visible
-          };
-        });
-      }
-
-      // Obtener categorías deshabilitadas
       const catConfigs = await prisma.webCategoriaConfig.findMany({
         where: { visible: false }
       });
       disabledCategories = catConfigs.map(c => c.categoria);
     } catch (pgErr) {
-      console.warn('[API Products Equivalents - LOCAL MODE] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
+      console.warn('[API Products Equivalents] Error cargando categorías deshabilitadas:', pgErr.message);
     }
 
     const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
 
-    const formattedProducts = erpProducts.map(p => {
-      const enrichment = enrichedMap[p.id] || {};
-      const imagesArray = enrichment.imagenes || [];
-      const mainImage = imagesArray.length > 0 ? imagesArray[0] : PLACEHOLDER_IMAGE;
-      const webCat = mapSubfamilyToWebCategory(p.categoryCode, p.categoryName);
-      
-      let finalCategory = webCat;
-      if (enrichment.destacado) {
-        finalCategory = 'Trending';
+    const formattedProducts = dbEquivalents.map(p => {
+      let imagesArray = [];
+      try {
+        imagesArray = JSON.parse(p.imagenes || '[]');
+      } catch (errJson) {
+        imagesArray = [];
       }
+      
+      const mainImage = imagesArray.length > 0 ? imagesArray[0] : PLACEHOLDER_IMAGE;
 
       return {
-        id: p.id,
-        userCode: p.userCode,
-        name: formatProductName(p.name),
-        brand: p.brand?.trim() || 'Importado',
-        unit: p.unit?.trim() || 'UND',
-        price: parseFloat(p.price || 0),
+        id: p.codart,
+        userCode: p.codart,
+        name: formatProductName(p.nombre || ''),
+        brand: p.marca || 'Importado',
+        unit: 'UND',
+        price: parseFloat(p.precio || 0),
         stock: parseFloat(p.stock || 0),
-        category: finalCategory,
+        category: p.destacado ? 'Trending' : (p.categoria || 'Otros'),
         image: mainImage,
         images: imagesArray,
-        description: enrichment.descripcionEnriquecida || p.observations?.trim() || null,
-        destacado: !!enrichment.destacado,
+        description: p.descripcionEnriquecida || null,
+        destacado: p.destacado,
         isMock: false
       };
     });
 
-    // Filtrar productos ocultos o categorías deshabilitadas
+    // Filtrar por categorías deshabilitadas
     const visibleProducts = formattedProducts.filter(p => {
-      const enrichment = enrichedMap[p.id];
-      if (enrichment && enrichment.visible === false) return false;
       if (disabledCategories.includes(p.category)) return false;
       return true;
     });
