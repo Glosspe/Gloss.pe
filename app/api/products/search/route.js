@@ -223,8 +223,19 @@ export async function GET(request) {
     
     let queryFilter = "";
     if (query.trim() !== '') {
-      sqlRequest.input('searchQuery', sql.VarChar, `%${query}%`);
-      queryFilter = ` AND (p01.descr LIKE @searchQuery OR p01.codi LIKE @searchQuery OR p01.codf LIKE @searchQuery OR p01.marc LIKE @searchQuery)`;
+      // Separar el término de búsqueda por palabras individuales para un buscador inteligente
+      const words = query.trim().split(/\s+/).filter(w => w.length > 0);
+      if (words.length > 0) {
+        let conditions = [];
+        words.forEach((word, idx) => {
+          const paramName = `searchWord_${idx}`;
+          // Forzar a mayúsculas y envolver en comodines %
+          sqlRequest.input(paramName, sql.VarChar, `%${word.toUpperCase()}%`);
+          // Aplicar UPPER en la consulta SQL para garantizar case-insensitivity absoluto en cualquier colación
+          conditions.push(`(UPPER(p01.descr) LIKE @${paramName} OR UPPER(p01.codi) LIKE @${paramName} OR UPPER(p01.codf) LIKE @${paramName} OR UPPER(p01.marc) LIKE @${paramName})`);
+        });
+        queryFilter = ` AND ` + conditions.join(' AND ');
+      }
     }
 
     let categoryFilter = "";
