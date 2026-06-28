@@ -106,7 +106,7 @@ export default function ProductCard({ product }) {
           </div>
         </Link>
 
-        {/* Lado Derecho: Precio + Botón Ver Kit */}
+        {/* Lado Derecho: Precio + Botón Ver Kit + Marca/Nombre del Producto */}
         <div className="product-card-right-side">
           {/* Bloque de Precio */}
           <div style={styles.priceBlockSide}>
@@ -127,33 +127,38 @@ export default function ProductCard({ product }) {
               Ver Kit
             </Link>
           )}
+
+          {/* Nombre y Marca en la columna derecha */}
+          <Link 
+            href={`/product/${product.id}`} 
+            style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit', marginTop: '2px', width: '100%' }}
+          >
+            {/* Marca en mayúsculas, ultra ligero */}
+            <span style={styles.brandLabel} className="product-card-brand">
+              {product.brand || 'Gloss Beauty'}
+            </span>
+
+            {/* Nombre del producto */}
+            <h3 style={styles.productName} className="product-card-name">
+              {product.name}
+            </h3>
+          </Link>
         </div>
       </div>
 
-      {/* ═══ ZONA DE INFORMACIÓN CLICKABLE ═══ */}
-      <Link 
-        href={`/product/${product.id}`} 
-        style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit' }}
-      >
-        <div style={styles.infoZone}>
-          {/* Marca en mayúsculas, ultra ligero */}
-          <span style={styles.brandLabel} className="product-card-brand">
-            {product.brand || 'Gloss Beauty'}
-          </span>
-
-          {/* Nombre del producto */}
-          <h3 style={styles.productName} className="product-card-name">
-            {product.name}
-          </h3>
-
-          {/* Descripción / Observaciones del ERP */}
-          {product.description && (
+      {/* ═══ ZONA DE INFORMACIÓN CLICKABLE (Solo descripción si existe) ═══ */}
+      {product.description && (
+        <Link 
+          href={`/product/${product.id}`} 
+          style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}
+        >
+          <div style={styles.infoZone}>
             <p style={styles.descriptionLabel} className="product-card-desc">
               {product.description}
             </p>
-          )}
-        </div>
-      </Link>
+          </div>
+        </Link>
+      )}
 
       {/* ═══ FILA INFERIOR: BOTONES DE ACCIÓN ═══ */}
       <div style={styles.bottomRowJustButtons}>

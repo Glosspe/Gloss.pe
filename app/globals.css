@@ -380,7 +380,7 @@ a {
   gap: 10px; /* Reducido en móvil */
   width: 100%;
   margin-bottom: 8px; /* Reducido en móvil */
-  min-height: 92px; /* Reducido en móvil */
+  min-height: auto; /* Dinámico para ajustarse a los textos de la derecha */
 }
 
 .product-card-left-side {
