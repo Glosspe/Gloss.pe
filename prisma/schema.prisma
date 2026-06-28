@@ -72,3 +72,48 @@ model WebAlmacenConfig {
   @@map("web_almacenes_config")
 }
 
+// Modelo para configuraciones globales del e-commerce
+model WebGlobalConfig {
+  id                 String   @id @default(uuid())
+  clave              String   @unique // Ej: "LOW_STOCK_THRESHOLD", "ERP_CROSS_SELLING_ACTIVE", "REPLENISHMENT_DAYS"
+  valor              String   // Valor guardado como texto/JSON
+  fechaActualizacion DateTime @updatedAt
+
+  @@map("web_global_config")
+}
+
+// Modelo para atajos y búsquedas sugeridas en caliente en el buscador
+model WebSearchShortcut {
+  id        String   @id @default(uuid())
+  texto     String   @unique // El texto sugerido (ej: "L'Oréal", "Uñas", "Tratamiento")
+  tipo      String   // "BRAND", "CATEGORY", "QUERY"
+  enlace    String   // Parámetro de búsqueda (ej: "?brand=L'OREAL" o "?category=10-01")
+  orden     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("web_search_shortcuts")
+}
+
+// Modelo para etiquetas de preocupación/necesidad y sus asociaciones de productos
+model WebProductTag {
+  id        String   @id @default(uuid())
+  etiqueta  String   @unique // Ej: "#AntiFrizz", "#ControlCaida", "#Brillo", "#CabelloSeco"
+  visible   Boolean  @default(true)
+  orden     Int      @default(0)
+  productos String   @db.Text // JSON array con los códigos de artículo asociados (ej: '["0505-010288", "0505-010337"]')
+  createdAt DateTime @default(now())
+
+  @@map("web_product_tags")
+}
+
+// Modelo para asociaciones de venta cruzada (sugeridos) manuales del administrador
+model WebProductCrossSell {
+  id        String   @id @default(uuid())
+  codart    String   @unique // Código del artículo origen
+  productos String   @db.Text // JSON array con los códigos de artículos sugeridos manualmente
+  createdAt DateTime @default(now())
+
+  @@map("web_product_cross_sells")
+}
+

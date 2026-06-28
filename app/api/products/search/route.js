@@ -323,7 +323,26 @@ export async function GET(request) {
         }
       }
     } else if (category && category !== 'Todos') {
-      if (category.startsWith('FAM:')) {
+      if (category.startsWith('#')) {
+        // Filtrar por etiqueta de preocupación/necesidad de PostgreSQL
+        let tagCodes = [];
+        try {
+          const dbTag = await prisma.webProductTag.findUnique({
+            where: { etiqueta: category.trim() }
+          });
+          if (dbTag && dbTag.productos) {
+            tagCodes = JSON.parse(dbTag.productos);
+          }
+        } catch (e) {
+          console.warn('[API Products Search] Error consultando códigos de tag:', e.message);
+        }
+
+        if (tagCodes.length > 0) {
+          categoryFilter = ` AND p01.codi IN (${tagCodes.map(c => `'${c}'`).join(',')})`;
+        } else {
+          categoryFilter = ` AND 1 = 0`; // Forzar respuesta vacía si no hay productos
+        }
+      } else if (category.startsWith('FAM:')) {
         // Filter by entire family (e.g., FAM:05 = all products in CABELLO)
         const familyCode = category.replace('FAM:', '');
         sqlRequest.input('familyCode', sql.VarChar, familyCode);
@@ -405,6 +424,43 @@ export async function GET(request) {
       console.warn('[API Products Search - LOCAL MODE] PostgreSQL no accesible, usando imágenes por defecto:', pgErr.message);
     }
 
+    // 1. Obtener la configuración global de Stock Crítico
+    let lowStockThreshold = 5;
+    try {
+      const thresholdConfig = await prisma.webGlobalConfig.findUnique({
+        where: { clave: 'LOW_STOCK_THRESHOLD' }
+      });
+      if (thresholdConfig && thresholdConfig.valor) {
+        lowStockThreshold = parseInt(thresholdConfig.valor || '5');
+      }
+    } catch (e) {
+      console.warn('[API Products Search] Error cargando LOW_STOCK_THRESHOLD:', e.message);
+    }
+
+    // 2. Obtener etiquetas asociadas a los productos
+    let productTagsMap = {};
+    try {
+      const dbTags = await prisma.webProductTag.findMany({
+        where: { visible: true }
+      });
+      dbTags.forEach(t => {
+        let prods = [];
+        try {
+          prods = JSON.parse(t.productos || '[]');
+        } catch (errJson) {
+          prods = [];
+        }
+        prods.forEach(prodId => {
+          if (!productTagsMap[prodId]) {
+            productTagsMap[prodId] = [];
+          }
+          productTagsMap[prodId].push(t.etiqueta);
+        });
+      });
+    } catch (e) {
+      console.warn('[API Products Search] Error cargando etiquetas en el buscador:', e.message);
+    }
+
     const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
 
     const formattedProducts = productsList.map(p => {
@@ -442,7 +498,9 @@ export async function GET(request) {
         hasEquivalents: useFallback 
           ? (p.id === '0505-010288' || p.id === '0505-010340' || p.id === '0505-010287') 
           : (p.hasEquivalents === 1 || p.hasEquivalents === true),
-        isMock: useFallback
+        isMock: useFallback,
+        lowStockThreshold,
+        tags: productTagsMap[p.id] || []
       };
     });
 

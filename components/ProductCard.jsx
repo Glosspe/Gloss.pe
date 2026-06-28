@@ -5,7 +5,7 @@ import { Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
-const getStockBadge = (stock) => {
+const getStockBadge = (stock, lowStockThreshold = 5) => {
   const qty = parseFloat(stock || 0);
   if (qty <= 0) {
     return {
@@ -14,12 +14,12 @@ const getStockBadge = (stock) => {
       bg: 'rgba(254, 242, 242, 0.9)',
       dotColor: '#EF4444'
     };
-  } else if (qty <= 10) {
+  } else if (qty <= lowStockThreshold) {
     return {
-      label: `Poco stock (${qty})`,
-      color: '#F59E0B',
-      bg: 'rgba(254, 243, 199, 0.9)',
-      dotColor: '#F59E0B'
+      label: `¡Solo ${qty} unids!`,
+      color: '#B45309', // Cobre/marrón elegante
+      bg: '#FEF3C7',    // Ámbar suave
+      dotColor: '#D97706'
     };
   } else {
     return {
@@ -37,7 +37,7 @@ export default function ProductCard({ product }) {
   const [justAdded, setJustAdded] = useState(false);
 
   const isFavorite = favorites.some((fav) => fav.id === product.id);
-  const stockBadge = getStockBadge(product.stock);
+  const stockBadge = getStockBadge(product.stock, product.lowStockThreshold || 5);
 
   const handleAddToCart = () => {
     addToCart(product);

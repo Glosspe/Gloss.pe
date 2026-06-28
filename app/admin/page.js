@@ -7,11 +7,27 @@ import {
   Sparkles, RefreshCw, Upload, X, Eye, EyeOff, Package,
   LayoutGrid, Trash2, Star, ImagePlus, Store
 } from 'lucide-react';
+import IntelligenceTab from '@/components/admin/IntelligenceTab';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'featured' | 'categories' | 'warehouses'
+  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'featured' | 'categories' | 'warehouses' | 'intelligence'
+
+  // ── Inteligencia de E-commerce ──
+  const [intelConfigs, setIntelConfigs] = useState({ LOW_STOCK_THRESHOLD: '5' });
+  const [intelShortcuts, setIntelShortcuts] = useState([]);
+  const [intelTags, setIntelTags] = useState([]);
+  const [intelCrossSells, setIntelCrossSells] = useState([]);
+  const [isIntelLoading, setIsIntelLoading] = useState(false);
+  const [isIntelSaving, setIsIntelSaving] = useState(false);
+  const [intelMessage, setIntelMessage] = useState({ type: '', text: '' });
+
+  // ── Editor de atajos / tags / cross-sell ──
+  const [newShortcut, setNewShortcut] = useState({ texto: '', tipo: 'QUERY', enlace: '', orden: '0' });
+  const [newTag, setNewTag] = useState({ etiqueta: '', orden: '0', productos: [] });
+  const [newCrossSell, setNewCrossSell] = useState({ codart: '', productos: [] });
+  const [editingItemId, setEditingItemId] = useState(null); // Para edición en caliente
 
   // ── Productos ──
   const [products, setProducts] = useState([]);
@@ -428,6 +444,213 @@ export default function AdminDashboard() {
     router.push('/admin/login');
   };
 
+  // ═══ Métodos de E-commerce Inteligente (Administración) ═══
+  const loadIntelligenceData = async () => {
+    setIsIntelLoading(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+
+      // Configs
+      const cRes = await fetch('/api/admin/intelligence?action=configs', { headers });
+      if (cRes.ok) {
+        const cData = await cRes.json();
+        const configMap = {};
+        cData.forEach(c => { configMap[c.clave] = c.valor; });
+        setIntelConfigs(prev => ({ ...prev, ...configMap }));
+      }
+
+      // Shortcuts
+      const sRes = await fetch('/api/admin/intelligence?action=shortcuts', { headers });
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        setIntelShortcuts(sData);
+      }
+
+      // Tags
+      const tRes = await fetch('/api/admin/intelligence?action=tags', { headers });
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        setIntelTags(tData);
+      }
+
+      // Cross-selling
+      const csRes = await fetch('/api/admin/intelligence?action=cross-sell', { headers });
+      if (csRes.ok) {
+        const csData = await csRes.json();
+        setIntelCrossSells(csData);
+      }
+    } catch (err) {
+      console.error('[loadIntelligenceData] Error:', err);
+      setIntelMessage({ type: 'error', text: 'Error de red al cargar el panel de inteligencia.' });
+    } finally {
+      setIsIntelLoading(false);
+    }
+  };
+
+  const saveIntelConfig = async (clave, valor) => {
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/intelligence?action=configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ clave, valor })
+      });
+      if (res.ok) {
+        setIntelConfigs(prev => ({ ...prev, [clave]: valor }));
+        setIntelMessage({ type: 'success', text: 'Configuración guardada correctamente.' });
+      } else {
+        setIntelMessage({ type: 'error', text: 'Error al guardar configuración.' });
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error de red al guardar.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const saveShortcut = async (e) => {
+    e.preventDefault();
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/intelligence?action=shortcuts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(editingItemId ? { id: editingItemId, ...newShortcut } : newShortcut)
+      });
+      if (res.ok) {
+        setNewShortcut({ texto: '', tipo: 'QUERY', enlace: '', orden: '0' });
+        setEditingItemId(null);
+        setIntelMessage({ type: 'success', text: 'Atajo guardado correctamente.' });
+        loadIntelligenceData();
+      } else {
+        setIntelMessage({ type: 'error', text: 'Error al registrar atajo.' });
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error al conectar con el servidor.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const deleteShortcut = async (id) => {
+    if (!confirm('¿Estás seguro de eliminar este atajo?')) return;
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch(`/api/admin/intelligence?action=shortcuts&id=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setIntelMessage({ type: 'success', text: 'Atajo eliminado con éxito.' });
+        loadIntelligenceData();
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error al eliminar atajo.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const saveTag = async (e) => {
+    e.preventDefault();
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/intelligence?action=tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(editingItemId ? { id: editingItemId, ...newTag } : newTag)
+      });
+      if (res.ok) {
+        setNewTag({ etiqueta: '', orden: '0', productos: [] });
+        setEditingItemId(null);
+        setIntelMessage({ type: 'success', text: 'Etiqueta de necesidad guardada.' });
+        loadIntelligenceData();
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error de red al guardar etiqueta.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const deleteTag = async (id) => {
+    if (!confirm('¿Estás seguro de eliminar esta etiqueta de necesidad?')) return;
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch(`/api/admin/intelligence?action=tags&id=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setIntelMessage({ type: 'success', text: 'Etiqueta eliminada con éxito.' });
+        loadIntelligenceData();
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error de red.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const saveCrossSell = async (e) => {
+    e.preventDefault();
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/intelligence?action=cross-sell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(newCrossSell)
+      });
+      if (res.ok) {
+        setNewCrossSell({ codart: '', productos: [] });
+        setIntelMessage({ type: 'success', text: 'Asociación manual de venta cruzada guardada.' });
+        loadIntelligenceData();
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error al conectar con la base de datos.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
+  const runAutoTagging = async () => {
+    if (!confirm('¿Deseas ejecutar el proceso automático de auto-etiquetado por reglas en el catálogo del ERP? Esto sobrescribirá las asignaciones previas de las etiquetas del sistema.')) return;
+    setIsIntelSaving(true);
+    setIntelMessage({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/intelligence?action=auto-tag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setIntelMessage({ type: 'success', text: `¡Proceso completado! Resumen: ${result.summary.map(s => `${s.etiqueta} (${s.totalAsociados})`).join(', ')}` });
+        loadIntelligenceData();
+      } else {
+        setIntelMessage({ type: 'error', text: 'Error al procesar auto-etiquetado.' });
+      }
+    } catch (err) {
+      setIntelMessage({ type: 'error', text: 'Error al procesar auto-etiquetado.' });
+    } finally {
+      setIsIntelSaving(false);
+    }
+  };
+
   const CATEGORY_ICONS = { 
     'UÑAS': '💅', 
     'PESTAÑAS': '👁️', 
@@ -497,6 +720,12 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('warehouses')}
         >
           <Store size={16} /> Sedes
+        </button>
+        <button
+          style={{ ...s.tab, ...(activeTab === 'intelligence' ? s.tabActive : {}) }}
+          onClick={() => { setActiveTab('intelligence'); loadIntelligenceData(); }}
+        >
+          <Sparkles size={16} /> E-commerce Inteligente
         </button>
       </div>
 
@@ -1035,6 +1264,11 @@ export default function AdminDashboard() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Tab de E-commerce Inteligente */}
+      {activeTab === 'intelligence' && (
+        <IntelligenceTab />
       )}
     </div>
   );

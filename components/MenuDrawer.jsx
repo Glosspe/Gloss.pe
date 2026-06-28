@@ -27,9 +27,11 @@ export default function MenuDrawer() {
   const [categoriesTree, setCategoriesTree] = useState([]);
   const [brands, setBrands] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
+  const [tags, setTags] = useState([]); // Etiquetas de preocupación
   const [activeFamily, setActiveFamily] = useState(null); // ID de familia desplegada
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
+  const [isTagsOpen, setIsTagsOpen] = useState(false); // Acordeón de etiquetas
   const [isWarehousesOpen, setIsWarehousesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,6 +54,13 @@ export default function MenuDrawer() {
           setBrands(brandData);
         }
 
+        // Cargar etiquetas de preocupación
+        const tagsRes = await fetch('/api/products/tags');
+        if (tagsRes.ok) {
+          const tagsData = await tagsRes.json();
+          setTags(tagsData);
+        }
+
         // Cargar sedes
         const whRes = await fetch('/api/admin/warehouses');
         if (whRes.ok) {
@@ -61,7 +70,7 @@ export default function MenuDrawer() {
           }
         }
       } catch (err) {
-        console.error('[MenuDrawer] Error cargando árbol, marcas y sedes:', err);
+        console.error('[MenuDrawer] Error cargando árbol, marcas, etiquetas y sedes:', err);
       } finally {
         setIsLoading(false);
       }
@@ -125,6 +134,18 @@ export default function MenuDrawer() {
     setIsMenuOpen(false); // Cerrar sidebar
     
     // Si no estamos en la página de inicio, navegar a ella para ver los productos filtrados
+    if (pathname !== '/') {
+      router.push('/');
+    }
+  };
+
+  const handleSelectTag = (tagEtiqueta) => {
+    setSelectedCategory(tagEtiqueta);
+    setSelectedCategoryLabel(`Preocupación: ${tagEtiqueta}`);
+    setSelectedBrand(''); // Limpiar marca
+    setSearchQuery(''); // Limpiar buscador
+    setIsMenuOpen(false); // Cerrar sidebar
+
     if (pathname !== '/') {
       router.push('/');
     }
@@ -242,6 +263,59 @@ export default function MenuDrawer() {
                   </div>
                 )}
               </div>
+
+              {/* SECCIÓN PREOCUPACIÓN / NECESIDAD */}
+              {tags.length > 0 && (
+                <div style={styles.sectionCard}>
+                  <button 
+                    style={styles.sectionHeader}
+                    onClick={() => setIsTagsOpen(!isTagsOpen)}
+                  >
+                    <div style={styles.sectionTitleGroup}>
+                      <Tag size={18} color="var(--accent-start)" />
+                      <span style={styles.sectionTitle}>Preocupación / Necesidad</span>
+                    </div>
+                    {isTagsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+
+                  {isTagsOpen && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px 12px 16px 12px' }}>
+                      {tags.map((tagItem) => {
+                        const isTagActive = selectedCategory === tagItem.etiqueta;
+                        return (
+                          <button
+                            key={tagItem.id}
+                            style={{
+                              ...styles.subcategoryBtn,
+                              color: isTagActive ? 'var(--accent-start)' : 'var(--text-primary)',
+                              fontWeight: isTagActive ? '700' : '500',
+                              padding: '10px 8px',
+                              textAlign: 'left',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              background: 'none',
+                              border: 'none',
+                              width: '100%',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '0.88rem'
+                            }}
+                            onClick={() => handleSelectTag(tagItem.etiqueta)}
+                          >
+                            <div style={{
+                              ...styles.bulletDot,
+                              backgroundColor: isTagActive ? 'var(--accent-start)' : 'transparent',
+                              borderColor: isTagActive ? 'var(--accent-start)' : '#D1D5DB'
+                            }} />
+                            <span>{tagItem.etiqueta}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* SECCIÓN MARCAS */}
               <div style={styles.sectionCard}>

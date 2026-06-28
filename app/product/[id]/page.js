@@ -5,7 +5,7 @@ import { ArrowLeft, ShoppingBag, Plus, Minus, Heart, Phone, Loader2 } from 'luci
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
-const getStockBadge = (stock) => {
+const getStockBadge = (stock, lowStockThreshold = 5) => {
   const qty = parseFloat(stock || 0);
   if (qty <= 0) {
     return {
@@ -13,11 +13,11 @@ const getStockBadge = (stock) => {
       color: '#EF4444',
       bg: 'rgba(254, 242, 242, 0.9)',
     };
-  } else if (qty <= 10) {
+  } else if (qty <= lowStockThreshold) {
     return {
-      label: `Poco stock (${qty})`,
-      color: '#F59E0B',
-      bg: 'rgba(254, 243, 199, 0.9)',
+      label: `¡Solo ${qty} unids!`,
+      color: '#B45309', // Cobre elegante
+      bg: '#FEF3C7',    // Ámbar suave
     };
   } else {
     return {
@@ -37,8 +37,10 @@ export default function ProductDetailPage({ params }) {
 
   const [product, setProduct] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
+  const [crossSells, setCrossSells] = useState([]); // Venta cruzada dinámica
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingEqui, setIsLoadingEqui] = useState(false);
+  const [isLoadingCross, setIsLoadingCross] = useState(false); // Cargador venta cruzada
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -68,6 +70,28 @@ export default function ProductDetailPage({ params }) {
       fetchProductDetail();
     }
   }, [id, selectedWarehouse]);
+
+  // Fetch de venta cruzada (Comprados Juntos)
+  useEffect(() => {
+    async function fetchCrossSells() {
+      setIsLoadingCross(true);
+      try {
+        const res = await fetch(`/api/products/cross-selling?productId=${id}&warehouse=${selectedWarehouse || ''}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCrossSells(data);
+        }
+      } catch (err) {
+        console.error('Error fetching cross-sells:', err);
+      } finally {
+        setIsLoadingCross(false);
+      }
+    }
+
+    if (product) {
+      fetchCrossSells();
+    }
+  }, [product, id, selectedWarehouse]);
 
   // Fetch de productos complementarios (Kit)
   useEffect(() => {
@@ -151,7 +175,7 @@ export default function ProductDetailPage({ params }) {
     );
   }
 
-  const stockBadge = getStockBadge(product.stock);
+  const stockBadge = getStockBadge(product.stock, product.lowStockThreshold || 5);
   const kitTotalPrice = product.price + equivalents.reduce((acc, eq) => acc + (eq.stock > 0 ? eq.price : 0), 0);
 
   // Mensaje para WhatsApp
@@ -316,7 +340,7 @@ export default function ProductDetailPage({ params }) {
 
               {/* Conector "+" visual */}
               {equivalents.map((item, idx) => {
-                const equiBadge = getStockBadge(item.stock);
+                const equiBadge = getStockBadge(item.stock, item.lowStockThreshold || 5);
                 const isAdded = addedItems[item.id];
                 return (
                   <React.Fragment key={item.id}>
@@ -384,6 +408,58 @@ export default function ProductDetailPage({ params }) {
               >
                 Comprar Kit Completo
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Sección de Venta Cruzada: Comprados Juntos Habitualmente */}
+        {!isLoadingCross && crossSells.length > 0 && (
+          <div style={styles.crossSellSection}>
+            <div style={styles.crossSellHeader}>
+              <h2 style={styles.crossSellTitle}>Comprados juntos habitualmente</h2>
+              <p style={styles.crossSellSubtitle}>
+                Otras clientas que compraron este producto también se llevaron:
+              </p>
+            </div>
+            
+            <div style={styles.crossSellGrid}>
+              {crossSells.map((item) => {
+                const isAdded = addedItems[item.id];
+                return (
+                  <div key={item.id} style={styles.crossSellCard}>
+                    <Link href={`/product/${item.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <div style={styles.crossSellImgWrapper}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.image} alt={item.name} style={styles.crossSellImg} />
+                      </div>
+                      <div style={styles.crossSellDetails}>
+                        <span style={styles.crossSellBrand}>{item.brand}</span>
+                        <h4 style={styles.crossSellName}>{item.name}</h4>
+                        <span style={styles.crossSellPrice}>S/ {item.price.toFixed(2)}</span>
+                      </div>
+                    </Link>
+                    
+                    <div style={{ padding: '0 12px 12px 12px' }}>
+                      {item.stock > 0 ? (
+                        <button
+                          onClick={() => handleAddEquivalentToCart(item)}
+                          style={{
+                            ...styles.crossSellAddBtn,
+                            backgroundColor: isAdded ? '#22C55E' : 'var(--accent-start)',
+                          }}
+                          className="soft-button"
+                        >
+                          {isAdded ? '✓ Agregado' : 'Añadir al carrito'}
+                        </button>
+                      ) : (
+                        <button style={styles.crossSellAddDisabledBtn} disabled>
+                          Agotado
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -868,5 +944,108 @@ const styles = {
     height: '48px',
     padding: '0 32px',
     fontSize: '0.95rem',
+  },
+  crossSellSection: {
+    width: '100%',
+    padding: '30px 20px',
+    backgroundColor: '#FFFFFF',
+    borderTop: '1px solid rgba(0, 0, 0, 0.05)',
+    marginTop: '40px',
+  },
+  crossSellHeader: {
+    marginBottom: '20px',
+  },
+  crossSellTitle: {
+    fontFamily: 'var(--font-title)',
+    fontSize: '1.35rem',
+    fontWeight: '500',
+    color: 'var(--text-primary)',
+    marginBottom: '4px',
+  },
+  crossSellSubtitle: {
+    fontSize: '0.82rem',
+    color: 'var(--text-secondary)',
+    fontFamily: 'var(--font-body)',
+  },
+  crossSellGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '16px',
+    marginTop: '20px',
+  },
+  crossSellCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: 'var(--bg-primary)',
+    borderRadius: '16px',
+    border: '1px solid rgba(0, 0, 0, 0.04)',
+    overflow: 'hidden',
+    transition: 'transform 0.2s ease',
+  },
+  crossSellImgWrapper: {
+    width: '100%',
+    aspectRatio: '1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: '12px',
+  },
+  crossSellImg: {
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+  },
+  crossSellDetails: {
+    padding: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    flex: 1,
+  },
+  crossSellBrand: {
+    fontSize: '0.65rem',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  crossSellName: {
+    fontSize: '0.8rem',
+    fontWeight: '500',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-body)',
+    margin: 0,
+    lineHeight: '1.3',
+    display: '-webkit-box',
+    WebkitLineClamp: '2',
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+    height: '2.1rem',
+  },
+  crossSellPrice: {
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    color: 'var(--accent-start)',
+    marginTop: '4px',
+  },
+  crossSellAddBtn: {
+    width: '100%',
+    height: '36px',
+    fontSize: '0.8rem',
+    borderRadius: '10px',
+    border: 'none',
+    color: '#FFFFFF',
+    cursor: 'pointer',
+  },
+  crossSellAddDisabledBtn: {
+    width: '100%',
+    height: '36px',
+    fontSize: '0.8rem',
+    borderRadius: '10px',
+    border: 'none',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    color: 'var(--text-secondary)',
+    cursor: 'not-allowed',
   }
 };

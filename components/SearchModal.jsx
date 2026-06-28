@@ -38,10 +38,31 @@ export default function SearchModal() {
   const [scannerError, setScannerError] = useState(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [scanMessage, setScanMessage] = useState(null);
+  const [shortcuts, setShortcuts] = useState([]); // Atajos de búsqueda en caliente
 
   const inputRef = useRef(null);
   const html5QrCodeRef = useRef(null);
   const searchDebounceRef = useRef(null);
+
+  // Cargar atajos sugeridos al abrir el buscador
+  useEffect(() => {
+    if (isSearchOpen) {
+      fetch('/api/products/search-shortcuts')
+        .then(res => res.json())
+        .then(data => setShortcuts(data))
+        .catch(err => console.error('[SearchModal] Error fetching shortcuts:', err));
+    }
+  }, [isSearchOpen]);
+
+  const handleShortcutClick = (shortcut) => {
+    if (shortcut.tipo === 'QUERY') {
+      setLocalQuery(shortcut.texto);
+      if (inputRef.current) inputRef.current.focus();
+    } else {
+      router.push('/' + shortcut.enlace);
+      setIsSearchOpen(false);
+    }
+  };
 
   // Auto-enfocar el input cuando se abre el modal y no está el escáner activo
   useEffect(() => {
@@ -477,10 +498,42 @@ export default function SearchModal() {
             )}
 
             {!isSearching && !localQuery && !isScannerActive && (
-              <div className="search-placeholder-tip">
-                <ScanBarcode size={40} color="#E2E8F0" />
-                <h3>Consulta de precios en tienda</h3>
-                <p>Usa la cámara de tu celular para escanear el código de barra de los cosméticos y ver su precio exacto e información de manera instantánea.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+                {shortcuts.length > 0 && (
+                  <div className="search-shortcuts-container" style={{ padding: '0 8px' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '600', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
+                      Sugeridos para ti
+                    </div>
+                    <div className="search-shortcuts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {shortcuts.map(sh => (
+                        <button
+                          key={sh.id}
+                          onClick={() => handleShortcutClick(sh)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '12px',
+                            backgroundColor: '#F1F5F9',
+                            border: '1px solid #E2E8F0',
+                            color: '#475569',
+                            fontSize: '0.8rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                          className="search-shortcut-pill"
+                        >
+                          {sh.texto}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="search-placeholder-tip">
+                  <ScanBarcode size={32} color="#CBD5E1" />
+                  <h3>Consulta de precios en tienda</h3>
+                  <p>Usa la cámara de tu celular para escanear el código de barra de los cosméticos y ver su precio exacto e información de manera instantánea.</p>
+                </div>
               </div>
             )}
           </div>

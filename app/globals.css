@@ -1304,5 +1304,15 @@ a {
   line-height: 1.5;
   max-width: 320px;
 }
+/* Estilos interactivos premium para las píldoras de atajos rápidos en el buscador */
+.search-shortcut-pill:hover {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent-end) !important;
+  border-color: rgba(255, 46, 147, 0.25) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 46, 147, 0.08);
+}
 
-
+.search-shortcut-pill:active {
+  transform: translateY(0);
+}
