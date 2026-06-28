@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Save, Trash2, Plus, RefreshCw, 
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
-  ShieldAlert, Search, Package, Zap, Eye, Brain
+  ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
@@ -888,10 +888,10 @@ export default function IntelligenceTab({ activeSubSection }) {
             }}
           >
             <option value="ALL">Todos los Productos</option>
-            <option value="ALERT">⚠️ Solo Alertas (Todas)</option>
-            <option value="INCONSISTENT">❌ Solo Inconsistentes</option>
-            <option value="UNASSIGNED">❓ Categoría Genérica</option>
-            <option value="CORRECT">✅ Solo Correctos</option>
+            <option value="ALERT">Solo Alertas (Todas)</option>
+            <option value="INCONSISTENT">Solo Inconsistentes</option>
+            <option value="UNASSIGNED">Categoría Genérica</option>
+            <option value="CORRECT">Solo Correctos</option>
           </select>
         </div>
       </div>
@@ -950,8 +950,25 @@ export default function IntelligenceTab({ activeSubSection }) {
               <div style={{ flex: 1.2, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                 {p.status !== 'CORRECT' ? (
                   <>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: p.status === 'INCONSISTENT' ? '#C5221F' : '#B06000' }}>
-                      {p.status === 'INCONSISTENT' ? '❌ Anomalía Detectada:' : '❓ Categoría Genérica:'}
+                    <span style={{ 
+                      fontSize: '0.65rem', 
+                      fontWeight: 600, 
+                      color: p.status === 'INCONSISTENT' ? '#C5221F' : '#B06000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      {p.status === 'INCONSISTENT' ? (
+                        <>
+                          <AlertCircle size={12} color="#C5221F" />
+                          <span>Anomalía Detectada:</span>
+                        </>
+                      ) : (
+                        <>
+                          <HelpCircle size={12} color="#B06000" />
+                          <span>Categoría Genérica:</span>
+                        </>
+                      )}
                     </span>
                     <span style={{ fontSize: '0.72rem', color: '#475569', lineHeight: '1.3' }}>
                       {p.alertMessage}
@@ -968,8 +985,16 @@ export default function IntelligenceTab({ activeSubSection }) {
               <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
                 {p.status !== 'CORRECT' && p.suggestedCategory && (
                   <>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#1E3A8A' }}>
-                      💡 Sugerencia Web:
+                    <span style={{ 
+                      fontSize: '0.65rem', 
+                      fontWeight: 600, 
+                      color: '#1E3A8A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Lightbulb size={12} color="#1E3A8A" />
+                      <span>Sugerencia Web:</span>
                     </span>
                     <span style={{ fontSize: '0.72rem', color: '#1E3A8A', fontWeight: 600, backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #DBEAFE', display: 'inline-block', width: 'fit-content' }}>
                       {p.suggestedCategory} &gt; {p.suggestedSubcategory}
