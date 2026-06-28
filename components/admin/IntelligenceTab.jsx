@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Save, Trash2, Plus, RefreshCw, 
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
-  ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb
+  ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb, ChevronDown
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
@@ -32,6 +32,8 @@ export default function IntelligenceTab({ activeSubSection }) {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditSearch, setAuditSearch] = useState('');
   const [auditFilter, setAuditFilter] = useState('ALL'); // ALL, ALERT, CORRECT, UNASSIGNED
+  const [openShortcutType, setOpenShortcutType] = useState(false);
+  const [openAuditFilter, setOpenAuditFilter] = useState(false);
 
   // Estados para resultados de Procesos IA
   const [lastTagSummary, setLastTagSummary] = useState(null);
@@ -571,17 +573,85 @@ export default function IntelligenceTab({ activeSubSection }) {
                   required
                 />
               </div>
-              <div style={styles.inputWrapper}>
+              <div style={{ ...styles.inputWrapper, position: 'relative' }}>
                 <label style={styles.inputLabel}>Tipo de Atajo</label>
-                <select 
-                  value={newShortcut.tipo} 
-                  onChange={(e) => setNewShortcut({ ...newShortcut, tipo: e.target.value })}
-                  style={styles.select}
+                <button
+                  type="button"
+                  onClick={() => setOpenShortcutType(!openShortcutType)}
+                  style={{
+                    ...styles.input,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
                 >
-                  <option value="QUERY">Consulta de Texto</option>
-                  <option value="BRAND">Marca Directa</option>
-                  <option value="CATEGORY">Categoría Directa</option>
-                </select>
+                  <span>
+                    {newShortcut.tipo === 'QUERY' ? 'Consulta de Texto' :
+                     newShortcut.tipo === 'BRAND' ? 'Marca Directa' :
+                     'Categoría Directa'}
+                  </span>
+                  <ChevronDown size={14} color="#64748B" style={{ transform: openShortcutType ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+                </button>
+                
+                {openShortcutType && (
+                  <>
+                    <div onClick={() => setOpenShortcutType(false)} style={{ position: 'fixed', inset: 0, zIndex: 999 }} />
+                    <div style={{
+                      position: 'absolute',
+                      top: '72px',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid rgba(142,154,167,0.18)',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+                      zIndex: 1000,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}>
+                      {[
+                        { value: 'QUERY', label: 'Consulta de Texto' },
+                        { value: 'BRAND', label: 'Marca Directa' },
+                        { value: 'CATEGORY', label: 'Categoría Directa' }
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setNewShortcut({ ...newShortcut, tipo: opt.value });
+                            setOpenShortcutType(false);
+                          }}
+                          style={{
+                            padding: '10px 14px',
+                            fontSize: '0.82rem',
+                            textAlign: 'left',
+                            border: 'none',
+                            backgroundColor: newShortcut.tipo === opt.value ? '#F1F5F9' : 'transparent',
+                            color: newShortcut.tipo === opt.value ? '#1E293B' : '#475569',
+                            cursor: 'pointer',
+                            fontWeight: newShortcut.tipo === opt.value ? '600' : 'normal',
+                            transition: 'all 0.1s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (newShortcut.tipo !== opt.value) {
+                              e.currentTarget.style.backgroundColor = '#F8FAFC';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (newShortcut.tipo !== opt.value) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
               <div style={styles.inputWrapper}>
                 <label style={styles.inputLabel}>Enlace del atajo (opcional)</label>
@@ -981,29 +1051,99 @@ export default function IntelligenceTab({ activeSubSection }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>Filtro de Estado:</span>
-          <select 
-            value={auditFilter}
-            onChange={(e) => setAuditFilter(e.target.value)}
-            style={{
-              ...styles.input,
-              margin: 0,
-              width: '180px',
-              height: '38px',
-              borderRadius: '8px',
-              border: '1px solid #E2E8F0',
-              padding: '0 10px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              backgroundColor: '#FFFFFF',
-              color: '#334155',
-            }}
-          >
-            <option value="ALL">Todos los Productos</option>
-            <option value="ALERT">Solo Alertas (Todas)</option>
-            <option value="INCONSISTENT">Solo Inconsistentes</option>
-            <option value="UNASSIGNED">Categoría Genérica</option>
-            <option value="CORRECT">Solo Correctos</option>
-          </select>
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setOpenAuditFilter(!openAuditFilter)}
+              style={{
+                ...styles.input,
+                margin: 0,
+                width: '180px',
+                height: '38px',
+                borderRadius: '8px',
+                border: '1px solid #E2E8F0',
+                padding: '0 12px',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                backgroundColor: '#FFFFFF',
+                color: '#334155',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <span>
+                {auditFilter === 'ALL' ? 'Todos los Productos' :
+                 auditFilter === 'ALERT' ? 'Solo Alertas (Todas)' :
+                 auditFilter === 'INCONSISTENT' ? 'Solo Inconsistentes' :
+                 auditFilter === 'UNASSIGNED' ? 'Categoría Genérica' :
+                 'Solo Correctos'}
+              </span>
+              <ChevronDown size={14} color="#64748B" style={{ transform: openAuditFilter ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+            </button>
+            
+            {openAuditFilter && (
+              <>
+                <div onClick={() => setOpenAuditFilter(false)} style={{ position: 'fixed', inset: 0, zIndex: 999 }} />
+                <div style={{
+                  position: 'absolute',
+                  top: '42px',
+                  right: 0,
+                  width: '180px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid rgba(142,154,167,0.18)',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+                  zIndex: 1000,
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  {[
+                    { value: 'ALL', label: 'Todos los Productos' },
+                    { value: 'ALERT', label: 'Solo Alertas (Todas)' },
+                    { value: 'INCONSISTENT', label: 'Solo Inconsistentes' },
+                    { value: 'UNASSIGNED', label: 'Categoría Genérica' },
+                    { value: 'CORRECT', label: 'Solo Correctos' }
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        setAuditFilter(opt.value);
+                        setOpenAuditFilter(false);
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        fontSize: '0.78rem',
+                        textAlign: 'left',
+                        border: 'none',
+                        backgroundColor: auditFilter === opt.value ? '#F1F5F9' : 'transparent',
+                        color: auditFilter === opt.value ? '#1E293B' : '#475569',
+                        cursor: 'pointer',
+                        fontWeight: auditFilter === opt.value ? '600' : 'normal',
+                        transition: 'all 0.1s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (auditFilter !== opt.value) {
+                          e.currentTarget.style.backgroundColor = '#F8FAFC';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (auditFilter !== opt.value) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
