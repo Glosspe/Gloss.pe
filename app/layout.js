@@ -3,6 +3,7 @@ import { CartProvider } from "@/context/CartContext";
 import Cart from "@/components/Cart";
 import MenuDrawer from "@/components/MenuDrawer";
 import BottomBar from "@/components/BottomBar";
+import SearchModal from "@/components/SearchModal";
 
 export const metadata = {
   title: "Tienda Gloss - Cosmética, Cuidado Facial & Belleza Capilar",
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
             <Cart />
             <MenuDrawer />
             <BottomBar />
+            <SearchModal />
           </div>
         </CartProvider>
       </body>

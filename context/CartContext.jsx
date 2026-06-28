@@ -15,6 +15,7 @@ export function CartProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
   const [selectedWarehouseName, setSelectedWarehouseName] = useState('Todas las sedes');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Cargar carrito, favoritos y sede desde localStorage al iniciar
@@ -141,6 +142,8 @@ export function CartProvider({ children }) {
         setSelectedWarehouse,
         selectedWarehouseName,
         setSelectedWarehouseName,
+        isSearchOpen,
+        setIsSearchOpen,
         isInitialized,
       }}
     >
