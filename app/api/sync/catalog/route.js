@@ -17,42 +17,44 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Formato inválido. Se requiere un array de productos.' }, { status: 400 });
     }
 
-    console.log(`[API Catalog Sync] Recibido lote de ${products.length} productos para sincronizar...`);
+    console.log(`[API Catalog Sync] Recibido lote de ${products.length} productos para sincronizar. Procesando transacción en lote...`);
 
-    // Procesamos uno a uno los productos mediante upsert seguro
-    for (const prod of products) {
-      if (!prod.id || prod.id.trim() === '') continue;
-      
-      const codartClean = prod.id.trim();
-      
-      await prisma.webProductoImagen.upsert({
-        where: { codart: codartClean },
-        update: {
-          nombre: prod.name?.trim() || null,
-          marca: prod.brand?.trim() || null,
-          categoria: prod.category?.trim() || null,
-          precio: parseFloat(prod.price || 0),
-          stock: parseFloat(prod.stock || 0),
-          hasEquivalents: !!prod.hasEquivalents,
-          equivalentes: prod.equivalents ? JSON.stringify(prod.equivalents) : '[]',
-          sincronizadoEn: new Date()
-        },
-        create: {
-          codart: codartClean,
-          nombre: prod.name?.trim() || null,
-          marca: prod.brand?.trim() || null,
-          categoria: prod.category?.trim() || null,
-          precio: parseFloat(prod.price || 0),
-          stock: parseFloat(prod.stock || 0),
-          hasEquivalents: !!prod.hasEquivalents,
-          equivalentes: prod.equivalents ? JSON.stringify(prod.equivalents) : '[]',
-          imagenes: '[]', // Array vacío inicial
-          descripcionEnriquecida: null,
-          destacado: false,
-          visible: true,
-          sincronizadoEn: new Date()
-        }
+    const validProducts = products.filter(prod => prod.id && prod.id.trim() !== '');
+
+    if (validProducts.length > 0) {
+      const upsertOperations = validProducts.map(prod => {
+        const codartClean = prod.id.trim();
+        return prisma.webProductoImagen.upsert({
+          where: { codart: codartClean },
+          update: {
+            nombre: prod.name?.trim() || null,
+            marca: prod.brand?.trim() || null,
+            categoria: prod.category?.trim() || null,
+            precio: parseFloat(prod.price || 0),
+            stock: parseFloat(prod.stock || 0),
+            hasEquivalents: !!prod.hasEquivalents,
+            equivalentes: prod.equivalents ? JSON.stringify(prod.equivalents) : '[]',
+            sincronizadoEn: new Date()
+          },
+          create: {
+            codart: codartClean,
+            nombre: prod.name?.trim() || null,
+            marca: prod.brand?.trim() || null,
+            categoria: prod.category?.trim() || null,
+            precio: parseFloat(prod.price || 0),
+            stock: parseFloat(prod.stock || 0),
+            hasEquivalents: !!prod.hasEquivalents,
+            equivalentes: prod.equivalents ? JSON.stringify(prod.equivalents) : '[]',
+            imagenes: '[]',
+            descripcionEnriquecida: null,
+            destacado: false,
+            visible: true,
+            sincronizadoEn: new Date()
+          }
+        });
       });
+
+      await prisma.$transaction(upsertOperations);
     }
 
     return NextResponse.json({ 
