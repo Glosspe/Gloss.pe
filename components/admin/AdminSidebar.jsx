@@ -32,7 +32,7 @@ const menuItems = [
       { id: 'intel-shortcuts', label: 'Atajos Búsqueda', icon: Zap },
       { id: 'intel-tags', label: 'Etiquetas', icon: Tag },
       { id: 'intel-crosssell', label: 'Venta Cruzada', icon: Shuffle },
-      { id: 'intel-autotag', label: 'Auto-Etiquetado', icon: Wand2 },
+      { id: 'intel-autotag', label: 'Procesos IA', icon: Wand2 },
     ]
   },
 ];

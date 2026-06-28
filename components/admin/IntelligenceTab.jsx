@@ -309,6 +309,37 @@ export default function IntelligenceTab({ activeSubSection }) {
     );
   };
 
+  const handleRunAutoCrossSelling = () => {
+    triggerConfirm(
+      '¿Ejecutar Auto-Venta Cruzada?',
+      'El motor inteligente analizará el historial de boletas y facturas de los últimos 180 días del ERP para calcular y generar las recomendaciones de venta cruzada automáticamente. Esto puede tomar unos segundos.',
+      'primary',
+      async () => {
+        setIsSaving(true);
+        setMessage({ type: '', text: '' });
+        try {
+          const token = localStorage.getItem('gloss_admin_token');
+          const res = await fetch('/api/admin/intelligence?action=auto-cross-sell', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            loadIntelData();
+            setMessage({ 
+              type: 'success', 
+              text: `Auto-venta cruzada completada. Se generaron sugerencias de venta cruzada automática para ${data.totalProductosProcesados} productos en base a su historial transaccional real del ERP.` 
+            });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: 'Error al procesar auto-venta cruzada.' });
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    );
+  };
+
   const renderConfig = () => (
     <div style={styles.card} className="soft-card">
       <div style={styles.cardHeader}>
@@ -537,14 +568,38 @@ export default function IntelligenceTab({ activeSubSection }) {
       <div style={styles.cardHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Shuffle size={18} color="var(--accent-start)" />
-          <h3 style={styles.cardTitle}>Venta Cruzada Manual</h3>
+          <h3 style={styles.cardTitle}>Venta Cruzada</h3>
         </div>
-        <button 
-          onClick={() => setShowCrossSellForm(!showCrossSellForm)} 
-          style={showCrossSellForm ? styles.cancelFormBtn : styles.openFormBtn}
-        >
-          {showCrossSellForm ? 'Cerrar Formulario' : '+ Configurar Venta'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            type="button"
+            onClick={handleRunAutoCrossSelling}
+            style={{
+              ...styles.openFormBtn,
+              backgroundColor: 'rgba(139, 92, 246, 0.08)',
+              color: '#8B5CF6',
+              borderColor: 'rgba(139, 92, 246, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 600,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.08)';
+            }}
+          >
+            <RefreshCw size={14} /> Auto-Venta Cruzada (ERP)
+          </button>
+          <button 
+            onClick={() => setShowCrossSellForm(!showCrossSellForm)} 
+            style={showCrossSellForm ? styles.cancelFormBtn : styles.openFormBtn}
+          >
+            {showCrossSellForm ? 'Cerrar Formulario' : '+ Configurar Venta'}
+          </button>
+        </div>
       </div>
       <p style={styles.cardSub}>Configura qué productos sugerir al cliente en el carrusel de la ficha de detalle.</p>
 
@@ -602,35 +657,98 @@ export default function IntelligenceTab({ activeSubSection }) {
   );
 
   const renderAutoTag = () => (
-    <div style={styles.card} className="soft-card">
-      <div style={styles.cardHeader}>
-        <RefreshCw size={20} color="var(--accent-start)" />
-        <h3 style={styles.cardTitle}>Auto-Etiquetado Inteligente (ERP)</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+      {/* Cabecera de Procesos */}
+      <div style={styles.card} className="soft-card">
+        <div style={styles.cardHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} color="var(--accent-start)" />
+            <h3 style={styles.cardTitle}>Automatizaciones e Inteligencia (IA)</h3>
+          </div>
+        </div>
+        <p style={styles.cardSub}>
+          Gatilla los motores analíticos de sincronización del ERP. Procesan grandes volúmenes de datos del ERP local y de transacciones reales para actualizar de forma automatizada las clasificaciones y recomendaciones en la nube.
+        </p>
       </div>
-      <p style={styles.cardSub}>
-        Gatilla el motor analítico de auto-etiquetado. Lee campos clave de la base de datos del ERP
-        para emparejar de forma inteligente productos con preocupaciones como #ControlCaida, #AntiFrizz o #RizosDefinidos.
-      </p>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '12px' }}>
-        <button 
-          onClick={handleRunAutoTagging} 
-          style={{ 
-            ...styles.autoTagBtn, 
-            width: 'auto', 
-            padding: '0 24px', 
-            backgroundColor: 'var(--accent-start)', 
-            color: '#FFFFFF',
-            border: 'none'
-          }} 
-          className="soft-button"
-          disabled={isSaving}
-        >
-          <RefreshCw size={16} /> Ejecutar Análisis e Indexación Automática
-        </button>
-        <span style={{ fontSize: '0.72rem', color: '#94A3B8', textAlign: 'center', maxWidth: '400px' }}>
-          Este proceso corre sobre PostgreSQL local y sincroniza las clasificaciones del ERP. Toma unos segundos.
-        </span>
+
+      {/* Grilla de Acciones */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '20px',
+        width: '100%'
+      }}>
+        {/* Tarjeta 1: Auto-Etiquetado */}
+        <div style={styles.card} className="soft-card">
+          <div style={styles.cardHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Tag size={18} color="var(--accent-start)" />
+              <h3 style={{ ...styles.cardTitle, fontSize: '0.95rem' }}>Auto-Etiquetado de Productos</h3>
+            </div>
+          </div>
+          <p style={{ ...styles.cardSub, minHeight: '60px' }}>
+            Escanea descripciones de productos en la base de datos del ERP para clasificarlos automáticamente con etiquetas de belleza (#AntiFrizz, #ControlCaida, #UñasFuertes).
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+            <button 
+              onClick={handleRunAutoTagging} 
+              style={{ 
+                ...styles.autoTagBtn, 
+                width: '100%', 
+                backgroundColor: 'var(--accent-start)', 
+                color: '#FFFFFF',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }} 
+              className="soft-button"
+              disabled={isSaving}
+            >
+              <RefreshCw size={14} /> Ejecutar Análisis de Etiquetas
+            </button>
+            <span style={{ fontSize: '0.68rem', color: '#94A3B8', textAlign: 'center' }}>
+              Empareja por palabras clave en observaciones del ERP.
+            </span>
+          </div>
+        </div>
+
+        {/* Tarjeta 2: Auto-Venta Cruzada */}
+        <div style={styles.card} className="soft-card">
+          <div style={styles.cardHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Shuffle size={18} color="var(--accent-start)" />
+              <h3 style={{ ...styles.cardTitle, fontSize: '0.95rem' }}>Auto-Venta Cruzada Transaccional</h3>
+            </div>
+          </div>
+          <p style={{ ...styles.cardSub, minHeight: '60px' }}>
+            Analiza el historial de ventas (boletas y facturas) de los últimos 180 días del ERP para calcular qué productos se compran juntos con frecuencia y crear recomendaciones de venta cruzada reales.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+            <button 
+              onClick={handleRunAutoCrossSelling} 
+              style={{ 
+                ...styles.autoTagBtn, 
+                width: '100%', 
+                backgroundColor: 'var(--accent-start)', 
+                color: '#FFFFFF',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }} 
+              className="soft-button"
+              disabled={isSaving}
+            >
+              <RefreshCw size={14} /> Ejecutar Análisis de Ventas (ERP)
+            </button>
+            <span style={{ fontSize: '0.68rem', color: '#94A3B8', textAlign: 'center' }}>
+              Genera recomendaciones basadas en datos reales de facturación.
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

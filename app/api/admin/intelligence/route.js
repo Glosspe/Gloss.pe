@@ -173,6 +173,118 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Auto-etiquetado completado con éxito', summary: resultsSummary });
     }
 
+    // Acción 6: Ejecutar Auto-Cross-Selling por compras conjuntas reales en el ERP
+    if (action === 'auto-cross-sell') {
+      console.log('[API Admin Intelligence] Iniciando proceso de Auto-Venta Cruzada...');
+
+      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
+      // redirige la petición a la API local que corre en la PC del usuario a través del túnel de ngrok.
+      const localApiUrl = process.env.LOCAL_API_URL;
+      if (localApiUrl) {
+        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo auto-cross-sell a la API local: ${localApiUrl}/api/admin/intelligence?action=auto-cross-sell`);
+        try {
+          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
+          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=auto-cross-sell`;
+          
+          const authHeader = request.headers.get('Authorization') || '';
+
+          const res = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': authHeader 
+            },
+            cache: 'no-store'
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            return NextResponse.json(data);
+          } else {
+            const errorText = await res.text();
+            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}: ${errorText}`);
+            return NextResponse.json(
+              { error: 'La API local del ERP retornó un error durante el auto-cross-sell', details: errorText },
+              { status: res.status }
+            );
+          }
+        } catch (proxyErr) {
+          console.error(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local a través del túnel:`, proxyErr.message);
+          return NextResponse.json(
+            { error: 'El servidor local del ERP no está disponible para auto-cross-sell a través del túnel', details: proxyErr.message },
+            { status: 503 }
+          );
+        }
+      }
+
+      // Modo Local: Se conecta al ERP local (SQL Server)
+      let pool;
+      try {
+        pool = await getErpConnection();
+      } catch (err) {
+        console.error('[API Admin Intelligence] Error al obtener conexion del ERP:', err);
+        return NextResponse.json({ 
+          error: 'ERP no accesible para auto-cross-sell', 
+          details: err.message, 
+          stack: err.stack 
+        }, { status: 503 });
+      }
+
+      // Consultar parejas de productos comprados juntos de los últimos 180 días
+      // Filtramos para coincidencia >= 2 para asegurar relevancia real
+      const query = `
+        SELECT 
+          RTRIM(d1.codi) as base_product, 
+          RTRIM(d2.codi) as recommended_product, 
+          COUNT(*) as coincidencia
+        FROM dtl01fac d1 WITH(nolock)
+        INNER JOIN dtl01fac d2 WITH(nolock) ON d1.ndocu = d2.ndocu AND d1.cdocu = d2.cdocu
+        INNER JOIN prd0101 p1 WITH(nolock) ON p1.codi = d1.codi
+        INNER JOIN prd0101 p2 WITH(nolock) ON p2.codi = d2.codi
+        WHERE d1.fecha >= DATEADD(day, -180, GETDATE())
+          AND d1.codi <> d2.codi
+          AND p1.estado = 1
+          AND p2.estado = 1
+          AND d1.cdocu IN ('01', '03', '65')
+        GROUP BY d1.codi, d2.codi
+        HAVING COUNT(*) >= 2
+        ORDER BY base_product, coincidencia DESC
+      `;
+      const res = await pool.request().query(query);
+      const relations = res.recordset;
+
+      // Agrupar recomendaciones por producto base
+      const crossSellMap = {};
+      relations.forEach(row => {
+        if (!crossSellMap[row.base_product]) {
+          crossSellMap[row.base_product] = [];
+        }
+        // Top 4 recomendaciones por producto
+        if (crossSellMap[row.base_product].length < 4) {
+          crossSellMap[row.base_product].push(row.recommended_product);
+        }
+      });
+
+      // Guardar resultados en PostgreSQL (Railway)
+      let count = 0;
+      for (const baseProduct of Object.keys(crossSellMap)) {
+        const recommendedProducts = crossSellMap[baseProduct];
+        const jsonProductos = JSON.stringify(recommendedProducts);
+
+        await prisma.webProductCrossSell.upsert({
+          where: { codart: baseProduct },
+          update: { productos: jsonProductos },
+          create: { codart: baseProduct, productos: jsonProductos }
+        });
+        count++;
+      }
+
+      return NextResponse.json({ 
+        message: 'Auto-venta cruzada completada con éxito', 
+        totalProductosProcesados: count 
+      });
+    }
+
     // Para las demás acciones, sí leemos el body JSON
     const body = await request.json();
 
