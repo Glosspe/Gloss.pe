@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Sparkles } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
@@ -82,36 +82,66 @@ export default function ProductCard({ product }) {
         )
       )}
 
-      {/* Zona clickable que redirige al detalle del producto */}
+      {/* ═══ FILA SUPERIOR DIVIDIDA EN DOS ═══ */}
+      <div className="product-card-top-row">
+        {/* Lado Izquierdo: Imagen */}
+        <Link 
+          href={`/product/${product.id}`} 
+          className="product-card-left-side"
+        >
+          <div className="product-card-image-wrapper">
+            {/* Shimmer / Brillo sutil animado */}
+            <div style={styles.shimmer} className="card-shimmer" />
+
+            {/* Imagen del Producto */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.image || 'https://via.placeholder.com/200?text=Gloss'}
+              alt={product.name}
+              style={{
+                ...styles.productImage,
+                transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+              }}
+            />
+          </div>
+        </Link>
+
+        {/* Lado Derecho: Precio + Botón Ver Kit */}
+        <div className="product-card-right-side">
+          {/* Bloque de Precio */}
+          <div style={styles.priceBlockSide}>
+            <span style={styles.priceLabelSide}>Precio</span>
+            <div style={styles.priceValueBlock}>
+              <span style={styles.currency}>S/</span>
+              <span style={styles.priceValueSide}>{parseFloat(product.price || 0).toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Botón de Kit */}
+          {product.hasEquivalents && (
+            <Link
+              href={`/product/${product.id}#kit`}
+              className="equivalents-pill-btn-side"
+              style={{ textDecoration: 'none' }}
+            >
+              Ver Kit
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ ZONA DE INFORMACIÓN CLICKABLE ═══ */}
       <Link 
         href={`/product/${product.id}`} 
         style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit' }}
       >
-        {/* ═══ ZONA DE IMAGEN CON ALFOMBRA LIMPIA ═══ */}
-        <div className="product-card-image-zone">
-          {/* Shimmer / Brillo sutil animado */}
-          <div style={styles.shimmer} className="card-shimmer" />
-
-          {/* Imagen del Producto */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.image || 'https://via.placeholder.com/200?text=Gloss'}
-            alt={product.name}
-            style={{
-              ...styles.productImage,
-              transform: isHovered ? 'scale(1.06)' : 'scale(1)',
-            }}
-          />
-        </div>
-
-        {/* ═══ ZONA DE INFORMACIÓN ═══ */}
         <div style={styles.infoZone}>
           {/* Marca en mayúsculas, ultra ligero */}
           <span style={styles.brandLabel}>
             {product.brand || 'Gloss Beauty'}
           </span>
 
-          {/* Nombre del producto con tipografía serif editorial */}
+          {/* Nombre del producto */}
           <h3 style={styles.productName}>
             {product.name}
           </h3>
@@ -125,33 +155,10 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
 
-      {/* Botón de Kit (Ver Kit) - Fuera de Link para evitar anidamiento HTML inválido */}
-      {product.hasEquivalents && (
-        <div style={styles.equivalentsContainer}>
-          <Link
-            href={`/product/${product.id}#kit`}
-            className="equivalents-pill-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            Ver Kit
-          </Link>
-        </div>
-      )}
-
-      {/* Fila inferior: precio a la izquierda, botones de acción a la derecha */}
-      <div style={styles.bottomRow}>
-        {/* Bloque de Precio */}
-        <div style={styles.priceBlock}>
-          <span style={styles.priceLabel}>Precio</span>
-          <div style={styles.priceValueBlock}>
-            <span style={styles.currency}>S/</span>
-            <span style={styles.priceValue}>{parseFloat(product.price || 0).toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Zona de Botones de Acción */}
-        <div className="product-card-actions-zone">
-          {/* Botón Agregar al Carrito (Verde) */}
+      {/* ═══ FILA INFERIOR: BOTONES DE ACCIÓN ═══ */}
+      <div style={styles.bottomRowJustButtons}>
+        <div className="product-card-actions-zone" style={{ width: '100%' }}>
+          {/* Botón Agregar al Carrito */}
           <button
             className={`product-add-to-cart-btn ${justAdded ? 'success' : ''}`}
             onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
@@ -161,7 +168,7 @@ export default function ProductCard({ product }) {
             {product.stock <= 0 ? 'Agotado' : (justAdded ? '¡Agregado! ✓' : 'Agregar al carrito')}
           </button>
 
-          {/* Botón de Favorito (Corazón con borde de marca) */}
+          {/* Botón de Favorito (Corazón sin contorno) */}
           <button
             className={`product-favorite-btn ${isFavorite ? 'active' : ''}`}
             onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
@@ -193,7 +200,7 @@ const styles = {
     position: 'relative',
   },
 
-  // ─── Zona de imagen ───
+  // ─── Imagen ───
   shimmer: {
     position: 'absolute',
     top: 0,
@@ -207,8 +214,8 @@ const styles = {
   productImage: {
     position: 'relative',
     zIndex: 2,
-    maxHeight: '80%',
-    maxWidth: '80%',
+    maxHeight: '90%',
+    maxWidth: '90%',
     objectFit: 'contain',
     filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04))',
     transition: 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
@@ -244,7 +251,7 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '6px 12px',
-    backgroundColor: '#1D242D', // Negro carbón sofisticado para evitar el exceso de rosa
+    backgroundColor: '#1D242D',
     borderBottomLeftRadius: '10px',
     borderBottomRightRadius: '10px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
@@ -252,7 +259,7 @@ const styles = {
   trendingCardText: {
     fontFamily: 'var(--font-body)',
     fontSize: '0.62rem',
-    fontWeight: '600', // Suavizado
+    fontWeight: '600',
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -264,13 +271,7 @@ const styles = {
     flexDirection: 'column',
     gap: '4px',
     flex: 1,
-  },
-  metaRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2px',
-    gap: '8px',
+    marginTop: '4px',
   },
   stockCardBadge: {
     position: 'absolute',
@@ -329,25 +330,26 @@ const styles = {
     marginBottom: '4px',
   },
 
-  // ─── Fila inferior (precio + botones) ───
-  bottomRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: '10px',
-  },
-  priceBlock: {
+  // ─── Estilos de la columna de precio lateral ───
+  priceBlockSide: {
     display: 'flex',
     flexDirection: 'column',
     gap: '2px',
   },
-  priceLabel: {
+  priceLabelSide: {
     fontFamily: 'var(--font-body), sans-serif',
-    fontSize: '0.72rem',
+    fontSize: '0.68rem',
     color: '#9CA3AF',
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
+  },
+  priceValueSide: {
+    fontFamily: 'var(--font-title), sans-serif',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: '#1F2937',
+    letterSpacing: '-0.02em',
   },
   priceValueBlock: {
     display: 'flex',
@@ -360,62 +362,11 @@ const styles = {
     fontWeight: '500',
     color: '#1F2937',
   },
-  priceValue: {
-    fontFamily: 'var(--font-title), sans-serif',
-    fontSize: '1.3rem',
-    fontWeight: '500',
-    color: '#1F2937',
-    letterSpacing: '-0.02em',
-  },
 
-  // ─── Stack de botones de acción ───
-  actionsStack: {
+  // ─── Fila inferior de botones expandidos ───
+  bottomRowJustButtons: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    alignItems: 'center',
-  },
-  roundButton: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: '#FFFFFF',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)',
-  },
-  roundButtonSuccess: {
-    backgroundColor: '#22C55E',
-    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
-  },
-  addedText: {
-    color: '#FFFFFF',
-    fontSize: '0.9rem',
-    fontWeight: '700',
-  },
-  equivalentsContainer: {
-    marginTop: '6px',
-    marginBottom: '2px',
-    display: 'flex',
-    justifyContent: 'flex-start',
-  },
-  equivalentsBtn: {
-    background: 'rgba(255, 46, 147, 0.05)',
-    border: '1px solid rgba(255, 46, 147, 0.15)',
-    borderRadius: '16px',
-    padding: '4px 10px',
-    color: '#FF2E93',
-    fontFamily: 'var(--font-body), sans-serif',
-    fontSize: '0.72rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    transition: 'all 0.2s ease',
+    marginTop: '12px',
+    width: '100%',
   },
 };
