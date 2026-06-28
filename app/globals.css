@@ -389,6 +389,7 @@ a {
   justify-content: center;
   align-items: center;
   text-decoration: none;
+  padding: 6px 0; /* Espacio de aire hacia arriba y hacia abajo de la imagen */
 }
 
 .product-card-image-wrapper {
