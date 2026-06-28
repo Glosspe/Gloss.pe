@@ -140,7 +140,7 @@ export default function SearchModal() {
 
   // Encender/apagar cámara escáner
   const handleToggleScanner = async () => {
-    if (isScannerActive) {
+    if (isScannerActive || isScannerLoading) {
       await stopScanner();
     } else {
       await startScanner();
@@ -262,6 +262,7 @@ export default function SearchModal() {
       }
     }
     setIsScannerActive(false);
+    setIsScannerLoading(false);
     setIsFlashOn(false);
   };
 
@@ -393,7 +394,7 @@ export default function SearchModal() {
           <div className="search-controls-wrapper">
             
             {/* Input de Texto Manual */}
-            {!isScannerActive && (
+            {!(isScannerActive || isScannerLoading) && (
               <div className="search-input-wrapper">
                 <Search className="search-input-icon" size={20} />
                 <input
@@ -426,7 +427,7 @@ export default function SearchModal() {
             )}
 
             {/* Zona de Cámara del Escáner (Montado condicionalmente) */}
-            {isScannerActive && (
+            {(isScannerActive || isScannerLoading) && (
               <div className="scanner-container">
                 <div className="scanner-camera-wrapper">
                   <div id="scanner-viewport"></div>
@@ -459,16 +460,15 @@ export default function SearchModal() {
 
             {/* Botón Escáner / Cámara Toggle */}
             <button 
-              className={`search-scanner-toggle-btn ${isScannerActive ? 'active' : ''}`}
+              className={`search-scanner-toggle-btn ${(isScannerActive || isScannerLoading) ? 'active' : ''}`}
               onClick={handleToggleScanner}
-              disabled={isScannerLoading}
             >
               {isScannerLoading ? (
                 <Loader2 size={18} className="animate-spin" />
               ) : (
                 <ScanBarcode size={18} />
               )}
-              <span>{isScannerActive ? 'Volver al buscador manual' : 'Escanear código de barras / QR'}</span>
+              <span>{(isScannerActive || isScannerLoading) ? 'Volver al buscador manual' : 'Escanear código de barras / QR'}</span>
             </button>
           </div>
 
