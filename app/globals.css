@@ -98,7 +98,7 @@ html, body {
 
 /* Botón neumórfico con color fucsia plano */
 .soft-button {
-  background: var(--accent-start);
+  background: #FF6584; /* Fucsia pastel de marca */
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
@@ -116,15 +116,15 @@ html, body {
 }
 
 .soft-button:hover {
-  background: var(--accent-end);
+  background: #FF4D70;
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 24px rgba(255, 101, 132, 0.15);
 }
 
 .soft-button:active {
-  background: var(--accent-end);
+  background: #FF4D70;
   transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 10px rgba(255, 101, 132, 0.08);
 }
 
 .soft-button:disabled {
@@ -378,17 +378,17 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Fucsia/Magenta pill) */
+/* Botón Agregar al Carrito (Fucsia/Magenta pastel) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: var(--accent-start);
+  background-color: #FF6584; /* Fucsia pastel hermoso */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 0.82rem;
-  font-weight: 500; /* Tipografía más delgada y elegante */
+  font-weight: 600; /* Tipografía más delgada y elegante */
   border: none;
   border-radius: 50px;
   padding: 12px 20px;
@@ -401,9 +401,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: var(--accent-end);
+  background-color: #FF4D70;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px var(--accent-shadow);
+  box-shadow: 0 6px 16px rgba(255, 101, 132, 0.25);
 }
 
 .product-add-to-cart-btn:active {
@@ -426,7 +426,7 @@ a {
   box-shadow: none !important;
 }
 
-/* Botón Favorito (Corazón con borde fucsia) */
+/* Botón Favorito (Corazón con borde fucsia pastel y fondo rosa ultra suave) */
 .product-favorite-btn {
   display: flex;
   align-items: center;
@@ -435,8 +435,8 @@ a {
   height: 42px;
   min-width: 42px;
   border-radius: 50%;
-  border: 1.5px solid var(--accent-start); /* Borde más delgado y elegante */
-  background-color: transparent;
+  border: 1.5px solid #FF6584; /* Borde fucsia pastel */
+  background-color: #FFE6EC; /* Fondo rosa ultra suave para quitar la línea de fondo gris */
   cursor: pointer;
   outline: none;
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
@@ -468,7 +468,7 @@ a {
 
 .product-favorite-btn:hover {
   transform: scale(1.08);
-  background-color: var(--accent-soft);
+  background-color: #FFD1DC; /* Relleno rosa un poco más marcado en hover */
 }
 
 .product-favorite-btn:active {
@@ -477,13 +477,13 @@ a {
 
 /* Cuando el favorito está activo — fondo fucsia sólido con corazón blanco */
 .product-favorite-btn.active {
-  background-color: var(--accent-start);
-  border-color: var(--accent-start);
+  background-color: #FF6584;
+  border-color: #FF6584;
 }
 
 .product-favorite-btn.active:hover {
-  background-color: var(--accent-end);
-  border-color: var(--accent-end);
+  background-color: #FF4D70;
+  border-color: #FF4D70;
 }
 
 /* Select neumórfico premium */

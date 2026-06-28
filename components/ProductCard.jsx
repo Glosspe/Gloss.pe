@@ -169,7 +169,7 @@ export default function ProductCard({ product }) {
           >
             <Heart
               size={18}
-              color={isFavorite ? '#FFFFFF' : 'var(--accent-start)'}
+              color={isFavorite ? '#FFFFFF' : '#FF6584'}
               fill={isFavorite ? '#FFFFFF' : 'none'}
               strokeWidth={2}
             />
