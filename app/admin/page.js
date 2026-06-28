@@ -149,7 +149,7 @@ export default function AdminPage() {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
     try {
-      const response = await fetch(`/api/products/search?category=Todos&q=${encodeURIComponent(query)}&limit=all`);
+      const response = await fetch(`/api/products/search?category=Todos&q=${encodeURIComponent(query)}&limit=all&includeHidden=true`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -167,7 +167,7 @@ export default function AdminPage() {
   const loadFeaturedProducts = async () => {
     setIsFeatLoading(true);
     try {
-      const response = await fetch('/api/products/search?category=Trending&q=');
+      const response = await fetch('/api/products/search?category=Trending&q=&includeHidden=true');
       if (response.ok) {
         const data = await response.json();
         setFeaturedProducts(data);

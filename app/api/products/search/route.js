@@ -64,6 +64,7 @@ export async function GET(request) {
     const brand = searchParams.get('brand') || '';
     const warehouse = searchParams.get('warehouse') || '';
     const limitParam = searchParams.get('limit') || '';
+    const includeHidden = searchParams.get('includeHidden') === 'true';
     
     let topLimit = 100;
     if (limitParam === 'all') {
@@ -76,7 +77,7 @@ export async function GET(request) {
     }
     
     // 1. Intentar servir desde el caché en memoria (asíncronamente)
-    const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}-${topLimit}`;
+    const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}-${topLimit}-${includeHidden}`;
     const cachedData = await cache.get(cacheKey);
     if (cachedData) {
       console.log(`[API Products Search] Sirviendo desde caché para: ${cacheKey}`);
@@ -103,7 +104,7 @@ export async function GET(request) {
       console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search?warehouse=${warehouse}`);
       try {
         const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}&limit=${encodeURIComponent(limitParam)}`;
+        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}&limit=${encodeURIComponent(limitParam)}&includeHidden=${includeHidden}`;
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },
@@ -506,6 +507,7 @@ export async function GET(request) {
         images: imagesArray,
         description: enrichment.descripcionEnriquecida || p.observations?.trim() || null,
         destacado: !!enrichment.destacado,
+        visible: enrichment.visible !== false,
         hasEquivalents: useFallback 
           ? (p.id === '0505-010288' || p.id === '0505-010340' || p.id === '0505-010287') 
           : (p.hasEquivalents === 1 || p.hasEquivalents === true),
@@ -526,8 +528,8 @@ export async function GET(request) {
       }
       console.log(`[DEPURACIÓN FILTRADO] Categorías deshabilitadas en Postgres:`, disabledCategories);
 
-      // Si el producto tiene config y está marcado como oculto, excluirlo
-      if (enrichment && enrichment.visible === false) {
+      // Si el producto tiene config y está marcado como oculto, excluirlo (a menos que se pida incluirlos)
+      if (!includeHidden && enrichment && enrichment.visible === false) {
         console.log(`[DEPURACIÓN FILTRADO] EXCLUIDO: Marcado como visible=false en Postgres.`);
         return false;
       }
