@@ -11,7 +11,8 @@ function useBreakpoint() {
       const w = window.innerWidth
       if (w < 640) setColumns(1)
       else if (w < 1024) setColumns(2)
-      else setColumns(3)
+      else if (w < 1440) setColumns(3)
+      else setColumns(6) // 6 columnas en pantallas grandes de escritorio para un diseño ultra-ancho equilibrado
     }
     update()
     window.addEventListener('resize', update)

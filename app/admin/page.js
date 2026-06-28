@@ -430,354 +430,357 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Breadcrumb */}
-        <div className="admin-breadcrumb">
-          <span>Admin</span>
-          {bc.path.map((crumb, i) => (
-            <React.Fragment key={i}>
-              <ChevronRight size={12} className="admin-breadcrumb-sep" />
-              <span className={i === bc.path.length - 1 ? 'admin-breadcrumb-current' : ''}>{crumb}</span>
-            </React.Fragment>
-          ))}
-        </div>
+        {/* Wrapper unificado para centrado y alineación perfecta en pantallas grandes */}
+        <div className="admin-main-content-wrapper">
+          {/* Breadcrumb */}
+          <div className="admin-breadcrumb">
+            <span>Admin</span>
+            {bc.path.map((crumb, i) => (
+              <React.Fragment key={i}>
+                <ChevronRight size={12} className="admin-breadcrumb-sep" />
+                <span className={i === bc.path.length - 1 ? 'admin-breadcrumb-current' : ''}>{crumb}</span>
+              </React.Fragment>
+            ))}
+          </div>
 
-        {/* Section Header */}
-        <div className="admin-section-header" style={{ marginTop: '12px' }}>
-          <h1 className="admin-section-title">{bc.title}</h1>
-          <p className="admin-section-desc">{bc.desc}</p>
-        </div>
+          {/* Section Header */}
+          <div className="admin-section-header" style={{ marginTop: '12px' }}>
+            <h1 className="admin-section-title">{bc.title}</h1>
+            <p className="admin-section-desc">{bc.desc}</p>
+          </div>
 
-        {/* Content Area */}
-        <div className="admin-main-content">
+          {/* Content Area */}
+          <div className="admin-main-content">
 
-          {/* ══════ DASHBOARD ══════ */}
-          {activeSection === 'dashboard' && (
-            <AdminDashboard
-              products={products}
-              featuredProducts={featuredProducts}
-              warehouses={warehouses}
-              onNavigate={setActiveSection}
-              adminUser={adminUser}
-            />
-          )}
+            {/* ══════ DASHBOARD ══════ */}
+            {activeSection === 'dashboard' && (
+              <AdminDashboard
+                products={products}
+                featuredProducts={featuredProducts}
+                warehouses={warehouses}
+                onNavigate={setActiveSection}
+                adminUser={adminUser}
+              />
+            )}
 
-          {/* ══════ PRODUCTOS ══════ */}
-          {activeSection === 'products' && (
-            <div className="admin-products-layout">
-              {/* Panel Izquierdo: Buscador + Lista */}
-              <div className="admin-products-left">
-                <div className="admin-card-full">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h3 style={s.panelTitle}>Catálogo Base</h3>
-                    <button onClick={() => loadProducts(searchQuery)} style={s.refreshBtn} title="Refrescar">
-                      <RefreshCw size={16} />
-                    </button>
-                  </div>
-                  <AdminProductSearch
-                    products={products}
-                    isLoading={isLoading}
-                    onSearch={(q) => { setSearchQuery(q); loadProducts(q); }}
-                    onSelectProduct={handleSelectProduct}
-                    selectedProduct={selectedProduct}
-                    onBulkAction={handleBulkAction}
-                  />
-                </div>
-              </div>
-
-              {/* Panel Derecho: Editor */}
-              <div className="admin-products-right">
-                {selectedProduct ? (
+            {/* ══════ PRODUCTOS ══════ */}
+            {activeSection === 'products' && (
+              <div className="admin-products-layout">
+                {/* Panel Izquierdo: Buscador + Lista */}
+                <div className="admin-products-left">
                   <div className="admin-card-full">
-                    <h3 style={s.panelTitle}>Editar Producto</h3>
-                    <p style={s.panelSub}>Personaliza fotos y detalles para la web.</p>
-
-                    {/* Alertas */}
-                    {message.text && (
-                      <div style={{
-                        ...s.alert,
-                        backgroundColor: message.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
-                        borderColor: message.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
-                      }}>
-                        {message.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
-                        <span style={{ fontSize: '0.82rem', fontWeight: '600', color: message.type === 'success' ? '#22C55E' : '#EF4444' }}>
-                          {message.text}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Ficha del producto */}
-                    <div style={s.sourceGrid}>
-                      <div style={s.sourceItem}>
-                        <span style={s.sourceLabel}>Código</span>
-                        <span style={s.sourceVal}>{selectedProduct.id}</span>
-                      </div>
-                      <div style={s.sourceItem}>
-                        <span style={s.sourceLabel}>Nombre</span>
-                        <span style={s.sourceVal}>{selectedProduct.name}</span>
-                      </div>
-                      <div style={s.sourceItem}>
-                        <span style={s.sourceLabel}>Marca / Stock</span>
-                        <span style={s.sourceVal}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
-                      </div>
-                      <div style={s.sourceItem}>
-                        <span style={s.sourceLabel}>Precio</span>
-                        <span style={s.sourceVal}>S/ {selectedProduct.price}</span>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleSave} style={s.editorForm}>
-                      {/* Switches */}
-                      <div style={s.switchRow}>
-                        <div
-                          style={{ ...s.switchCard, borderColor: isVisible ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.2)' }}
-                          onClick={() => setIsVisible(!isVisible)}
-                        >
-                          {isVisible ? <Eye size={18} color="#22C55E" /> : <EyeOff size={18} color="#EF4444" />}
-                          <div>
-                            <div style={s.switchTitle}>{isVisible ? 'Visible' : 'Oculto'}</div>
-                            <div style={s.switchDesc}>Los clientes {isVisible ? 'pueden' : 'NO pueden'} ver este producto</div>
-                          </div>
-                          <div style={{ ...s.toggleTrack, backgroundColor: isVisible ? '#22C55E' : '#D1D5DB' }}>
-                            <div style={{ ...s.toggleThumb, transform: isVisible ? 'translateX(20px)' : 'translateX(2px)' }} />
-                          </div>
-                        </div>
-                        <div
-                          style={{ ...s.switchCard, borderColor: isTrending ? 'rgba(255,46,147,0.3)' : 'rgba(142,154,167,0.1)' }}
-                          onClick={() => setIsTrending(!isTrending)}
-                        >
-                          <Star size={18} color={isTrending ? 'var(--accent-start)' : 'var(--text-secondary)'} fill={isTrending ? 'var(--accent-start)' : 'none'} />
-                          <div>
-                            <div style={s.switchTitle}>Destacado</div>
-                            <div style={s.switchDesc}>Aparece en el carrusel principal</div>
-                          </div>
-                          <div style={{ ...s.toggleTrack, backgroundColor: isTrending ? 'var(--accent-start)' : '#D1D5DB' }}>
-                            <div style={{ ...s.toggleThumb, transform: isTrending ? 'translateX(20px)' : 'translateX(2px)' }} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Upload Zone */}
-                      <div style={s.uploadSection}>
-                        <label style={s.label}>Imágenes</label>
-                        <div
-                          style={{
-                            ...s.dropZone,
-                            borderColor: isDragOver ? 'var(--accent-start)' : 'rgba(142,154,167,0.2)',
-                            backgroundColor: isDragOver ? 'rgba(255,46,147,0.04)' : '#FAFAFA',
-                          }}
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          {isUploading ? (
-                            <div style={s.uploadingState}>
-                              <Loader2 size={28} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
-                              <span style={s.dropText}>Subiendo...</span>
-                            </div>
-                          ) : (
-                            <>
-                              <ImagePlus size={28} color={isDragOver ? 'var(--accent-start)' : '#9CA3AF'} />
-                              <span style={s.dropText}>{isDragOver ? 'Suelta aquí' : 'Arrastra o haz clic'}</span>
-                              <span style={s.dropHint}>JPEG, PNG, WebP — máx. 3MB</span>
-                            </>
-                          )}
-                          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files)} />
-                        </div>
-                        {uploadedImages.length > 0 && (
-                          <div style={s.imageGrid}>
-                            {uploadedImages.map((imgSrc, idx) => (
-                              <div key={idx} style={s.imageThumb}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={imgSrc} alt={`Imagen ${idx + 1}`} style={s.imageThumbImg} />
-                                <button type="button" style={s.removeImgBtn} onClick={() => handleRemoveImage(idx)}>
-                                  <X size={12} color="#FFF" />
-                                </button>
-                                {idx === 0 && <span style={s.mainBadge}>Principal</span>}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Descripción */}
-                      <div style={s.inputGroup}>
-                        <label style={s.label}>Descripción de Venta</label>
-                        <textarea
-                          placeholder="Beneficios, ingredientes, modo de uso..."
-                          rows={4}
-                          value={richDescription}
-                          onChange={(e) => setRichDescription(e.target.value)}
-                          style={s.textarea}
-                        />
-                      </div>
-
-                      <button type="submit" disabled={isSaving} style={s.saveBtn} className="soft-button">
-                        {isSaving ? (
-                          <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
-                        ) : (
-                          <><Save size={18} /> Guardar Cambios</>
-                        )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <h3 style={s.panelTitle}>Catálogo Base</h3>
+                      <button onClick={() => loadProducts(searchQuery)} style={s.refreshBtn} title="Refrescar">
+                        <RefreshCw size={16} />
                       </button>
-                    </form>
+                    </div>
+                    <AdminProductSearch
+                      products={products}
+                      isLoading={isLoading}
+                      onSearch={(q) => { setSearchQuery(q); loadProducts(q); }}
+                      onSelectProduct={handleSelectProduct}
+                      selectedProduct={selectedProduct}
+                      onBulkAction={handleBulkAction}
+                    />
                   </div>
-                ) : (
-                  <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 140px)', color: '#9CA3AF' }}>
-                    <Package size={48} color="#D1D5DB" />
-                    <h4 style={{ marginTop: '16px', color: 'var(--text-primary)' }}>Selecciona un producto</h4>
-                    <p style={{ fontSize: '0.85rem', textAlign: 'center', maxWidth: '280px', marginTop: '8px' }}>
-                      Elige un artículo de la lista para editar sus imágenes, descripción y visibilidad.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ══════ DESTACADOS ══════ */}
-          {activeSection === 'featured' && (
-            <div style={{ maxWidth: '900px' }}>
-              <div className="admin-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div>
-                    <p style={s.panelSub}>Productos del carrusel principal "Destacados" con badge "Top".</p>
-                  </div>
-                  <span style={s.countBadge}>{featuredProducts.length} productos</span>
                 </div>
 
-                {isFeatLoading ? (
-                  <div style={s.centerState}>
-                    <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
-                    <p style={s.stateText}>Cargando...</p>
-                  </div>
-                ) : featuredProducts.length === 0 ? (
-                  <div style={{ ...s.centerState, padding: '40px 0' }}>
-                    <Star size={48} color="#D1D5DB" />
-                    <p style={{ ...s.stateText, marginTop: '16px' }}>No tienes productos destacados.</p>
-                    <p style={{ fontSize: '0.8rem', color: '#9CA3AF', maxWidth: '300px', textAlign: 'center', marginTop: '4px' }}>
-                      Ve a "Productos", selecciona un artículo y activa "Producto Destacado".
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {featuredProducts.map((prod) => (
-                      <div key={prod.id} style={s.featuredItem}>
-                        <div style={s.featuredThumb}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={prod.image} alt={prod.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                {/* Panel Derecho: Editor */}
+                <div className="admin-products-right">
+                  {selectedProduct ? (
+                    <div className="admin-card-full">
+                      <h3 style={s.panelTitle}>Editar Producto</h3>
+                      <p style={s.panelSub}>Personaliza fotos y detalles para la web.</p>
+
+                      {/* Alertas */}
+                      {message.text && (
+                        <div style={{
+                          ...s.alert,
+                          backgroundColor: message.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                          borderColor: message.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+                        }}>
+                          {message.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                          <span style={{ fontSize: '0.82rem', fontWeight: '600', color: message.type === 'success' ? '#22C55E' : '#EF4444' }}>
+                            {message.text}
+                          </span>
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-primary)' }}>{prod.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#9CA3AF', display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
-                            <span>{prod.id}</span>
-                            <span>|</span>
-                            <span>{prod.brand || 'Gloss'}</span>
-                            <span>|</span>
-                            <span>S/ {prod.price}</span>
+                      )}
+
+                      {/* Ficha del producto */}
+                      <div style={s.sourceGrid}>
+                        <div style={s.sourceItem}>
+                          <span style={s.sourceLabel}>Código</span>
+                          <span style={s.sourceVal}>{selectedProduct.id}</span>
+                        </div>
+                        <div style={s.sourceItem}>
+                          <span style={s.sourceLabel}>Nombre</span>
+                          <span style={s.sourceVal}>{selectedProduct.name}</span>
+                        </div>
+                        <div style={s.sourceItem}>
+                          <span style={s.sourceLabel}>Marca / Stock</span>
+                          <span style={s.sourceVal}>{selectedProduct.brand} | {selectedProduct.stock} und.</span>
+                        </div>
+                        <div style={s.sourceItem}>
+                          <span style={s.sourceLabel}>Precio</span>
+                          <span style={s.sourceVal}>S/ {selectedProduct.price}</span>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleSave} style={s.editorForm}>
+                        {/* Switches */}
+                        <div style={s.switchRow}>
+                          <div
+                            style={{ ...s.switchCard, borderColor: isVisible ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.2)' }}
+                            onClick={() => setIsVisible(!isVisible)}
+                          >
+                            {isVisible ? <Eye size={18} color="#22C55E" /> : <EyeOff size={18} color="#EF4444" />}
+                            <div>
+                              <div style={s.switchTitle}>{isVisible ? 'Visible' : 'Oculto'}</div>
+                              <div style={s.switchDesc}>Los clientes {isVisible ? 'pueden' : 'NO pueden'} ver este producto</div>
+                            </div>
+                            <div style={{ ...s.toggleTrack, backgroundColor: isVisible ? '#22C55E' : '#D1D5DB' }}>
+                              <div style={{ ...s.toggleThumb, transform: isVisible ? 'translateX(20px)' : 'translateX(2px)' }} />
+                            </div>
+                          </div>
+                          <div
+                            style={{ ...s.switchCard, borderColor: isTrending ? 'rgba(255,46,147,0.3)' : 'rgba(142,154,167,0.1)' }}
+                            onClick={() => setIsTrending(!isTrending)}
+                          >
+                            <Star size={18} color={isTrending ? 'var(--accent-start)' : 'var(--text-secondary)'} fill={isTrending ? 'var(--accent-start)' : 'none'} />
+                            <div>
+                              <div style={s.switchTitle}>Destacado</div>
+                              <div style={s.switchDesc}>Aparece en el carrusel principal</div>
+                            </div>
+                            <div style={{ ...s.toggleTrack, backgroundColor: isTrending ? 'var(--accent-start)' : '#D1D5DB' }}>
+                              <div style={{ ...s.toggleThumb, transform: isTrending ? 'translateX(20px)' : 'translateX(2px)' }} />
+                            </div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                          <button onClick={() => handleToggleVisibilityFeatured(prod)} style={s.featuredActionBtn} title={prod.visible !== false ? 'Ocultar' : 'Mostrar'}>
-                            {prod.visible !== false ? <Eye size={15} color="#22C55E" /> : <EyeOff size={15} color="#EF4444" />}
-                          </button>
-                          <button
-                            onClick={() => showConfirm('Quitar de Destacados', `¿Remover "${prod.name}" de la sección de destacados?`, () => handleRemoveFeatured(prod))}
-                            style={s.featuredActionBtn}
-                            title="Quitar de destacados"
+
+                        {/* Upload Zone */}
+                        <div style={s.uploadSection}>
+                          <label style={s.label}>Imágenes</label>
+                          <div
+                            style={{
+                              ...s.dropZone,
+                              borderColor: isDragOver ? 'var(--accent-start)' : 'rgba(142,154,167,0.2)',
+                              backgroundColor: isDragOver ? 'rgba(255,46,147,0.04)' : '#FAFAFA',
+                            }}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
                           >
-                            <Trash2 size={15} color="#EF4444" />
-                          </button>
+                            {isUploading ? (
+                              <div style={s.uploadingState}>
+                                <Loader2 size={28} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+                                <span style={s.dropText}>Subiendo...</span>
+                              </div>
+                            ) : (
+                              <>
+                                <ImagePlus size={28} color={isDragOver ? 'var(--accent-start)' : '#9CA3AF'} />
+                                <span style={s.dropText}>{isDragOver ? 'Suelta aquí' : 'Arrastra o haz clic'}</span>
+                                <span style={s.dropHint}>JPEG, PNG, WebP — máx. 3MB</span>
+                              </>
+                            )}
+                            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style={{ display: 'none' }} onChange={(e) => handleFileSelect(e.target.files)} />
+                          </div>
+                          {uploadedImages.length > 0 && (
+                            <div style={s.imageGrid}>
+                              {uploadedImages.map((imgSrc, idx) => (
+                                <div key={idx} style={s.imageThumb}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={imgSrc} alt={`Imagen ${idx + 1}`} style={s.imageThumbImg} />
+                                  <button type="button" style={s.removeImgBtn} onClick={() => handleRemoveImage(idx)}>
+                                    <X size={12} color="#FFF" />
+                                  </button>
+                                  {idx === 0 && <span style={s.mainBadge}>Principal</span>}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* ══════ CATEGORÍAS ══════ */}
-          {activeSection === 'categories' && (
-            <div style={{ maxWidth: '700px' }}>
-              <div className="admin-card">
-                {catMessage.text && (
-                  <div style={{
-                    ...s.alert,
-                    backgroundColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
-                    borderColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
-                  }}>
-                    {catMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
-                    <span style={{ fontSize: '0.82rem', fontWeight: '600', color: catMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>{catMessage.text}</span>
-                  </div>
-                )}
-                {isCatLoading ? (
-                  <div style={s.centerState}><Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} /></div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                    {categories.map((cat) => (
-                      <div key={cat.categoria} style={{ ...s.listItem, opacity: cat.visible ? 1 : 0.5, borderColor: cat.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
-                        <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>{CATEGORY_ICONS[cat.categoria] || '📦'}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{CATEGORY_LABELS[cat.categoria] || cat.categoria}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>{cat.visible ? '✅ Visible' : '🚫 Oculta'}</div>
+                        {/* Descripción */}
+                        <div style={s.inputGroup}>
+                          <label style={s.label}>Descripción de Venta</label>
+                          <textarea
+                            placeholder="Beneficios, ingredientes, modo de uso..."
+                            rows={4}
+                            value={richDescription}
+                            onChange={(e) => setRichDescription(e.target.value)}
+                            style={s.textarea}
+                          />
                         </div>
-                        <div style={{ ...s.toggleTrack, backgroundColor: cat.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleCategoryVisibility(cat.categoria)}>
-                          <div style={{ ...s.toggleThumb, transform: cat.visible ? 'translateX(20px)' : 'translateX(2px)' }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button onClick={saveCategories} disabled={isCatSaving} style={s.saveFullBtn} className="soft-button">
-                  {isCatSaving ? (<><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>) : (<><Save size={18} /> Guardar Categorías</>)}
-                </button>
-              </div>
-            </div>
-          )}
 
-          {/* ══════ SEDES ══════ */}
-          {activeSection === 'warehouses' && (
-            <div style={{ maxWidth: '700px' }}>
-              <div className="admin-card">
-                {whMessage.text && (
-                  <div style={{
-                    ...s.alert,
-                    backgroundColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
-                    borderColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
-                  }}>
-                    {whMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
-                    <span style={{ fontSize: '0.82rem', fontWeight: '600', color: whMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>{whMessage.text}</span>
-                  </div>
-                )}
-                {isWhLoading ? (
-                  <div style={s.centerState}><Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} /></div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                    {warehouses.map((wh) => (
-                      <div key={wh.codalm} style={{ ...s.listItem, opacity: wh.visible ? 1 : 0.5, borderColor: wh.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
-                        <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>🏢</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{wh.nomalm}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>Código: <strong>{wh.codalm}</strong> | {wh.visible ? '✅ Activa' : '🚫 Inactiva'}</div>
-                        </div>
-                        <div style={{ ...s.toggleTrack, backgroundColor: wh.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleWarehouseVisibility(wh.codalm)}>
-                          <div style={{ ...s.toggleThumb, transform: wh.visible ? 'translateX(20px)' : 'translateX(2px)' }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button onClick={saveWarehouses} disabled={isWhSaving} style={s.saveFullBtn} className="soft-button">
-                  {isWhSaving ? (<><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>) : (<><Save size={18} /> Guardar Sedes</>)}
-                </button>
+                        <button type="submit" disabled={isSaving} style={s.saveBtn} className="soft-button">
+                          {isSaving ? (
+                            <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>
+                          ) : (
+                            <><Save size={18} /> Guardar Cambios</>
+                          )}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 140px)', color: '#9CA3AF' }}>
+                      <Package size={48} color="#D1D5DB" />
+                      <h4 style={{ marginTop: '16px', color: 'var(--text-primary)' }}>Selecciona un producto</h4>
+                      <p style={{ fontSize: '0.85rem', textAlign: 'center', maxWidth: '280px', marginTop: '8px' }}>
+                        Elige un artículo de la lista para editar sus imágenes, descripción y visibilidad.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ══════ INTELLIGENCE SUB-SECTIONS ══════ */}
-          {activeSection.startsWith('intel-') && (
-            <IntelligenceTab activeSubSection={activeSection} />
-          )}
+            {/* ══════ DESTACADOS ══════ */}
+            {activeSection === 'featured' && (
+              <div style={{ maxWidth: '900px' }}>
+                <div className="admin-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div>
+                      <p style={s.panelSub}>Productos del carrusel principal "Destacados" con badge "Top".</p>
+                    </div>
+                    <span style={s.countBadge}>{featuredProducts.length} productos</span>
+                  </div>
+
+                  {isFeatLoading ? (
+                    <div style={s.centerState}>
+                      <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
+                      <p style={s.stateText}>Cargando...</p>
+                    </div>
+                  ) : featuredProducts.length === 0 ? (
+                    <div style={{ ...s.centerState, padding: '40px 0' }}>
+                      <Star size={48} color="#D1D5DB" />
+                      <p style={{ ...s.stateText, marginTop: '16px' }}>No tienes productos destacados.</p>
+                      <p style={{ fontSize: '0.8rem', color: '#9CA3AF', maxWidth: '300px', textAlign: 'center', marginTop: '4px' }}>
+                        Ve a "Productos", selecciona un artículo y activa "Producto Destacado".
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {featuredProducts.map((prod) => (
+                        <div key={prod.id} style={s.featuredItem}>
+                          <div style={s.featuredThumb}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={prod.image} alt={prod.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-primary)' }}>{prod.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#9CA3AF', display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
+                              <span>{prod.id}</span>
+                              <span>|</span>
+                              <span>{prod.brand || 'Gloss'}</span>
+                              <span>|</span>
+                              <span>S/ {prod.price}</span>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                            <button onClick={() => handleToggleVisibilityFeatured(prod)} style={s.featuredActionBtn} title={prod.visible !== false ? 'Ocultar' : 'Mostrar'}>
+                              {prod.visible !== false ? <Eye size={15} color="#22C55E" /> : <EyeOff size={15} color="#EF4444" />}
+                            </button>
+                            <button
+                              onClick={() => showConfirm('Quitar de Destacados', `¿Remover "${prod.name}" de la sección de destacados?`, () => handleRemoveFeatured(prod))}
+                              style={s.featuredActionBtn}
+                              title="Quitar de destacados"
+                            >
+                              <Trash2 size={15} color="#EF4444" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ══════ CATEGORÍAS ══════ */}
+            {activeSection === 'categories' && (
+              <div style={{ maxWidth: '700px' }}>
+                <div className="admin-card">
+                  {catMessage.text && (
+                    <div style={{
+                      ...s.alert,
+                      backgroundColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                      borderColor: catMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+                    }}>
+                      {catMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                      <span style={{ fontSize: '0.82rem', fontWeight: '600', color: catMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>{catMessage.text}</span>
+                    </div>
+                  )}
+                  {isCatLoading ? (
+                    <div style={s.centerState}><Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} /></div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                      {categories.map((cat) => (
+                        <div key={cat.categoria} style={{ ...s.listItem, opacity: cat.visible ? 1 : 0.5, borderColor: cat.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
+                          <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>{CATEGORY_ICONS[cat.categoria] || '📦'}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{CATEGORY_LABELS[cat.categoria] || cat.categoria}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>{cat.visible ? '✅ Visible' : '🚫 Oculta'}</div>
+                          </div>
+                          <div style={{ ...s.toggleTrack, backgroundColor: cat.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleCategoryVisibility(cat.categoria)}>
+                            <div style={{ ...s.toggleThumb, transform: cat.visible ? 'translateX(20px)' : 'translateX(2px)' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={saveCategories} disabled={isCatSaving} style={s.saveFullBtn} className="soft-button">
+                    {isCatSaving ? (<><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>) : (<><Save size={18} /> Guardar Categorías</>)}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ══════ SEDES ══════ */}
+            {activeSection === 'warehouses' && (
+              <div style={{ maxWidth: '700px' }}>
+                <div className="admin-card">
+                  {whMessage.text && (
+                    <div style={{
+                      ...s.alert,
+                      backgroundColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                      borderColor: whMessage.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+                    }}>
+                      {whMessage.type === 'success' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
+                      <span style={{ fontSize: '0.82rem', fontWeight: '600', color: whMessage.type === 'success' ? '#22C55E' : '#EF4444' }}>{whMessage.text}</span>
+                    </div>
+                  )}
+                  {isWhLoading ? (
+                    <div style={s.centerState}><Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} /></div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                      {warehouses.map((wh) => (
+                        <div key={wh.codalm} style={{ ...s.listItem, opacity: wh.visible ? 1 : 0.5, borderColor: wh.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
+                          <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>🏢</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{wh.nomalm}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>Código: <strong>{wh.codalm}</strong> | {wh.visible ? '✅ Activa' : '🚫 Inactiva'}</div>
+                          </div>
+                          <div style={{ ...s.toggleTrack, backgroundColor: wh.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleWarehouseVisibility(wh.codalm)}>
+                            <div style={{ ...s.toggleThumb, transform: wh.visible ? 'translateX(20px)' : 'translateX(2px)' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={saveWarehouses} disabled={isWhSaving} style={s.saveFullBtn} className="soft-button">
+                    {isWhSaving ? (<><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</>) : (<><Save size={18} /> Guardar Sedes</>)}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ══════ INTELLIGENCE SUB-SECTIONS ══════ */}
+            {activeSection.startsWith('intel-') && (
+              <IntelligenceTab activeSubSection={activeSection} />
+            )}
+          </div>
         </div>
       </div>
 
