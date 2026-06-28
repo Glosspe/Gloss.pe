@@ -294,8 +294,14 @@ export async function GET(request) {
       ORDER BY p01.descr ASC
     `;
 
+    console.log(`[DEPURACIÓN BÚSQUEDA] Query: "${query}", Category: "${category}"`);
+    console.log(`[DEPURACIÓN BÚSQUEDA] Filtro SQL queryFilter: ${queryFilter}`);
+    console.log(`[DEPURACIÓN BÚSQUEDA] Filtro SQL categoryFilter: ${categoryFilter}`);
+    
     const result = await sqlRequest.query(sqlQuery);
     productsList = result.recordset;
+    
+    console.log(`[DEPURACIÓN BÚSQUEDA] Resultados de SQL Server del ERP: ${productsList.length}`);
 
     // Cruzar con PostgreSQL de Railway para jalar fotos, detalles y visibilidad
     let enrichedMap = {};

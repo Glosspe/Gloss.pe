@@ -70,7 +70,8 @@ export default function SearchModal() {
         const res = await fetch(`/api/products/search?q=${encodeURIComponent(localQuery)}`);
         if (res.ok) {
           const data = await res.json();
-          setResults(data.products || []);
+          // La API de búsqueda retorna un array plano de productos
+          setResults(Array.isArray(data) ? data : (data.products || []));
         }
       } catch (err) {
         console.error('Error buscando productos:', err);
@@ -265,7 +266,8 @@ export default function SearchModal() {
       const res = await fetch(`/api/products/search?q=${encodeURIComponent(code)}`);
       if (res.ok) {
         const data = await res.json();
-        const foundProducts = data.products || [];
+        // La API de búsqueda retorna un array plano de productos
+        const foundProducts = Array.isArray(data) ? data : (data.products || []);
 
         // Buscar coincidencia exacta por el código de barras (codart/código de barras)
         const exactMatch = foundProducts.find(
