@@ -28,6 +28,10 @@ export default function IntelligenceTab({ activeSubSection }) {
   const [auditSearch, setAuditSearch] = useState('');
   const [auditFilter, setAuditFilter] = useState('ALL'); // ALL, ALERT, CORRECT, UNASSIGNED
 
+  // Estados para resultados de Procesos IA
+  const [lastTagSummary, setLastTagSummary] = useState(null);
+  const [lastCrossSellSummary, setLastCrossSellSummary] = useState(null);
+
   // Confirm Modal local
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -325,6 +329,8 @@ export default function IntelligenceTab({ activeSubSection }) {
           if (res.ok) {
             const data = await res.json();
             loadIntelData();
+            setLastTagSummary(data.summary);
+            setLastCrossSellSummary(null);
             setMessage({ 
               type: 'success', 
               text: `Auto-etiquetado completado. Resumen: ${data.summary.map(s => `${s.etiqueta} (${s.totalAsociados})`).join(', ')}` 
@@ -356,6 +362,8 @@ export default function IntelligenceTab({ activeSubSection }) {
           if (res.ok) {
             const data = await res.json();
             loadIntelData();
+            setLastCrossSellSummary({ totalProductosProcesados: data.totalProductosProcesados });
+            setLastTagSummary(null);
             setMessage({ 
               type: 'success', 
               text: `Auto-venta cruzada completada. Se generaron sugerencias de venta cruzada automática para ${data.totalProductosProcesados} productos en base a su historial transaccional real del ERP.` 
@@ -1042,6 +1050,80 @@ export default function IntelligenceTab({ activeSubSection }) {
           </div>
         </div>
       </div>
+
+      {/* 📊 Resultados del Auto-Etiquetado */}
+      {lastTagSummary && (
+        <div style={styles.card} className="soft-card">
+          <div style={styles.cardHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={18} color="#10B981" />
+              <h3 style={styles.cardTitle}>Resultados del Auto-Etiquetado</h3>
+            </div>
+          </div>
+          <p style={styles.cardSub}>El motor analizó todo tu catálogo e indexó con éxito las siguientes etiquetas de belleza:</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '10px' }}>
+            {lastTagSummary.map((s, idx) => {
+              // Buscar el tag completo en la lista de tags para poder pasarle el objeto completo a Ver Lista
+              const fullTag = tags.find(t => t.etiqueta === s.etiqueta) || { etiqueta: s.etiqueta, productos: [] };
+              return (
+                <div key={idx} style={{ padding: '12px 14px', borderRadius: '12px', border: '1px solid #F1F5F9', backgroundColor: '#F8FAFC', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <strong style={{ fontSize: '0.85rem', color: 'var(--accent-start)' }}>{s.etiqueta}</strong>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B' }}>{s.totalAsociados} productos</span>
+                  <button 
+                    onClick={() => {
+                      // Construir el objeto tag compatible
+                      const mockTagForModal = {
+                        etiqueta: s.etiqueta,
+                        // Si no lo encuentra en la base de datos (por retraso de refresco),
+                        // al menos intentamos simular un array de códigos vacíos o podemos buscar los códigos después
+                        productos: fullTag.productos.length > 0 ? fullTag.productos : []
+                      };
+                      setTagProductsModal({ isOpen: true, tag: mockTagForModal });
+                    }}
+                    style={{
+                      marginTop: '4px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: 'rgba(255, 46, 147, 0.05)',
+                      color: 'var(--accent-start)',
+                      fontSize: '0.68rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      width: 'fit-content'
+                    }}
+                  >
+                    Ver Productos
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 📊 Resultados del Auto-Cross Selling */}
+      {lastCrossSellSummary && (
+        <div style={styles.card} className="soft-card">
+          <div style={styles.cardHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={18} color="#10B981" />
+              <h3 style={styles.cardTitle}>Resultados de la Venta Cruzada</h3>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', flexShrink: 0 }}>
+              <Shuffle size={20} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <strong style={{ fontSize: '0.88rem', color: '#1E293B' }}>Sincronización Exitosa</strong>
+              <p style={{ fontSize: '0.78rem', color: '#64748B', margin: 0 }}>
+                Se generaron sugerencias de venta cruzada para <strong style={{ color: 'var(--accent-start)' }}>{lastCrossSellSummary.totalProductosProcesados} productos</strong> en base al historial de ventas de boletas y facturas reales del ERP en los últimos 90 días.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
