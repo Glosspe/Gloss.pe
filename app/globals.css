@@ -686,7 +686,7 @@ a {
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #FFB3D1; /* Rosa bebé suave */
+  background-color: #FF8EBA; /* Rosa bebé un poco más intenso */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -703,9 +703,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #FF8EBA; /* Rosa un poco más intenso al hover */
+  background-color: #FF6D9F; /* Rosa un poco más oscuro al hover */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 179, 209, 0.4);
+  box-shadow: 0 6px 16px rgba(255, 142, 186, 0.35);
 }
 
 .product-add-to-cart-btn:active {
