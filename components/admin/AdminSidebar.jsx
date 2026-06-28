@@ -207,7 +207,7 @@ export default function AdminSidebar({
   // ── Sidebar content ──
 
   const sidebarContent = (
-    <div style={styles.sidebar}>
+    <div style={styles.sidebar(isDesktop)}>
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.logoRow}>
@@ -283,7 +283,7 @@ export default function AdminSidebar({
 // ── Styles ──
 
 const styles = {
-  sidebar: {
+  sidebar: (isDesktop) => ({
     width: 260,
     height: '100vh',
     background: '#1A1D23',
@@ -291,12 +291,12 @@ const styles = {
     flexDirection: 'column',
     fontFamily: 'var(--font-body)',
     userSelect: 'none',
-    position: 'fixed',
+    position: isDesktop ? 'fixed' : 'relative',
     left: 0,
     top: 0,
     bottom: 0,
-    zIndex: 50,
-  },
+    zIndex: isDesktop ? 50 : 1001,
+  }),
 
   // Header
   header: {
@@ -334,6 +334,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
   },
 
   // Nav
