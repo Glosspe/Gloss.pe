@@ -16,6 +16,11 @@ export default function IntelligenceTab({ activeSubSection }) {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // Lógica de visualización colapsable de formularios
+  const [showShortcutForm, setShowShortcutForm] = useState(false);
+  const [showTagForm, setShowTagForm] = useState(false);
+  const [showCrossSellForm, setShowCrossSellForm] = useState(false);
+
   // Inputs para atajos
   const [newShortcut, setNewShortcut] = useState({ texto: '', tipo: 'QUERY', enlace: '', orden: '0' });
   // Inputs para cross-sell
@@ -107,6 +112,7 @@ export default function IntelligenceTab({ activeSubSection }) {
       });
       if (res.ok) {
         setNewShortcut({ texto: '', tipo: 'QUERY', enlace: '', orden: '0' });
+        setShowShortcutForm(false);
         loadIntelData();
         setMessage({ type: 'success', text: 'Atajo rápido agregado correctamente.' });
       }
@@ -155,6 +161,7 @@ export default function IntelligenceTab({ activeSubSection }) {
       });
       if (res.ok) {
         setNewCrossSell({ codart: '', productosStr: '' });
+        setShowCrossSellForm(false);
         loadIntelData();
         setMessage({ type: 'success', text: 'Venta cruzada manual registrada.' });
       }
@@ -187,6 +194,7 @@ export default function IntelligenceTab({ activeSubSection }) {
       });
       if (res.ok) {
         setNewTag({ etiqueta: '', orden: '0', productosStr: '' });
+        setShowTagForm(false);
         loadIntelData();
         setMessage({ type: 'success', text: 'Etiqueta de necesidad creada/actualizada.' });
       }
@@ -270,49 +278,78 @@ export default function IntelligenceTab({ activeSubSection }) {
   const renderShortcuts = () => (
     <div style={styles.card} className="soft-card">
       <div style={styles.cardHeader}>
-        <Sparkles size={20} color="var(--accent-start)" />
-        <h3 style={styles.cardTitle}>Atajos de Búsqueda Rápida</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles size={18} color="var(--accent-start)" />
+          <h3 style={styles.cardTitle}>Atajos de Búsqueda Rápida</h3>
+        </div>
+        <button 
+          onClick={() => setShowShortcutForm(!showShortcutForm)} 
+          style={showShortcutForm ? styles.cancelFormBtn : styles.openFormBtn}
+        >
+          {showShortcutForm ? 'Cerrar Formulario' : '+ Configurar Atajo'}
+        </button>
       </div>
       <p style={styles.cardSub}>Gestión de píldoras sugeridas para el modal de búsqueda rápida de cosméticos.</p>
 
-      <form onSubmit={handleAddShortcut} style={styles.shortcutForm}>
-        <div style={styles.formGrid}>
-          <input 
-            type="text" 
-            placeholder="Texto (ej. Base Gloss)" 
-            value={newShortcut.texto}
-            onChange={(e) => setNewShortcut({ ...newShortcut, texto: e.target.value })}
-            style={styles.input}
-            required
-          />
-          <select 
-            value={newShortcut.tipo} 
-            onChange={(e) => setNewShortcut({ ...newShortcut, tipo: e.target.value })}
-            style={styles.select}
-          >
-            <option value="QUERY">Consulta de Texto</option>
-            <option value="BRAND">Marca Directa</option>
-            <option value="CATEGORY">Categoría Directa</option>
-          </select>
-          <input 
-            type="text" 
-            placeholder="Enlace (ej: ?brand=Meybelline)" 
-            value={newShortcut.enlace}
-            onChange={(e) => setNewShortcut({ ...newShortcut, enlace: e.target.value })}
-            style={styles.input}
-          />
-          <input 
-            type="number" 
-            placeholder="Orden (0, 1...)" 
-            value={newShortcut.orden}
-            onChange={(e) => setNewShortcut({ ...newShortcut, orden: e.target.value })}
-            style={styles.input}
-          />
+      {showShortcutForm && (
+        <div style={styles.formContainer}>
+          <form onSubmit={handleAddShortcut} style={styles.shortcutForm}>
+            <div style={styles.formGrid}>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Texto del atajo</label>
+                <input 
+                  type="text" 
+                  placeholder="ej. Labiales Gloss" 
+                  value={newShortcut.texto}
+                  onChange={(e) => setNewShortcut({ ...newShortcut, texto: e.target.value })}
+                  style={styles.input}
+                  required
+                />
+              </div>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Tipo de Atajo</label>
+                <select 
+                  value={newShortcut.tipo} 
+                  onChange={(e) => setNewShortcut({ ...newShortcut, tipo: e.target.value })}
+                  style={styles.select}
+                >
+                  <option value="QUERY">Consulta de Texto</option>
+                  <option value="BRAND">Marca Directa</option>
+                  <option value="CATEGORY">Categoría Directa</option>
+                </select>
+              </div>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Enlace del atajo (opcional)</label>
+                <input 
+                  type="text" 
+                  placeholder="ej: ?brand=Meybelline" 
+                  value={newShortcut.enlace}
+                  onChange={(e) => setNewShortcut({ ...newShortcut, enlace: e.target.value })}
+                  style={styles.input}
+                />
+              </div>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Orden de Visualización</label>
+                <input 
+                  type="number" 
+                  placeholder="ej: 0" 
+                  value={newShortcut.orden}
+                  onChange={(e) => setNewShortcut({ ...newShortcut, orden: e.target.value })}
+                  style={styles.input}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+                <Plus size={14} /> Registrar Atajo
+              </button>
+              <button type="button" onClick={() => setShowShortcutForm(false)} style={styles.secondaryBtn} className="soft-button">
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
-        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-          <Plus size={16} /> Agregar Atajo
-        </button>
-      </form>
+      )}
 
       <div style={styles.tableList}>
         {shortcuts.map((sh) => (
@@ -335,39 +372,65 @@ export default function IntelligenceTab({ activeSubSection }) {
   const renderTags = () => (
     <div style={styles.card} className="soft-card">
       <div style={styles.cardHeader}>
-        <Tag size={20} color="var(--accent-start)" />
-        <h3 style={styles.cardTitle}>Etiquetas de Necesidad (Filtros)</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Tag size={18} color="var(--accent-start)" />
+          <h3 style={styles.cardTitle}>Etiquetas de Necesidad (Filtros)</h3>
+        </div>
+        <button 
+          onClick={() => setShowTagForm(!showTagForm)} 
+          style={showTagForm ? styles.cancelFormBtn : styles.openFormBtn}
+        >
+          {showTagForm ? 'Cerrar Formulario' : '+ Configurar Filtro'}
+        </button>
       </div>
       <p style={styles.cardSub}>Organiza filtros de belleza (#AntiFrizz, #ControlCaida) asociando códigos de productos del ERP.</p>
 
-      <form onSubmit={handleAddTag} style={styles.shortcutForm}>
-        <div style={styles.formGrid}>
-          <input 
-            type="text" 
-            placeholder="Etiqueta (ej. #ControlCaida)" 
-            value={newTag.etiqueta}
-            onChange={(e) => setNewTag({ ...newTag, etiqueta: e.target.value })}
-            style={styles.input}
-            required
-          />
-          <input 
-            type="number" 
-            placeholder="Orden (0, 1...)" 
-            value={newTag.orden}
-            onChange={(e) => setNewTag({ ...newTag, orden: e.target.value })}
-            style={styles.input}
-          />
-          <textarea 
-            placeholder="Códigos del ERP separados por comas (ej. 0101-1, 0101-2)" 
-            value={newTag.productosStr}
-            onChange={(e) => setNewTag({ ...newTag, productosStr: e.target.value })}
-            style={{ ...styles.input, gridColumn: 'span 2', minHeight: '60px' }}
-          />
+      {showTagForm && (
+        <div style={styles.formContainer}>
+          <form onSubmit={handleAddTag} style={styles.shortcutForm}>
+            <div style={styles.formGrid}>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Etiqueta de belleza</label>
+                <input 
+                  type="text" 
+                  placeholder="ej. #ControlCaida" 
+                  value={newTag.etiqueta}
+                  onChange={(e) => setNewTag({ ...newTag, etiqueta: e.target.value })}
+                  style={styles.input}
+                  required
+                />
+              </div>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Orden de Visualización</label>
+                <input 
+                  type="number" 
+                  placeholder="ej: 0" 
+                  value={newTag.orden}
+                  onChange={(e) => setNewTag({ ...newTag, orden: e.target.value })}
+                  style={styles.input}
+                />
+              </div>
+              <div style={{ ...styles.inputWrapper, gridColumn: 'span 2' }}>
+                <label style={styles.inputLabel}>Códigos del ERP asociados</label>
+                <textarea 
+                  placeholder="Códigos del ERP separados por comas (ej. 0101.00245, 0102.00142)" 
+                  value={newTag.productosStr}
+                  onChange={(e) => setNewTag({ ...newTag, productosStr: e.target.value })}
+                  style={{ ...styles.input, minHeight: '80px', padding: '10px 12px', resize: 'none' }}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+                <Plus size={14} /> Registrar Filtro
+              </button>
+              <button type="button" onClick={() => setShowTagForm(false)} style={styles.secondaryBtn} className="soft-button">
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
-        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-          <Plus size={16} /> Crear/Guardar Etiqueta
-        </button>
-      </form>
+      )}
 
       <div style={styles.tableList}>
         {tags.map((tg) => (
@@ -390,33 +453,56 @@ export default function IntelligenceTab({ activeSubSection }) {
   const renderCrossSell = () => (
     <div style={styles.card} className="soft-card">
       <div style={styles.cardHeader}>
-        <Shuffle size={20} color="var(--accent-start)" />
-        <h3 style={styles.cardTitle}>Venta Cruzada Manual</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Shuffle size={18} color="var(--accent-start)" />
+          <h3 style={styles.cardTitle}>Venta Cruzada Manual</h3>
+        </div>
+        <button 
+          onClick={() => setShowCrossSellForm(!showCrossSellForm)} 
+          style={showCrossSellForm ? styles.cancelFormBtn : styles.openFormBtn}
+        >
+          {showCrossSellForm ? 'Cerrar Formulario' : '+ Configurar Venta'}
+        </button>
       </div>
       <p style={styles.cardSub}>Configura qué productos sugerir al cliente en el carrusel de la ficha de detalle.</p>
 
-      <form onSubmit={handleAddCrossSell} style={styles.shortcutForm}>
-        <div style={styles.formGrid}>
-          <input 
-            type="text" 
-            placeholder="Código Producto Base (ERP)" 
-            value={newCrossSell.codart}
-            onChange={(e) => setNewCrossSell({ ...newCrossSell, codart: e.target.value })}
-            style={styles.input}
-            required
-          />
-          <textarea 
-            placeholder="Códigos de productos complementarios (separados por comas)" 
-            value={newCrossSell.productosStr}
-            onChange={(e) => setNewCrossSell({ ...newCrossSell, productosStr: e.target.value })}
-            style={{ ...styles.input, minHeight: '60px' }}
-            required
-          />
+      {showCrossSellForm && (
+        <div style={styles.formContainer}>
+          <form onSubmit={handleAddCrossSell} style={styles.shortcutForm}>
+            <div style={styles.formGrid}>
+              <div style={styles.inputWrapper}>
+                <label style={styles.inputLabel}>Código Producto Base (ERP)</label>
+                <input 
+                  type="text" 
+                  placeholder="ej. 0505.010369" 
+                  value={newCrossSell.codart}
+                  onChange={(e) => setNewCrossSell({ ...newCrossSell, codart: e.target.value })}
+                  style={styles.input}
+                  required
+                />
+              </div>
+              <div style={{ ...styles.inputWrapper, gridColumn: 'span 2' }}>
+                <label style={styles.inputLabel}>Códigos Recomendados asociados</label>
+                <textarea 
+                  placeholder="Códigos recomendados separados por comas (ej: 0505.010002, 0502.000105)" 
+                  value={newCrossSell.productosStr}
+                  onChange={(e) => setNewCrossSell({ ...newCrossSell, productosStr: e.target.value })}
+                  style={{ ...styles.input, minHeight: '80px', padding: '10px 12px', resize: 'none' }}
+                  required
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+                <Plus size={14} /> Guardar Venta Cruzada
+              </button>
+              <button type="button" onClick={() => setShowCrossSellForm(false)} style={styles.secondaryBtn} className="soft-button">
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
-        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-          <Plus size={16} /> Guardar Venta Cruzada
-        </button>
-      </form>
+      )}
 
       <div style={styles.tableList}>
         {crossSells.map((cs) => (
@@ -555,6 +641,7 @@ const styles = {
   cardHeader: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: '10px',
     marginBottom: '8px'
   },
@@ -673,5 +760,63 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '60px 0'
+  },
+  openFormBtn: {
+    height: '32px',
+    padding: '0 12px',
+    fontSize: '0.78rem',
+    fontWeight: '600',
+    backgroundColor: '#EFF6FF',
+    color: '#2563EB',
+    border: '1px solid rgba(37,99,235,0.15)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-body)',
+    transition: 'all 0.2s',
+  },
+  cancelFormBtn: {
+    height: '32px',
+    padding: '0 12px',
+    fontSize: '0.78rem',
+    fontWeight: '600',
+    backgroundColor: '#FEF2F2',
+    color: '#EF4444',
+    border: '1px solid rgba(239,68,68,0.15)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-body)',
+    transition: 'all 0.2s',
+  },
+  formContainer: {
+    backgroundColor: '#FAFAFA',
+    border: '1px solid rgba(142,154,167,0.08)',
+    borderRadius: '12px',
+    padding: '16px',
+    marginBottom: '20px',
+    maxWidth: '680px',
+    width: '100%',
+  },
+  inputWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  inputLabel: {
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    color: '#64748B',
+    textAlign: 'left',
+  },
+  secondaryBtn: {
+    height: '40px',
+    padding: '0 16px',
+    fontSize: '0.85rem',
+    fontWeight: '500',
+    backgroundColor: '#FFFFFF',
+    color: '#475569',
+    border: '1px solid #E2E8F0',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-body)',
   }
 };
