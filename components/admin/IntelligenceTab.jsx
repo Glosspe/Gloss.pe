@@ -6,6 +6,7 @@ import {
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2 
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
+import AdminTagProductsModal from './AdminTagProductsModal';
 
 export default function IntelligenceTab({ activeSubSection }) {
   const [configs, setConfigs] = useState({ LOW_STOCK_THRESHOLD: '5' });
@@ -16,6 +17,9 @@ export default function IntelligenceTab({ activeSubSection }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Modal para ver productos asociados a las etiquetas
+  const [tagProductsModal, setTagProductsModal] = useState({ isOpen: false, tag: null });
 
   // Confirm Modal local
   const [confirmModal, setConfirmModal] = useState({
@@ -492,13 +496,36 @@ export default function IntelligenceTab({ activeSubSection }) {
           <div key={tg.id} style={styles.listItem}>
             <div>
               <strong style={{ fontSize: '0.85rem', color: 'var(--accent-start)' }}>{tg.etiqueta}</strong>
-              <div style={{ fontSize: '0.72rem', color: '#64748B', maxWidth: '300px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                Productos asociados: {tg.productos}
+              <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>
+                {tg.productos.length} producto{tg.productos.length !== 1 ? 's' : ''} asociado{tg.productos.length !== 1 ? 's' : ''}
               </div>
             </div>
-            <button onClick={() => handleDeleteTag(tg.id)} style={styles.deleteBtn}>
-              <Trash2 size={14} />
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                onClick={() => setTagProductsModal({ isOpen: true, tag: tg })} 
+                style={{
+                  ...styles.deleteBtn,
+                  color: 'var(--accent-start)',
+                  backgroundColor: 'rgba(255, 46, 147, 0.05)',
+                  borderColor: 'rgba(255, 46, 147, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 10px',
+                  height: '28px',
+                  borderRadius: '6px',
+                  border: '1px solid transparent',
+                  cursor: 'pointer'
+                }}
+                title="Ver Productos Asociados"
+              >
+                <Sparkles size={12} />
+                <span style={{ fontSize: '0.72rem', fontWeight: 600 }}>Ver Lista</span>
+              </button>
+              <button onClick={() => handleDeleteTag(tg.id)} style={styles.deleteBtn} title="Eliminar Etiqueta">
+                <Trash2 size={13} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -665,6 +692,13 @@ export default function IntelligenceTab({ activeSubSection }) {
         isProcessing={confirmModal.isProcessing}
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* ── Modal de Productos Asociados a Etiquetas ── */}
+      <AdminTagProductsModal
+        isOpen={tagProductsModal.isOpen}
+        tag={tagProductsModal.tag}
+        onClose={() => setTagProductsModal({ isOpen: false, tag: null })}
       />
     </div>
   );
