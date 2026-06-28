@@ -64,7 +64,7 @@ export default function Header() {
               onClick={() => setIsSearchOpen(true)}
               title="Buscar o Escanear"
             >
-              <Search size={24} color="var(--accent-start)" className="header-icon-svg" />
+              <Search size={24} color="#334155" className="header-icon-svg" />
             </button>
 
             {/* Botón Bolsa (Carrito) */}
@@ -74,7 +74,7 @@ export default function Header() {
               onClick={() => setIsCartOpen(true)}
               title="Ver Carrito"
             >
-              <ShoppingBag size={24} color="var(--accent-start)" className="header-icon-svg" />
+              <ShoppingBag size={24} color="#334155" className="header-icon-svg" />
               {cartCount > 0 && (
                 <span style={styles.badge} className="header-cart-badge">{cartCount}</span>
               )}
@@ -87,7 +87,7 @@ export default function Header() {
               onClick={() => setIsMenuOpen(true)}
               title="Menú"
             >
-              <Menu size={24} color="var(--accent-start)" className="header-icon-svg" />
+              <Menu size={24} color="#334155" className="header-icon-svg" />
             </button>
           </div>
         </div>
