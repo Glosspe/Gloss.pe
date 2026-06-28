@@ -240,16 +240,51 @@ export async function GET(request) {
 
     let categoryFilter = "";
     if (category === 'Trending') {
-      // Si el cliente está escribiendo una consulta de búsqueda, ignoramos la restricción de "Trending"
-      // para permitir buscar en todo el catálogo de productos.
       if (query.trim() !== '') {
         categoryFilter = "";
-      } else if (featuredCodes.length > 0) {
-        // SQL Server: Filtrar estrictamente por los códigos que se marcaron como destacados en Postgres
-        categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
       } else {
-        // Forzar que no devuelva nada si no hay destacados reales
-        categoryFilter = ` AND 1 = 0`;
+        // Consultar dinámicamente los productos más vendidos en el ERP en los últimos 90 días (por región/almacén si se solicita)
+        let topCodes = [];
+        try {
+          const topSalesRequest = pool.request();
+          const targetWarehouse = activeWarehouses.length === 1 ? activeWarehouses[0] : '';
+          
+          let warehouseFilter = "";
+          if (targetWarehouse) {
+            topSalesRequest.input('topSalesWarehouse', sql.VarChar, targetWarehouse);
+            warehouseFilter = ` AND d.Codalm = @topSalesWarehouse`;
+          }
+          
+          const topSalesQuery = `
+            SELECT TOP 20 
+              RTRIM(d.codi) as id,
+              SUM(d.cant) as unidades_vendidas
+            FROM dtl01fac d WITH(nolock)
+            INNER JOIN prd0101 p01 WITH(nolock) ON p01.codi = d.codi
+            WHERE d.fecha >= DATEADD(day, -90, GETDATE())
+              AND p01.estado = 1
+              ${warehouseFilter}
+            GROUP BY d.codi
+            ORDER BY unidades_vendidas DESC
+          `;
+          
+          const topSalesResult = await topSalesRequest.query(topSalesQuery);
+          topCodes = topSalesResult.recordset.map(r => r.id);
+          console.log(`[API Products Search - MAS VENDIDOS] Sede: ${targetWarehouse || 'GLOBAL'}. Más vendidos del ERP encontrados: ${topCodes.length}`);
+        } catch (errTopSales) {
+          console.error('[API Products Search - MAS VENDIDOS] Error consultando más vendidos del ERP:', errTopSales.message);
+        }
+
+        // Si obtuvimos más vendidos del ERP, los usamos
+        if (topCodes.length > 0) {
+          categoryFilter = ` AND p01.codi IN (${topCodes.map(c => `'${c}'`).join(',')})`;
+        } else if (featuredCodes.length > 0) {
+          // Fallback a los destacados de Postgres si el ERP no tiene registros de ventas o falla la consulta
+          categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
+        } else {
+          // Si no hay nada, no retornar nada
+          categoryFilter = ` AND 1 = 0`;
+        }
       }
     } else if (category && category !== 'Todos') {
       if (category.startsWith('FAM:')) {
