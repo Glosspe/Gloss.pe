@@ -99,8 +99,16 @@ export async function GET(request) {
 
       if (usePgFallback) {
         // Auditoría directa sobre base de datos PostgreSQL de la nube (Railway)
+        // Optimizamos la consulta seleccionando solo las columnas necesarias para evitar timeouts 502 en producción.
         const webProducts = await prisma.webProductoImagen.findMany({
-          where: { visible: true }
+          where: { visible: true },
+          select: {
+            codart: true,
+            nombre: true,
+            categoria: true,
+            imagenes: true,
+            visible: true
+          }
         });
 
         const auditedProducts = webProducts.map(p => {
@@ -205,6 +213,11 @@ export async function GET(request) {
             const webImages = await prisma.webProductoImagen.findMany({
               where: {
                 codart: { in: chunk }
+              },
+              select: {
+                codart: true,
+                imagenes: true,
+                visible: true
               }
             });
             webImages.forEach(img => {
