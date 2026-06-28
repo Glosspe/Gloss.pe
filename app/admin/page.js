@@ -149,7 +149,7 @@ export default function AdminPage() {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
     try {
-      const response = await fetch(`/api/products/search?category=Todos&q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/products/search?category=Todos&q=${encodeURIComponent(query)}&limit=all`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);

@@ -63,9 +63,20 @@ export async function GET(request) {
     const category = searchParams.get('category') || 'Trending';
     const brand = searchParams.get('brand') || '';
     const warehouse = searchParams.get('warehouse') || '';
+    const limitParam = searchParams.get('limit') || '';
+    
+    let topLimit = 100;
+    if (limitParam === 'all') {
+      topLimit = 15000;
+    } else if (limitParam) {
+      const parsed = parseInt(limitParam, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        topLimit = Math.min(parsed, 15000);
+      }
+    }
     
     // 1. Intentar servir desde el caché en memoria (asíncronamente)
-    const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}`;
+    const cacheKey = `search-${query}-${category}-${brand}-${warehouse || 'all'}-${topLimit}`;
     const cachedData = await cache.get(cacheKey);
     if (cachedData) {
       console.log(`[API Products Search] Sirviendo desde caché para: ${cacheKey}`);
@@ -92,7 +103,7 @@ export async function GET(request) {
       console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search?warehouse=${warehouse}`);
       try {
         const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}`;
+        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}&limit=${encodeURIComponent(limitParam)}`;
         
         const res = await fetch(targetUrl, {
           headers: { 'Content-Type': 'application/json' },
@@ -363,7 +374,7 @@ export async function GET(request) {
 
     // Consulta SQL Server con optimizaciones sargables y EXISTS
     const sqlQuery = `
-      SELECT TOP 100 
+      SELECT TOP ${topLimit} 
         RTRIM(p01.codi) as id, 
         RTRIM(p01.codf) as userCode, 
         RTRIM(p01.descr) as name, 
