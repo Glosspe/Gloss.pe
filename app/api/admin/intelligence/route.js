@@ -112,7 +112,7 @@ export async function GET(request) {
       const query = `
         SELECT 
           RTRIM(p01.codi) as id,
-          RTRIM(p01.codart) as userCode,
+          RTRIM(p01.codf) as userCode,
           RTRIM(p01.descr) as name,
           RTRIM(p01.codcat) as categoryCode,
           RTRIM(s.nomsub) as categoryName
