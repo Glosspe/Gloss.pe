@@ -276,7 +276,8 @@ const styles = {
     flexDirection: 'column',
     gap: '4px',
     flex: 1,
-    marginTop: '4px',
+    marginTop: '6px',
+    padding: '0 6px', // Espacio interior adicional para que no empiece tan al borde de la tarjeta
   },
   stockCardBadge: {
     position: 'absolute',
