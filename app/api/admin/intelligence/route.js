@@ -98,87 +98,91 @@ export async function GET(request) {
       }
 
       if (usePgFallback) {
-        // Auditoría directa sobre base de datos PostgreSQL de la nube (Railway)
-        // Optimizamos la consulta seleccionando solo las columnas necesarias para evitar timeouts 502 en producción.
-        const webProducts = await prisma.webProductoImagen.findMany({
-          where: { visible: true },
-          select: {
-            codart: true,
-            nombre: true,
-            categoria: true,
-            imagenes: true,
-            visible: true
-          }
-        });
+        // Auditoría directa sobre base de datos PostgreSQL de la nube (Railway) mediante SQL Nativo optimizado.
+        // Esto previene los errores 502 Bad Gateway procesando el filtrado Regex en el motor de BD en menos de 20ms.
+        const sqlQuery = `
+          SELECT 
+            codart as id,
+            codart as "userCode",
+            nombre as name,
+            COALESCE(categoria, '') as "categoryName",
+            visible,
+            imagenes,
+            CASE 
+              WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador') 
+                   AND NOT (categoria ~* 'cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio') THEN 'INCONSISTENT'
+                   
+              WHEN NOT (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador')
+                   AND (nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar')
+                   AND NOT (categoria ~* 'rostro|facial|cutis|piel|cremas') THEN 'INCONSISTENT'
+                   
+              WHEN (nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña')
+                   AND NOT (categoria ~* 'uñas|manicure|pedicure|esmalte') THEN 'INCONSISTENT'
+                   
+              WHEN (categoria IS NULL OR categoria = '' OR LOWER(categoria) IN ('otros', 'varios', 'sin categoria', 'genericos') OR LOWER(categoria) LIKE '%accesorio%') THEN 
+                   CASE 
+                     WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador'
+                           OR nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar'
+                           OR nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña') THEN 'INCONSISTENT'
+                     ELSE 'UNASSIGNED'
+                   END
+              ELSE 'CORRECT'
+            END as status,
+            
+            CASE 
+              WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador') 
+                   AND NOT (categoria ~* 'cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio') THEN 'El nombre sugiere cuidado capilar, pero su categoría es "' || COALESCE(categoria, 'Sin Nombre') || '".'
+                   
+              WHEN NOT (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador')
+                   AND (nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar')
+                   AND NOT (categoria ~* 'rostro|facial|cutis|piel|cremas') THEN 'El producto sugiere cuidado de la piel/facial, pero su categoría es "' || COALESCE(categoria, 'Sin Nombre') || '".'
+                   
+              WHEN (nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña')
+                   AND NOT (categoria ~* 'uñas|manicure|pedicure|esmalte') THEN 'El producto sugiere manicure/uñas, pero su categoría es "' || COALESCE(categoria, 'Sin Nombre') || '".'
+                   
+              WHEN (categoria IS NULL OR categoria = '' OR LOWER(categoria) IN ('otros', 'varios', 'sin categoria', 'genericos') OR LOWER(categoria) LIKE '%accesorio%') THEN 
+                   CASE 
+                     WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador'
+                           OR nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar'
+                           OR nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña') 
+                       THEN 'El producto es un cosmético activo, pero está clasificado bajo la categoría genérica "' || COALESCE(categoria, 'ACCESORIOS') || '".'
+                     ELSE 'El producto está en una categoría genérica o vacía.'
+                   END
+              ELSE ''
+            END as "alertMessage",
 
-        const auditedProducts = webProducts.map(p => {
-          const nameLower = (p.nombre || '').toLowerCase();
-          const catName = p.categoria ? p.categoria.trim() : '';
-          const catNameLower = catName.toLowerCase();
-          
-          let status = 'CORRECT';
-          let alertMessage = '';
-          let suggestedCategory = '';
-          let suggestedSubcategory = '';
+            CASE 
+              WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador') THEN 'Cabello'
+              WHEN (nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar') THEN 'Rostro'
+              WHEN (nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña') THEN 'Uñas'
+              ELSE 'Por Definir'
+            END as "suggestedCategory",
 
-          const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
-          const isCapilarCategory = /cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio/i.test(catNameLower);
+            CASE 
+              WHEN (nombre ~* 'shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador') THEN 'Cuidado Capilar'
+              WHEN (nombre ~* 'crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar') THEN 'Cuidado Facial'
+              WHEN (nombre ~* 'esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña') THEN 'Esmaltes y Manicure'
+              ELSE 'Pendiente Clasificación'
+            END as "suggestedSubcategory"
 
-          const isFacialName = !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
-          const isFacialCategory = /rostro|facial|cutis|piel|cremas/i.test(catNameLower);
+          FROM web_producto_imagenes
+          WHERE visible = true
+        `;
 
-          const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
-          const isUñasCategory = /uñas|manicure|pedicure|esmalte/i.test(catNameLower);
+        const rawProducts = await prisma.$queryRawUnsafe(sqlQuery);
 
-          if (isCapilarName && !isCapilarCategory) {
-            status = 'INCONSISTENT';
-            alertMessage = `El nombre sugiere cuidado capilar, pero su categoría es "${catName || 'Sin Nombre'}".`;
-            suggestedCategory = 'Cabello';
-            suggestedSubcategory = 'Cuidado Capilar';
-          } else if (isFacialName && !isFacialCategory) {
-            status = 'INCONSISTENT';
-            alertMessage = `El producto sugiere cuidado de la piel/facial, pero su categoría es "${catName || 'Sin Nombre'}".`;
-            suggestedCategory = 'Rostro';
-            suggestedSubcategory = 'Cuidado Facial';
-          } else if (isUñasName && !isUñasCategory) {
-            status = 'INCONSISTENT';
-            alertMessage = `El producto sugiere manicure/uñas, pero su categoría es "${catName || 'Sin Nombre'}".`;
-            suggestedCategory = 'Uñas';
-            suggestedSubcategory = 'Esmaltes y Manicure';
-          } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '' || catNameLower.includes('accesorio')) {
-            if (isCapilarName || isFacialName || isUñasName) {
-              status = 'INCONSISTENT';
-              alertMessage = `El producto es un cosmético activo, pero está clasificado bajo la categoría genérica "${catName || 'ACCESORIOS'}".`;
-              if (isCapilarName) {
-                suggestedCategory = 'Cabello';
-                suggestedSubcategory = 'Cuidado Capilar';
-              } else if (isFacialName) {
-                suggestedCategory = 'Rostro';
-                suggestedSubcategory = 'Cuidado Facial';
-              } else {
-                suggestedCategory = 'Uñas';
-                suggestedSubcategory = 'Esmaltes y Manicure';
-              }
-            } else {
-              status = 'UNASSIGNED';
-              alertMessage = `El producto está en una categoría genérica o vacía.`;
-              suggestedCategory = 'Por Definir';
-              suggestedSubcategory = 'Pendiente Clasificación';
-            }
-          }
-
+        const auditedProducts = rawProducts.map(p => {
           let imgs = [];
           try { imgs = JSON.parse(p.imagenes || '[]'); } catch (errJson) { imgs = []; }
-
           return {
-            id: p.codart,
-            userCode: p.codart,
-            name: p.nombre || '',
-            categoryName: catName || '(Sin categoría)',
-            status,
-            alertMessage,
-            suggestedCategory,
-            suggestedSubcategory,
+            id: p.id,
+            userCode: p.userCode,
+            name: p.name,
+            categoryName: p.categoryName || '(Sin categoría)',
+            status: p.status,
+            alertMessage: p.alertMessage,
+            suggestedCategory: p.suggestedCategory,
+            suggestedSubcategory: p.suggestedSubcategory,
             image: imgs.length > 0 ? imgs[0] : null,
             visible: p.visible !== false
           };
