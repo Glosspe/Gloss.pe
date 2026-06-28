@@ -686,7 +686,7 @@ a {
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #8B5CF6; /* Lila/Violeta premium */
+  background-color: #A78BFA; /* Lila pastel suave */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -703,9 +703,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #7C3AED; /* Lila/Violeta más oscuro al hover */
+  background-color: #8B5CF6; /* Lila un poco más oscuro al hover */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.3);
 }
 
 .product-add-to-cart-btn:active {
