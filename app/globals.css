@@ -680,13 +680,13 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Rosado pastel derivado del logo) */
+/* Botón Agregar al Carrito (Lila pastel premium) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #FF5CA6; /* Rosado pastel derivado del logo */
+  background-color: #8B5CF6; /* Lila/Violeta premium */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -703,9 +703,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #FF3593;
+  background-color: #7C3AED; /* Lila/Violeta más oscuro al hover */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 92, 166, 0.25);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.25);
 }
 
 .product-add-to-cart-btn:active {
