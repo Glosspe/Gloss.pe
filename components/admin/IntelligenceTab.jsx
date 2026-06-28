@@ -312,6 +312,32 @@ export default function IntelligenceTab({ activeSubSection }) {
     );
   };
 
+  const handleDeleteCrossSell = (codart) => {
+    triggerConfirm(
+      '¿Eliminar recomendación de venta cruzada?',
+      'Esta acción removerá las recomendaciones de venta cruzada asociadas a este producto base de forma permanente.',
+      'danger',
+      async () => {
+        setIsSaving(true);
+        try {
+          const token = localStorage.getItem('gloss_admin_token');
+          const res = await fetch(`/api/admin/intelligence?action=cross-sell&id=${codart}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            loadIntelData();
+            setMessage({ type: 'success', text: 'Recomendación de venta cruzada eliminada con éxito.' });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: 'Error de red.' });
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    );
+  };
+
   const handleRunAutoTagging = () => {
     triggerConfirm(
       '¿Ejecutar Auto-Etiquetado?',
@@ -479,7 +505,7 @@ export default function IntelligenceTab({ activeSubSection }) {
         </div>
       )}
 
-      <div style={styles.tableList}>
+      <div style={{ ...styles.tableList, maxHeight: '550px' }}>
         {shortcuts.map((sh) => (
           <div key={sh.id} style={styles.listItem}>
             <div>
@@ -560,7 +586,7 @@ export default function IntelligenceTab({ activeSubSection }) {
         </div>
       )}
 
-      <div style={styles.tableList}>
+      <div style={{ ...styles.tableList, maxHeight: '550px' }}>
         {tags.map((tg) => (
           <div key={tg.id} style={styles.listItem}>
             <div>
@@ -679,17 +705,27 @@ export default function IntelligenceTab({ activeSubSection }) {
         </div>
       )}
 
-      <div style={styles.tableList}>
-        {crossSells.map((cs) => (
-          <div key={cs.codart} style={styles.listItem}>
-            <div>
-              <strong style={{ fontSize: '0.85rem' }}>Base: {cs.codart}</strong>
-              <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                Recomendados: {cs.productos}
+      <div style={{ ...styles.tableList, maxHeight: '550px' }}>
+        {crossSells
+          .filter(cs => cs.codart && cs.codart.trim() !== '')
+          .map((cs) => (
+            <div key={cs.codart} style={styles.listItem}>
+              <div>
+                <strong style={{ fontSize: '0.85rem' }}>Base: {cs.codart}</strong>
+                <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
+                  Recomendados: {cs.productos}
+                </div>
               </div>
+              <button 
+                type="button" 
+                onClick={() => handleDeleteCrossSell(cs.codart)} 
+                style={styles.deleteBtn}
+                title="Eliminar recomendación"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

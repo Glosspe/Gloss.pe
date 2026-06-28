@@ -558,6 +558,11 @@ export async function DELETE(request) {
       return NextResponse.json({ success: true, message: 'Etiqueta eliminada' });
     }
 
+    if (action === 'cross-sell') {
+      await prisma.webProductCrossSell.delete({ where: { codart: id } });
+      return NextResponse.json({ success: true, message: 'Venta cruzada eliminada' });
+    }
+
     return NextResponse.json({ error: 'Acción DELETE no válida' }, { status: 400 });
   } catch (err) {
     console.error('[API Admin Intelligence DELETE] Error:', err);
