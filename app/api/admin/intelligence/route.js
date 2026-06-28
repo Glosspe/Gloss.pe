@@ -163,49 +163,52 @@ export async function GET(request) {
         let suggestedSubcategory = '';
 
         // Diccionario de categorías sugeridas
-        // Regla 1: Capilar/Cabello
-        const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar/i.test(nameLower);
-        const isCapilarCategory = /cabello|capilar|shampoo|acondicionador/i.test(catNameLower);
+        // Regla 1: Capilar/Cabello (Prioridad alta en la detección)
+        const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
+        const isCapilarCategory = /cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio/i.test(catNameLower);
 
-        // Regla 2: Rostro/Facial/Skin Care
-        const isFacialName = /crema facial|serum|suero|limpiador facial|tonico|facial|rostro|contorno de ojos|bloqueador facial|gel limpiador|antiarrugas|antiedad/i.test(nameLower);
-        const isFacialCategory = /rostro|facial|cutis|piel/i.test(catNameLower);
+        // Regla 2: Rostro/Facial/Skin Care (Debe excluir capilar para no solaparse en cremas)
+        const isFacialName = !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
+        const isFacialCategory = /rostro|facial|cutis|piel|cremas/i.test(catNameLower);
 
         // Regla 3: Uñas
-        const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico/i.test(nameLower);
+        const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
         const isUñasCategory = /uñas|manicure|pedicure|esmalte/i.test(catNameLower);
 
         // Evaluar discrepancias
-        if (isCapilarName && !isCapilarCategory && !catNameLower.includes('cabello') && !catNameLower.includes('capilar')) {
+        if (isCapilarName && !isCapilarCategory) {
           status = 'INCONSISTENT';
-          alertMessage = `El nombre contiene palabras capilares, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          alertMessage = `El nombre sugiere cuidado capilar, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Cabello';
           suggestedSubcategory = 'Cuidado Capilar';
-        } else if (isFacialName && !isFacialCategory && !catNameLower.includes('facial') && !catNameLower.includes('rostro')) {
+        } else if (isFacialName && !isFacialCategory) {
           status = 'INCONSISTENT';
-          alertMessage = `El nombre del producto sugiere cuidado facial, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          alertMessage = `El producto sugiere cuidado de la piel/facial, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Rostro';
           suggestedSubcategory = 'Cuidado Facial';
-        } else if (isUñasName && !isUñasCategory && !catNameLower.includes('uñas') && !catNameLower.includes('esmalte')) {
+        } else if (isUñasName && !isUñasCategory) {
           status = 'INCONSISTENT';
           alertMessage = `El producto sugiere manicure/uñas, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Uñas';
           suggestedSubcategory = 'Esmaltes y Manicure';
-        } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '') {
-          status = 'UNASSIGNED';
-          alertMessage = `El producto está en una categoría genérica ("${catName || 'Vacía'}"). Debería asignarse a una categoría de venta final.`;
-          
-          // Sugerir en base al nombre
-          if (isCapilarName) {
-            suggestedCategory = 'Cabello';
-            suggestedSubcategory = 'Cuidado Capilar';
-          } else if (isFacialName) {
-            suggestedCategory = 'Rostro';
-            suggestedSubcategory = 'Cuidado Facial';
-          } else if (isUñasName) {
-            suggestedCategory = 'Uñas';
-            suggestedSubcategory = 'Esmaltes y Manicure';
+        } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '' || catNameLower.includes('accesorio')) {
+          // Si está en ACCESORIOS pero se detecta por palabras clave que es un cosmético, es inconsistente o sin asignar
+          if (isCapilarName || isFacialName || isUñasName) {
+            status = 'INCONSISTENT';
+            alertMessage = `El producto es un cosmético activo detectado por el motor, pero está clasificado en el ERP bajo la categoría genérica "${catName || 'ACCESORIOS'}".`;
+            if (isCapilarName) {
+              suggestedCategory = 'Cabello';
+              suggestedSubcategory = 'Cuidado Capilar';
+            } else if (isFacialName) {
+              suggestedCategory = 'Rostro';
+              suggestedSubcategory = 'Cuidado Facial';
+            } else {
+              suggestedCategory = 'Uñas';
+              suggestedSubcategory = 'Esmaltes y Manicure';
+            }
           } else {
+            status = 'UNASSIGNED';
+            alertMessage = `El producto está en una categoría genérica ("${catName || 'Vacía'}"). Debería asignarse a una categoría de venta final en el ERP.`;
             suggestedCategory = 'Por Definir';
             suggestedSubcategory = 'Pendiente Clasificación';
           }
