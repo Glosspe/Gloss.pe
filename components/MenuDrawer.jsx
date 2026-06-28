@@ -155,7 +155,7 @@ export default function MenuDrawer() {
         {/* Encabezado del Menú */}
         <div style={styles.header}>
           <div style={styles.logoGroup}>
-            <h3 style={styles.logoText}>GLOSS</h3>
+            <h3 style={styles.logoText}>Menú</h3>
           </div>
           <button style={styles.closeButton} onClick={() => setIsMenuOpen(false)}>
             <X size={20} color="var(--text-primary)" />
@@ -450,12 +450,11 @@ const styles = {
     gap: '8px',
   },
   logoText: {
-    fontFamily: 'var(--font-logo)',
-    fontSize: '1.45rem',
-    fontWeight: '700',
-    color: 'var(--accent-start)',
-    letterSpacing: '0.2em',
-    textTransform: 'uppercase',
+    fontFamily: 'var(--font-body), sans-serif',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: 'var(--text-primary)',
+    letterSpacing: '0.02em',
   },
   closeButton: {
     background: 'none',
