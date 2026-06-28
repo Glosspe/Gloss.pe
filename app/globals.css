@@ -384,7 +384,7 @@ a {
 }
 
 .product-card-left-side {
-  width: 50%; /* Reducido en móvil */
+  width: 38%; /* Aún más pequeña y delicada en móviles */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -404,7 +404,7 @@ a {
 }
 
 .product-card-right-side {
-  width: 50%;
+  width: 62%; /* Más espacio para textos, precios y botón */
   display: flex;
   flex-direction: column;
   justify-content: center;
