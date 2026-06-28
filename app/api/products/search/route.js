@@ -229,7 +229,11 @@ export async function GET(request) {
 
     let categoryFilter = "";
     if (category === 'Trending') {
-      if (featuredCodes.length > 0) {
+      // Si el cliente está escribiendo una consulta de búsqueda, ignoramos la restricción de "Trending"
+      // para permitir buscar en todo el catálogo de productos.
+      if (query.trim() !== '') {
+        categoryFilter = "";
+      } else if (featuredCodes.length > 0) {
         // SQL Server: Filtrar estrictamente por los códigos que se marcaron como destacados en Postgres
         categoryFilter = ` AND p01.codi IN (${featuredCodes.map(c => `'${c}'`).join(',')})`;
       } else {

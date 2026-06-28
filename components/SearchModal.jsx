@@ -115,6 +115,30 @@ export default function SearchModal() {
       const html5QrCode = new Html5Qrcode('scanner-viewport');
       html5QrCodeRef.current = html5QrCode;
 
+      // 1. Intentar listar las cámaras conectadas para pedir permisos
+      let cameraSelection = { facingMode: 'environment' };
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          // Intentamos elegir la cámara trasera buscando palabras clave en su label
+          const backCamera = devices.find(d => 
+            d.label.toLowerCase().includes('back') || 
+            d.label.toLowerCase().includes('rear') || 
+            d.label.toLowerCase().includes('trasera')
+          );
+          if (backCamera) {
+            cameraSelection = backCamera.id;
+          } else if (devices.length > 1) {
+            // Si hay varias cámaras y ninguna coincide con el texto, la última usualmente es la trasera
+            cameraSelection = devices[devices.length - 1].id;
+          } else {
+            cameraSelection = devices[0].id;
+          }
+        }
+      } catch (camListErr) {
+        console.warn('No se pudo listar cámaras con getCameras(), usando constraints por defecto:', camListErr);
+      }
+
       const config = {
         fps: 15,
         qrbox: (width, height) => {
@@ -127,7 +151,7 @@ export default function SearchModal() {
       };
 
       await html5QrCode.start(
-        { facingMode: 'environment' }, // Cámara trasera del celular
+        cameraSelection,
         config,
         async (decodedText, decodedResult) => {
           // Escaneo exitoso!
@@ -149,7 +173,13 @@ export default function SearchModal() {
       setIsScannerActive(true);
     } catch (err) {
       console.error('Error al iniciar el escáner de cámara:', err);
-      setScannerError('No pudimos acceder a tu cámara. Por favor, concede los permisos de cámara e intenta de nuevo.');
+      
+      // Validar si el sitio se está sirviendo por HTTP inseguro
+      if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        setScannerError('El acceso a la cámara requiere una conexión segura HTTPS. Por favor, ingresa usando la URL HTTPS.');
+      } else {
+        setScannerError('No pudimos acceder a tu cámara. Por favor, asegúrate de conceder permisos de cámara en tu navegador e intenta de nuevo.');
+      }
       setIsScannerActive(false);
     } finally {
       setIsScannerLoading(false);
