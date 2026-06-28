@@ -100,10 +100,10 @@ export default function AdminProductSearch({
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === paginatedProducts.length) {
+    if (selectedIds.size === sortedProducts.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(paginatedProducts.map(p => p.id)));
+      setSelectedIds(new Set(sortedProducts.map(p => p.id)));
     }
   };
 
@@ -245,7 +245,7 @@ export default function AdminProductSearch({
           <label style={st.checkboxLabel}>
             <input
               type="checkbox"
-              checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
+              checked={sortedProducts.length > 0 && selectedIds.size === sortedProducts.length}
               onChange={toggleSelectAll}
               style={st.checkbox}
             />
