@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Save, Trash2, Plus, RefreshCw, 
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
-  ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb, ChevronDown
+  ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb, ChevronDown,
+  Settings
 } from 'lucide-react';
 import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
