@@ -196,10 +196,36 @@ export async function GET(request) {
     const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
 
     // Consultar PostgreSQL
-    const productsFromDb = await prisma.webProductoImagen.findMany({
+    let productsFromDb = await prisma.webProductoImagen.findMany({
       where: whereCondition,
       take: topLimit
     });
+
+    // Fallback inteligente para la Home (Trending) si no hay productos marcados como destacados en la base de datos
+    if (category === 'Trending' && productsFromDb.length === 0) {
+      console.log('[API Products Search] No hay productos destacados en base de datos. Cargando catálogo de fallback para la Home...');
+      const fallbackCondition = { ...whereCondition };
+      delete fallbackCondition.destacado; // Quitamos el filtro de destacado
+      fallbackCondition.visible = true;
+      fallbackCondition.stock = { gt: 0 }; // Priorizar productos con stock disponible
+
+      productsFromDb = await prisma.webProductoImagen.findMany({
+        where: fallbackCondition,
+        take: topLimit,
+        orderBy: {
+          fechaActualizacion: 'desc'
+        }
+      });
+
+      // Si tampoco hay con stock, traer cualquier producto visible
+      if (productsFromDb.length === 0) {
+        delete fallbackCondition.stock;
+        productsFromDb = await prisma.webProductoImagen.findMany({
+          where: fallbackCondition,
+          take: topLimit
+        });
+      }
+    }
 
     const formattedProducts = productsFromDb.map(p => {
       let imagesArray = [];
