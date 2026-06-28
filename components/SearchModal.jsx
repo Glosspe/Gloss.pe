@@ -40,9 +40,28 @@ export default function SearchModal() {
   const [scanMessage, setScanMessage] = useState(null);
   const [shortcuts, setShortcuts] = useState([]); // Atajos de búsqueda en caliente
 
+  // Filtros dinámicos interactivos del lado del cliente
+  const [selectedBrandFilter, setSelectedBrandFilter] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+
   const inputRef = useRef(null);
   const html5QrCodeRef = useRef(null);
   const searchDebounceRef = useRef(null);
+
+  // Resaltado de coincidencia del término de búsqueda
+  const highlightText = (text, query) => {
+    if (!query || !text) return text;
+    const parts = text.split(new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, i) => 
+          part.toLowerCase() === query.toLowerCase() 
+            ? <strong key={i} style={{ color: 'var(--accent-start)', fontWeight: '700' }}>{part}</strong> 
+            : <span key={i}>{part}</span>
+        )}
+      </span>
+    );
+  };
 
   // Cargar atajos sugeridos al abrir el buscador
   useEffect(() => {
@@ -75,6 +94,10 @@ export default function SearchModal() {
 
   // Manejar el debounce de búsqueda manual
   useEffect(() => {
+    // Limpiar los filtros del cliente cuando cambia la consulta
+    setSelectedBrandFilter('');
+    setSelectedCategoryFilter('');
+
     if (!localQuery.trim()) {
       setResults([]);
       setIsSearching(false);
@@ -452,42 +475,149 @@ export default function SearchModal() {
           {/* Área de Resultados / Sugerencias */}
           <div className="search-results-area">
             {isSearching && (
-              <div className="search-loading-wrapper">
-                <Loader2 size={24} className="animate-spin text-accent" />
-                <span>Buscando en el catálogo...</span>
-              </div>
-            )}
-
-            {!isSearching && results.length > 0 && (
-              <div className="search-results-list">
-                <span className="results-count-label">{results.length} coincidencias encontradas</span>
-                {results.map((product) => (
-                  <div 
-                    key={product.id} 
-                    className="search-result-item-card"
-                    onClick={() => handleSelectProduct(product.id)}
-                  >
-                    <div className="result-img-wrapper">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        src={product.image || 'https://via.placeholder.com/80?text=Gloss'} 
-                        alt={product.name} 
-                      />
+              <div className="search-results-list" style={{ width: '100%', gap: '12px' }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="search-result-item-card admin-skeleton" style={{ pointerEvents: 'none', border: '1px solid rgba(0,0,0,0.03)' }}>
+                    <div className="result-img-wrapper" style={{ backgroundColor: '#E5E7EB', position: 'relative', overflow: 'hidden' }} />
+                    <div className="result-details" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ height: '10px', width: '30%', backgroundColor: '#E5E7EB', borderRadius: '4px' }} />
+                      <div style={{ height: '14px', width: '80%', backgroundColor: '#E5E7EB', borderRadius: '4px' }} />
+                      <div style={{ height: '10px', width: '20%', backgroundColor: '#E5E7EB', borderRadius: '4px' }} />
                     </div>
-                    <div className="result-details">
-                      <span className="result-brand">{product.brand || 'Gloss Beauty'}</span>
-                      <span className="result-name">{product.name}</span>
-                      {product.codart && (
-                        <span className="result-code">Cod: {product.codart}</span>
-                      )}
-                    </div>
-                    <div className="result-price-details">
-                      <span className="result-price-value">S/ {parseFloat(product.price || 0).toFixed(2)}</span>
+                    <div className="result-price-details" style={{ marginLeft: 'auto' }}>
+                      <div style={{ height: '18px', width: '60px', backgroundColor: '#E5E7EB', borderRadius: '4px' }} />
                     </div>
                   </div>
                 ))}
               </div>
             )}
+
+            {!isSearching && results.length > 0 && (() => {
+              const availableBrands = Array.from(new Set(results.map(p => p.brand).filter(Boolean)));
+              const availableCategories = Array.from(new Set(results.map(p => p.category).filter(Boolean)));
+              const displayedResults = results.filter(p => {
+                if (selectedBrandFilter && p.brand !== selectedBrandFilter) return false;
+                if (selectedCategoryFilter && p.category !== selectedCategoryFilter) return false;
+                return true;
+              });
+
+              return (
+                <div className="search-results-list">
+                  {/* Chips de Filtro Interactivo del Cliente */}
+                  {(availableBrands.length > 1 || availableCategories.length > 1) && (
+                    <div className="search-client-filters" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px', padding: '0 4px' }}>
+                      {availableBrands.length > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Marcas:</span>
+                          <button
+                            onClick={() => setSelectedBrandFilter('')}
+                            style={{
+                              padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer', border: '1px solid',
+                              backgroundColor: !selectedBrandFilter ? 'var(--accent-soft)' : '#F3F4F6',
+                              color: !selectedBrandFilter ? 'var(--accent-start)' : '#6B7280',
+                              borderColor: !selectedBrandFilter ? 'var(--accent-start)' : 'transparent',
+                            }}
+                          >
+                            Todas
+                          </button>
+                          {availableBrands.map(b => (
+                            <button
+                              key={b}
+                              onClick={() => setSelectedBrandFilter(b === selectedBrandFilter ? '' : b)}
+                              style={{
+                                padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer', border: '1px solid',
+                                backgroundColor: selectedBrandFilter === b ? 'var(--accent-soft)' : '#F3F4F6',
+                                color: selectedBrandFilter === b ? 'var(--accent-start)' : '#6B7280',
+                                borderColor: selectedBrandFilter === b ? 'var(--accent-start)' : 'transparent',
+                              }}
+                            >
+                              {b}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {availableCategories.length > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Categorías:</span>
+                          <button
+                            onClick={() => setSelectedCategoryFilter('')}
+                            style={{
+                              padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer', border: '1px solid',
+                              backgroundColor: !selectedCategoryFilter ? 'var(--accent-soft)' : '#F3F4F6',
+                              color: !selectedCategoryFilter ? 'var(--accent-start)' : '#6B7280',
+                              borderColor: !selectedCategoryFilter ? 'var(--accent-start)' : 'transparent',
+                            }}
+                          >
+                            Todas
+                          </button>
+                          {availableCategories.map(c => (
+                            <button
+                              key={c}
+                              onClick={() => setSelectedCategoryFilter(c === selectedCategoryFilter ? '' : c)}
+                              style={{
+                                padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer', border: '1px solid',
+                                backgroundColor: selectedCategoryFilter === c ? 'var(--accent-soft)' : '#F3F4F6',
+                                color: selectedCategoryFilter === c ? 'var(--accent-start)' : '#6B7280',
+                                borderColor: selectedCategoryFilter === c ? 'var(--accent-start)' : 'transparent',
+                              }}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <span className="results-count-label">
+                    {displayedResults.length} de {results.length} coincidencias encontradas
+                    {(selectedBrandFilter || selectedCategoryFilter) && (
+                      <button 
+                        onClick={() => { setSelectedBrandFilter(''); setSelectedCategoryFilter(''); }}
+                        style={{ background: 'none', border: 'none', color: 'var(--accent-start)', cursor: 'pointer', textDecoration: 'underline', marginLeft: '10px', fontSize: '0.68rem', fontWeight: '700' }}
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
+                  </span>
+
+                  {displayedResults.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className="search-result-item-card"
+                      onClick={() => handleSelectProduct(product.id)}
+                    >
+                      <div className="result-img-wrapper">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={product.image || 'https://via.placeholder.com/80?text=Gloss'} 
+                          alt={product.name} 
+                        />
+                      </div>
+                      <div className="result-details">
+                        <span className="result-brand">{product.brand || 'Gloss Beauty'}</span>
+                        <span className="result-name">{highlightText(product.name, localQuery)}</span>
+                        {product.codart && (
+                          <span className="result-code">Cod: {product.codart}</span>
+                        )}
+                      </div>
+                      <div className="result-price-details">
+                        <span className="result-price-value">S/ {parseFloat(product.price || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {displayedResults.length === 0 && (
+                    <div className="search-empty-results">
+                      <Sparkles size={36} color="#CBD5E1" />
+                      <p>Ningún resultado coincide con los filtros aplicados</p>
+                      <span>Prueba seleccionando "Todas" en marcas o categorías</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {!isSearching && localQuery && results.length === 0 && (
               <div className="search-empty-results">

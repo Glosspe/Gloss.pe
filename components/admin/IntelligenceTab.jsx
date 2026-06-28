@@ -6,7 +6,7 @@ import {
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2 
 } from 'lucide-react';
 
-export default function IntelligenceTab() {
+export default function IntelligenceTab({ activeSubSection }) {
   const [configs, setConfigs] = useState({ LOW_STOCK_THRESHOLD: '5' });
   const [shortcuts, setShortcuts] = useState([]);
   const [tags, setTags] = useState([]);
@@ -159,7 +159,7 @@ export default function IntelligenceTab() {
         setMessage({ type: 'success', text: 'Venta cruzada manual registrada.' });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: 'Error al guardar venta cruzada.' });
+      setMessage({ type: 'error', text: 'Error al registrar.' });
     } finally {
       setIsSaving(false);
     }
@@ -179,10 +179,10 @@ export default function IntelligenceTab() {
       const res = await fetch('/api/admin/intelligence?action=tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ 
-          etiqueta: newTag.etiqueta.trim(), 
-          orden: parseInt(newTag.orden || '0'), 
-          productos: cleanProds 
+        body: JSON.stringify({
+          etiqueta: newTag.etiqueta.trim(),
+          orden: parseInt(newTag.orden) || 0,
+          productos: cleanProds
         })
       });
       if (res.ok) {
@@ -191,7 +191,7 @@ export default function IntelligenceTab() {
         setMessage({ type: 'success', text: 'Etiqueta de necesidad creada/actualizada.' });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: 'Error al guardar la etiqueta.' });
+      setMessage({ type: 'error', text: 'Error al guardar etiqueta.' });
     } finally {
       setIsSaving(false);
     }
@@ -242,8 +242,233 @@ export default function IntelligenceTab() {
     }
   };
 
+  const renderConfig = () => (
+    <div style={styles.card} className="soft-card">
+      <div style={styles.cardHeader}>
+        <HelpCircle size={20} color="var(--accent-start)" />
+        <h3 style={styles.cardTitle}>Alerta de Stock Crítico</h3>
+      </div>
+      <p style={styles.cardSub}>Configura el umbral mínimo bajo el cual se mostrará el banner de urgencia al cliente.</p>
+      
+      <form onSubmit={handleSaveConfig} style={styles.formRow}>
+        <input 
+          type="number"
+          min="1"
+          max="100"
+          value={configs.LOW_STOCK_THRESHOLD}
+          onChange={(e) => setConfigs({ ...configs, LOW_STOCK_THRESHOLD: e.target.value })}
+          style={styles.input}
+          required
+        />
+        <button type="submit" disabled={isSaving} style={styles.saveBtn} className="soft-button">
+          <Save size={16} /> Guardar
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderShortcuts = () => (
+    <div style={styles.card} className="soft-card">
+      <div style={styles.cardHeader}>
+        <Sparkles size={20} color="var(--accent-start)" />
+        <h3 style={styles.cardTitle}>Atajos de Búsqueda Rápida</h3>
+      </div>
+      <p style={styles.cardSub}>Gestión de píldoras sugeridas para el modal de búsqueda rápida de cosméticos.</p>
+
+      <form onSubmit={handleAddShortcut} style={styles.shortcutForm}>
+        <div style={styles.formGrid}>
+          <input 
+            type="text" 
+            placeholder="Texto (ej. Base Gloss)" 
+            value={newShortcut.texto}
+            onChange={(e) => setNewShortcut({ ...newShortcut, texto: e.target.value })}
+            style={styles.input}
+            required
+          />
+          <select 
+            value={newShortcut.tipo} 
+            onChange={(e) => setNewShortcut({ ...newShortcut, tipo: e.target.value })}
+            style={styles.select}
+          >
+            <option value="QUERY">Consulta de Texto</option>
+            <option value="BRAND">Marca Directa</option>
+            <option value="CATEGORY">Categoría Directa</option>
+          </select>
+          <input 
+            type="text" 
+            placeholder="Enlace (ej: ?brand=Meybelline)" 
+            value={newShortcut.enlace}
+            onChange={(e) => setNewShortcut({ ...newShortcut, enlace: e.target.value })}
+            style={styles.input}
+          />
+          <input 
+            type="number" 
+            placeholder="Orden (0, 1...)" 
+            value={newShortcut.orden}
+            onChange={(e) => setNewShortcut({ ...newShortcut, orden: e.target.value })}
+            style={styles.input}
+          />
+        </div>
+        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+          <Plus size={16} /> Agregar Atajo
+        </button>
+      </form>
+
+      <div style={styles.tableList}>
+        {shortcuts.map((sh) => (
+          <div key={sh.id} style={styles.listItem}>
+            <div>
+              <strong style={{ fontSize: '0.85rem' }}>{sh.texto}</strong>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
+                Tipo: {sh.tipo} | Orden: {sh.orden} | Enlace: {sh.enlace || 'No requiere'}
+              </div>
+            </div>
+            <button onClick={() => handleDeleteShortcut(sh.id)} style={styles.deleteBtn}>
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTags = () => (
+    <div style={styles.card} className="soft-card">
+      <div style={styles.cardHeader}>
+        <Tag size={20} color="var(--accent-start)" />
+        <h3 style={styles.cardTitle}>Etiquetas de Necesidad (Filtros)</h3>
+      </div>
+      <p style={styles.cardSub}>Organiza filtros de belleza (#AntiFrizz, #ControlCaida) asociando códigos de productos del ERP.</p>
+
+      <form onSubmit={handleAddTag} style={styles.shortcutForm}>
+        <div style={styles.formGrid}>
+          <input 
+            type="text" 
+            placeholder="Etiqueta (ej. #ControlCaida)" 
+            value={newTag.etiqueta}
+            onChange={(e) => setNewTag({ ...newTag, etiqueta: e.target.value })}
+            style={styles.input}
+            required
+          />
+          <input 
+            type="number" 
+            placeholder="Orden (0, 1...)" 
+            value={newTag.orden}
+            onChange={(e) => setNewTag({ ...newTag, orden: e.target.value })}
+            style={styles.input}
+          />
+          <textarea 
+            placeholder="Códigos del ERP separados por comas (ej. 0101-1, 0101-2)" 
+            value={newTag.productosStr}
+            onChange={(e) => setNewTag({ ...newTag, productosStr: e.target.value })}
+            style={{ ...styles.input, gridColumn: 'span 2', minHeight: '60px' }}
+          />
+        </div>
+        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+          <Plus size={16} /> Crear/Guardar Etiqueta
+        </button>
+      </form>
+
+      <div style={styles.tableList}>
+        {tags.map((tg) => (
+          <div key={tg.id} style={styles.listItem}>
+            <div>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--accent-start)' }}>{tg.etiqueta}</strong>
+              <div style={{ fontSize: '0.72rem', color: '#64748B', maxWidth: '300px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                Productos asociados: {tg.productos}
+              </div>
+            </div>
+            <button onClick={() => handleDeleteTag(tg.id)} style={styles.deleteBtn}>
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCrossSell = () => (
+    <div style={styles.card} className="soft-card">
+      <div style={styles.cardHeader}>
+        <Shuffle size={20} color="var(--accent-start)" />
+        <h3 style={styles.cardTitle}>Venta Cruzada Manual</h3>
+      </div>
+      <p style={styles.cardSub}>Configura qué productos sugerir al cliente en el carrusel de la ficha de detalle.</p>
+
+      <form onSubmit={handleAddCrossSell} style={styles.shortcutForm}>
+        <div style={styles.formGrid}>
+          <input 
+            type="text" 
+            placeholder="Código Producto Base (ERP)" 
+            value={newCrossSell.codart}
+            onChange={(e) => setNewCrossSell({ ...newCrossSell, codart: e.target.value })}
+            style={styles.input}
+            required
+          />
+          <textarea 
+            placeholder="Códigos de productos complementarios (separados por comas)" 
+            value={newCrossSell.productosStr}
+            onChange={(e) => setNewCrossSell({ ...newCrossSell, productosStr: e.target.value })}
+            style={{ ...styles.input, minHeight: '60px' }}
+            required
+          />
+        </div>
+        <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
+          <Plus size={16} /> Guardar Venta Cruzada
+        </button>
+      </form>
+
+      <div style={styles.tableList}>
+        {crossSells.map((cs) => (
+          <div key={cs.codart} style={styles.listItem}>
+            <div>
+              <strong style={{ fontSize: '0.85rem' }}>Base: {cs.codart}</strong>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
+                Recomendados: {cs.productos}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderAutoTag = () => (
+    <div style={styles.card} className="soft-card">
+      <div style={styles.cardHeader}>
+        <RefreshCw size={20} color="var(--accent-start)" />
+        <h3 style={styles.cardTitle}>Auto-Etiquetado Inteligente (ERP)</h3>
+      </div>
+      <p style={styles.cardSub}>
+        Gatilla el motor analítico de auto-etiquetado. Lee campos clave de la base de datos del ERP
+        para emparejar de forma inteligente productos con preocupaciones como #ControlCaida, #AntiFrizz o #RizosDefinidos.
+      </p>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '12px' }}>
+        <button 
+          onClick={handleRunAutoTagging} 
+          style={{ 
+            ...styles.autoTagBtn, 
+            width: 'auto', 
+            padding: '0 24px', 
+            backgroundColor: 'var(--accent-start)', 
+            color: '#FFFFFF',
+            border: 'none'
+          }} 
+          className="soft-button"
+          disabled={isSaving}
+        >
+          <RefreshCw size={16} /> Ejecutar Análisis e Indexación Automática
+        </button>
+        <span style={{ fontSize: '0.72rem', color: '#94A3B8', textAlign: 'center', maxWidth: '400px' }}>
+          Este proceso corre sobre PostgreSQL local y sincroniza las clasificaciones del ERP. Toma unos segundos.
+        </span>
+      </div>
+    </div>
+  );
+
   return (
-    <div style={styles.tabContainer}>
+    <div style={{ ...styles.tabContainer, backgroundColor: activeSubSection ? 'transparent' : '#F8F9FA', padding: activeSubSection ? '0' : '24px' }}>
       {/* Mensaje global */}
       {message.text && (
         <div style={{
@@ -261,213 +486,32 @@ export default function IntelligenceTab() {
       {isLoading ? (
         <div style={styles.centerState}>
           <Loader2 size={32} color="var(--accent-start)" style={{ animation: 'spin 1s linear infinite' }} />
-          <p style={{ marginTop: '12px', fontSize: '0.88rem', color: '#94A3B8' }}>Cargando panel de Inteligencia comercial...</p>
+          <p style={{ marginTop: '12px', fontSize: '0.88rem', color: '#94A3B8' }}>Cargando panel...</p>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {/* Columna Izquierda: Configs y Shortcuts */}
-          <div style={styles.col}>
-            {/* Tarjeta 1: Alerta de Stock Crítico */}
-            <div style={styles.card} className="soft-card">
-              <div style={styles.cardHeader}>
-                <HelpCircle size={20} color="var(--accent-start)" />
-                <h3 style={styles.cardTitle}>Alerta de Stock Crítico</h3>
-              </div>
-              <p style={styles.cardSub}>Configura el umbral mínimo bajo el cual se mostrará el banner de urgencia al cliente.</p>
-              
-              <form onSubmit={handleSaveConfig} style={styles.formRow}>
-                <input 
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={configs.LOW_STOCK_THRESHOLD}
-                  onChange={(e) => setConfigs({ ...configs, LOW_STOCK_THRESHOLD: e.target.value })}
-                  style={styles.input}
-                  required
-                />
-                <button type="submit" disabled={isSaving} style={styles.saveBtn} className="soft-button">
-                  <Save size={16} /> Guardar
-                </button>
-              </form>
+        activeSubSection ? (
+          <div style={{ width: '100%' }}>
+            {activeSubSection === 'intel-config' && renderConfig()}
+            {activeSubSection === 'intel-shortcuts' && renderShortcuts()}
+            {activeSubSection === 'intel-tags' && renderTags()}
+            {activeSubSection === 'intel-crosssell' && renderCrossSell()}
+            {activeSubSection === 'intel-autotag' && renderAutoTag()}
+          </div>
+        ) : (
+          <div style={styles.grid}>
+            {/* Columna Izquierda: Configs y Shortcuts */}
+            <div style={styles.col}>
+              {renderConfig()}
+              {renderShortcuts()}
             </div>
 
-            {/* Tarjeta 2: Atajos de Búsqueda Rápida */}
-            <div style={styles.card} className="soft-card">
-              <div style={styles.cardHeader}>
-                <Sparkles size={20} color="var(--accent-start)" />
-                <h3 style={styles.cardTitle}>Atajos de Búsqueda Rápida</h3>
-              </div>
-              <p style={styles.cardSub}>Gestión de píldoras sugeridas para el modal de búsqueda rápida de cosméticos.</p>
-
-              <form onSubmit={handleAddShortcut} style={styles.shortcutForm}>
-                <div style={styles.formGrid}>
-                  <input 
-                    type="text" 
-                    placeholder="Texto (ej. Base Gloss)" 
-                    value={newShortcut.texto}
-                    onChange={(e) => setNewShortcut({ ...newShortcut, texto: e.target.value })}
-                    style={styles.input}
-                    required
-                  />
-                  <select 
-                    value={newShortcut.tipo} 
-                    onChange={(e) => setNewShortcut({ ...newShortcut, tipo: e.target.value })}
-                    style={styles.select}
-                  >
-                    <option value="QUERY">Consulta de Texto</option>
-                    <option value="BRAND">Marca Directa</option>
-                    <option value="CATEGORY">Categoría Directa</option>
-                  </select>
-                  <input 
-                    type="text" 
-                    placeholder="Enlace (ej: ?brand=Meybelline)" 
-                    value={newShortcut.enlace}
-                    onChange={(e) => setNewShortcut({ ...newShortcut, enlace: e.target.value })}
-                    style={styles.input}
-                  />
-                  <input 
-                    type="number" 
-                    placeholder="Orden (0, 1...)" 
-                    value={newShortcut.orden}
-                    onChange={(e) => setNewShortcut({ ...newShortcut, orden: e.target.value })}
-                    style={styles.input}
-                  />
-                </div>
-                <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-                  <Plus size={16} /> Agregar Atajo
-                </button>
-              </form>
-
-              <div style={styles.tableList}>
-                {shortcuts.map((sh) => (
-                  <div key={sh.id} style={styles.listItem}>
-                    <div>
-                      <strong style={{ fontSize: '0.85rem' }}>{sh.texto}</strong>
-                      <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                        Tipo: {sh.tipo} | Orden: {sh.orden} | Enlace: {sh.enlace || 'No requiere'}
-                      </div>
-                    </div>
-                    <button onClick={() => handleDeleteShortcut(sh.id)} style={styles.deleteBtn}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+            {/* Columna Derecha: Tags & Cross-sells */}
+            <div style={styles.col}>
+              {renderTags()}
+              {renderCrossSell()}
             </div>
           </div>
-
-          {/* Columna Derecha: Tags & Cross-sells */}
-          <div style={styles.col}>
-            {/* Tarjeta 3: Etiquetas de Necesidad */}
-            <div style={styles.card} className="soft-card">
-              <div style={styles.cardHeader}>
-                <Tag size={20} color="var(--accent-start)" />
-                <h3 style={styles.cardTitle}>Etiquetas de Necesidad (Filtros)</h3>
-              </div>
-              <p style={styles.cardSub}>Organiza filtros de belleza (#AntiFrizz, #ControlCaida) asociando códigos de productos del ERP.</p>
-
-              {/* Botón Auto-Tagging */}
-              <button 
-                onClick={handleRunAutoTagging} 
-                style={styles.autoTagBtn} 
-                className="soft-button"
-                disabled={isSaving}
-              >
-                <RefreshCw size={16} /> Auto-Etiquetar Catálogo (ERP)
-              </button>
-
-              <form onSubmit={handleAddTag} style={styles.shortcutForm}>
-                <div style={styles.formGrid}>
-                  <input 
-                    type="text" 
-                    placeholder="Etiqueta (ej. #ControlCaida)" 
-                    value={newTag.etiqueta}
-                    onChange={(e) => setNewTag({ ...newTag, etiqueta: e.target.value })}
-                    style={styles.input}
-                    required
-                  />
-                  <input 
-                    type="number" 
-                    placeholder="Orden (0, 1...)" 
-                    value={newTag.orden}
-                    onChange={(e) => setNewTag({ ...newTag, orden: e.target.value })}
-                    style={styles.input}
-                  />
-                  <textarea 
-                    placeholder="Códigos del ERP separados por comas (ej. 0101-1, 0101-2)" 
-                    value={newTag.productosStr}
-                    onChange={(e) => setNewTag({ ...newTag, productosStr: e.target.value })}
-                    style={{ ...styles.input, gridColumn: 'span 2', minHeight: '60px' }}
-                  />
-                </div>
-                <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-                  <Plus size={16} /> Crear/Guardar Etiqueta
-                </button>
-              </form>
-
-              <div style={styles.tableList}>
-                {tags.map((tg) => (
-                  <div key={tg.id} style={styles.listItem}>
-                    <div>
-                      <strong style={{ fontSize: '0.85rem', color: 'var(--accent-start)' }}>{tg.etiqueta}</strong>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', maxWidth: '300px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        Productos asociados: {tg.productos}
-                      </div>
-                    </div>
-                    <button onClick={() => handleDeleteTag(tg.id)} style={styles.deleteBtn}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tarjeta 4: Venta Cruzada Manual */}
-            <div style={styles.card} className="soft-card">
-              <div style={styles.cardHeader}>
-                <Shuffle size={20} color="var(--accent-start)" />
-                <h3 style={styles.cardTitle}>Venta Cruzada Manual</h3>
-              </div>
-              <p style={styles.cardSub}>Configura qué productos sugerir al cliente en el carrusel de la ficha de detalle.</p>
-
-              <form onSubmit={handleAddCrossSell} style={styles.shortcutForm}>
-                <div style={styles.formGrid}>
-                  <input 
-                    type="text" 
-                    placeholder="Código Producto Base (ERP)" 
-                    value={newCrossSell.codart}
-                    onChange={(e) => setNewCrossSell({ ...newCrossSell, codart: e.target.value })}
-                    style={styles.input}
-                    required
-                  />
-                  <textarea 
-                    placeholder="Códigos de productos complementarios (separados por comas)" 
-                    value={newCrossSell.productosStr}
-                    onChange={(e) => setNewCrossSell({ ...newCrossSell, productosStr: e.target.value })}
-                    style={{ ...styles.input, minHeight: '60px' }}
-                    required
-                  />
-                </div>
-                <button type="submit" disabled={isSaving} style={styles.addBtn} className="soft-button">
-                  <Plus size={16} /> Guardar Venta Cruzada
-                </button>
-              </form>
-
-              <div style={styles.tableList}>
-                {crossSells.map((cs) => (
-                  <div key={cs.codart} style={styles.listItem}>
-                    <div>
-                      <strong style={{ fontSize: '0.85rem' }}>Base: {cs.codart}</strong>
-                      <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                        Recomendados: {cs.productos}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        )
       )}
     </div>
   );
@@ -479,7 +523,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    backgroundColor: '#F8F9FA',
     flex: 1,
     fontFamily: 'var(--font-body)'
   },
@@ -506,8 +549,8 @@ const styles = {
     backgroundColor: '#FFFFFF',
     borderRadius: '16px',
     padding: '20px',
-    border: '1px solid rgba(0,0,0,0.03)',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
+    border: '1px solid rgba(142,154,167,0.06)',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
   },
   cardHeader: {
     display: 'flex',
@@ -594,7 +637,6 @@ const styles = {
     borderRadius: '8px',
     fontSize: '0.85rem',
     fontWeight: '500',
-    marginBottom: '20px',
     cursor: 'pointer',
     display: 'inline-flex',
     alignItems: 'center',
