@@ -107,7 +107,10 @@ export async function GET(request) {
         const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}&limit=${encodeURIComponent(limitParam)}&includeHidden=${includeHidden}`;
         
         const res = await fetch(targetUrl, {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           cache: 'no-store'
         });
         

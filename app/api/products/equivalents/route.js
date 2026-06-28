@@ -151,7 +151,10 @@ export async function GET(request) {
         const targetUrl = `${cleanApiUrl}/api/products/equivalents?id=${encodeURIComponent(productId)}&warehouse=${encodeURIComponent(warehouse)}`;
         
         const res = await fetch(targetUrl, {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           cache: 'no-store'
         });
         

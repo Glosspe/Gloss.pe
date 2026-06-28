@@ -71,7 +71,8 @@ export async function GET(request) {
           const res = await fetch(targetUrl, {
             method: 'GET',
             headers: { 
-              'Authorization': authHeader 
+              'Authorization': authHeader,
+              'ngrok-skip-browser-warning': 'true'
             },
             cache: 'no-store'
           });
@@ -265,7 +266,8 @@ export async function POST(request) {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': authHeader 
+              'Authorization': authHeader,
+              'ngrok-skip-browser-warning': 'true'
             },
             cache: 'no-store'
           });
@@ -372,7 +374,8 @@ export async function POST(request) {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': authHeader 
+              'Authorization': authHeader,
+              'ngrok-skip-browser-warning': 'true'
             },
             cache: 'no-store'
           });
