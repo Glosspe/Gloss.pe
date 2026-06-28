@@ -409,10 +409,10 @@ a {
   padding-left: 4px;
 }
 
-/* Botón Ver Kit al costado de la imagen (Azul premium refinado para balance cromático) */
+/* Botón Ver Kit al costado de la imagen (Azul noche premium y gris frío elegante) */
 .equivalents-pill-btn-side {
-  background-color: #EBF5FF; /* Azul pastel muy suave */
-  color: #2563EB; /* Azul real elegante */
+  background-color: #F1F5F9; /* Gris frío neutro suave (slate-100) */
+  color: #334155; /* Azul pizarra oscuro sobrio y premium (slate-700) */
   font-family: var(--font-body), sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
@@ -426,14 +426,14 @@ a {
   transition: all 0.2s ease;
   width: 100%;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.05);
+  box-shadow: 0 2px 6px rgba(51, 65, 85, 0.03);
 }
 
 .equivalents-pill-btn-side:hover {
-  background-color: #2563EB;
+  background-color: #334155; /* Azul pizarra oscuro */
   color: #FFFFFF;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 10px rgba(51, 65, 85, 0.12);
 }
 
 /* ═══ Estilos de Botones en Tarjeta de Producto ═══ */
