@@ -739,4 +739,21 @@ a {
   }
 }
 
+/* Título de sección inteligente en la Home (ej: Productos Destacados, Marca, etc.) */
+.home-section-title {
+  font-family: var(--font-body), sans-serif !important;
+  font-size: 0.82rem !important; /* Más pequeño en celular */
+  font-weight: 700 !important;
+  color: #9CA3AF !important; /* Color gris claro / suave */
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+@media (min-width: 768px) {
+  .home-section-title {
+    font-size: 1.05rem !important; /* Tamaño moderado en PC */
+    color: #6B7280 !important; /* Gris un poco más oscuro en PC */
+  }
+}
+
 
