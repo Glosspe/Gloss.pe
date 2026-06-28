@@ -56,11 +56,11 @@ export default function Header() {
 
   return (
     <>
-      <header style={headerStyle}>
+      <header style={headerStyle} className="gloss-header">
         {/* Fila Superior: Logo y Botones de Acción (Bolsa + Menú) */}
         <div style={styles.topRow}>
           <div style={styles.logoContainer}>
-            <h2 style={styles.logoText}>GLOSS</h2>
+            <h2 style={styles.logoText} className="header-logo">GLOSS</h2>
             <button 
               onClick={() => setIsSedesModalOpen(true)} 
               style={styles.sedeSelectorBtn}
@@ -73,16 +73,16 @@ export default function Header() {
           
           <div style={styles.actions}>
             {/* Botón Bolsa (Carrito) */}
-            <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-              <ShoppingBag size={24} color="var(--accent-start)" />
+            <button style={styles.iconButton} className="header-icon-button" onClick={() => setIsCartOpen(true)}>
+              <ShoppingBag size={24} color="var(--accent-start)" className="header-icon-svg" />
               {cartCount > 0 && (
-                <span style={styles.badge}>{cartCount}</span>
+                <span style={styles.badge} className="header-cart-badge">{cartCount}</span>
               )}
             </button>
             
             {/* Botón Menú Desplegable */}
-            <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-              <Menu size={24} color="var(--accent-start)" />
+            <button style={styles.iconButton} className="header-icon-button" onClick={() => setIsMenuOpen(true)}>
+              <Menu size={24} color="var(--accent-start)" className="header-icon-svg" />
             </button>
           </div>
         </div>
@@ -98,11 +98,11 @@ export default function Header() {
             }}
             style={{ width: '100%' }}
           >
-            <div style={styles.searchBar}>
-              <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} />
+            <div style={styles.searchBar} className="header-search-bar">
+              <Search size={22} color="var(--text-secondary)" style={styles.searchIcon} className="header-search-icon" />
               <input
                 type="text"
-                placeholder="Buscar productos, marcas, cosméticos..."
+                placeholder="Buscar productos..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -112,7 +112,7 @@ export default function Header() {
                   }
                 }}
                 style={styles.searchInput}
-                className="search-input-premium"
+                className="search-input-premium header-search-input"
               />
             </div>
           </form>

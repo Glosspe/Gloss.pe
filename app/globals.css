@@ -637,4 +637,98 @@ a {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
+/* ═══ Estilos responsivos del Header Móvil (Logo, botones de acciones, buscador y header más compactos) ═══ */
+
+/* Por defecto en celulares (Estilo súper compacto y fluido) */
+.gloss-header {
+  padding: 6px 14px 6px 14px !important;
+  gap: 4px !important;
+}
+
+.header-logo {
+  font-size: 1.35rem !important;
+  letter-spacing: 0.16em !important;
+}
+
+.header-icon-button {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.header-icon-svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.header-cart-badge {
+  width: 15px !important;
+  height: 15px !important;
+  font-size: 0.58rem !important;
+  top: -3px !important;
+  right: -3px !important;
+}
+
+.header-search-bar {
+  height: 42px !important; /* Buscador móvil compacto de 42px */
+  padding: 0 16px !important;
+  border-radius: 20px !important;
+}
+
+.header-search-icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 8px !important;
+}
+
+.header-search-input {
+  font-size: 0.82rem !important;
+}
+
+/* En pantallas grandes / Computadoras (Restablecer a tamaño amplio y elegante) */
+@media (min-width: 768px) {
+  .gloss-header {
+    padding: 10px 20px 10px 20px !important;
+    gap: 8px !important;
+  }
+
+  .header-logo {
+    font-size: 1.80rem !important;
+    letter-spacing: 0.24em !important;
+  }
+
+  .header-icon-button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .header-icon-svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .header-cart-badge {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.65rem !important;
+    top: -2px !important;
+    right: -2px !important;
+  }
+
+  .header-search-bar {
+    height: 46px !important; /* Más refinado en desktop que los 60px originales */
+    padding: 0 20px !important;
+    border-radius: 30px !important;
+  }
+
+  .header-search-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 12px !important;
+  }
+
+  .header-search-input {
+    font-size: 0.88rem !important;
+  }
+}
+
 
