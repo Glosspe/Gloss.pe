@@ -57,35 +57,7 @@ export async function GET(request) {
     if (action === 'category-audit') {
       console.log('[API Admin Intelligence] Iniciando Auditoría de Categorías...');
 
-      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
-      // redirige la petición a la API local. Si esta falla o da error (ej. 403, 502), pasará automáticamente al fallback local.
-      const localApiUrl = process.env.LOCAL_API_URL;
-      if (localApiUrl) {
-        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo category-audit a la API local: ${localApiUrl}/api/admin/intelligence?action=category-audit`);
-        try {
-          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=category-audit`;
-          const authHeader = request.headers.get('Authorization') || '';
 
-          const res = await fetch(targetUrl, {
-            method: 'GET',
-            headers: { 
-              'Authorization': authHeader,
-              'ngrok-skip-browser-warning': 'true'
-            },
-            cache: 'no-store'
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            return NextResponse.json(data);
-          } else {
-            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
-          }
-        } catch (proxyErr) {
-          console.warn(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local: ${proxyErr.message}. Pasando a fallback local.`);
-        }
-      }
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o audita sobre PostgreSQL de Railway
       let pool;
@@ -331,36 +303,7 @@ export async function POST(request) {
     if (action === 'auto-tag') {
       console.log('[API Admin Intelligence] Iniciando proceso de Auto-Etiquetado...');
 
-      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
-      // redirige la petición a la API local. Si esta falla o da error (ej. 403, 502), pasará automáticamente al fallback local.
-      const localApiUrl = process.env.LOCAL_API_URL;
-      if (localApiUrl) {
-        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo auto-tag a la API local: ${localApiUrl}/api/admin/intelligence?action=auto-tag`);
-        try {
-          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=auto-tag`;
-          const authHeader = request.headers.get('Authorization') || '';
 
-          const res = await fetch(targetUrl, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': authHeader,
-              'ngrok-skip-browser-warning': 'true'
-            },
-            cache: 'no-store'
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            return NextResponse.json(data);
-          } else {
-            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
-          }
-        } catch (proxyErr) {
-          console.warn(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local: ${proxyErr.message}. Pasando a fallback local.`);
-        }
-      }
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o ejecuta auto-tagging en la nube
       let pool;
@@ -441,36 +384,7 @@ export async function POST(request) {
     if (action === 'auto-cross-sell') {
       console.log('[API Admin Intelligence] Iniciando proceso de Auto-Venta Cruzada...');
 
-      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
-      // redirige la petición a la API local. Si esta falla o da error (ej. 403, 502), pasará automáticamente al fallback local.
-      const localApiUrl = process.env.LOCAL_API_URL;
-      if (localApiUrl) {
-        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo auto-cross-sell a la API local: ${localApiUrl}/api/admin/intelligence?action=auto-cross-sell`);
-        try {
-          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
-          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=auto-cross-sell`;
-          const authHeader = request.headers.get('Authorization') || '';
 
-          const res = await fetch(targetUrl, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': authHeader,
-              'ngrok-skip-browser-warning': 'true'
-            },
-            cache: 'no-store'
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            return NextResponse.json(data);
-          } else {
-            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
-          }
-        } catch (proxyErr) {
-          console.warn(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local: ${proxyErr.message}. Pasando a fallback local.`);
-        }
-      }
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o responde éxito informativo
       let pool;
