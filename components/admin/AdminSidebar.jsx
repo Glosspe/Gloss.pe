@@ -211,7 +211,6 @@ export default function AdminSidebar({
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.logoRow}>
-          <Sparkles size={18} color="var(--accent-start)" />
           <span style={styles.logoText}>GLOSS</span>
         </div>
         <span style={styles.subtitle}>Panel Administrativo</span>

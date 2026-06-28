@@ -451,8 +451,7 @@ export default function AdminPage() {
           <button className="admin-hamburger" onClick={() => setIsMobileSidebarOpen(true)}>
             <Menu size={22} />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Sparkles size={16} color="var(--accent-start)" />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ fontFamily: 'var(--font-logo)', fontWeight: '600', letterSpacing: '0.12em', fontSize: '1rem' }}>GLOSS ADMIN</span>
           </div>
         </div>
