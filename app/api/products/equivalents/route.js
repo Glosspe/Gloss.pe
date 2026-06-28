@@ -140,36 +140,8 @@ export async function GET(request) {
       return NextResponse.json(cachedData);
     }
 
-    // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
-    // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
-    const localApiUrl = process.env.LOCAL_API_URL;
-    
-    if (localApiUrl) {
-      console.log(`[API Products Equivalents - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/equivalents?id=${productId}&warehouse=${warehouse}`);
-      try {
-        const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/equivalents?id=${encodeURIComponent(productId)}&warehouse=${encodeURIComponent(warehouse)}`;
-        
-        const res = await fetch(targetUrl, {
-          headers: { 
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          cache: 'no-store'
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          // Guardar en caché de la nube por 3 minutos (180s)
-          await cache.set(cacheKey, data, 180);
-          return NextResponse.json(data);
-        } else {
-          console.warn(`[API Products Equivalents - PROXY MODE] La API local retornó status ${res.status}. Pasando a fallback local.`);
-        }
-      } catch (proxyErr) {
-        console.error(`[API Products Equivalents - PROXY MODE] Error conectando a la API local de ngrok:`, proxyErr.message);
-      }
-    }
+    // El modo Proxy directo en caliente a la base de datos local ha sido deshabilitado
+    // en favor de la arquitectura de sincronización asíncrona de PostgreSQL en la nube.
 
     // --- MODO LOCAL / API SERVER (ASÍNCRONO - DESACOPLADO) ---
     console.log(`[API Products Equivalents - LOCAL MODE] Consultando equivalentes para el producto: ${productId} en PostgreSQL...`);

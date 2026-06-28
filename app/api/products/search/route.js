@@ -96,44 +96,8 @@ export async function GET(request) {
       }
     }
 
-    // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente, la nube (Railway)
-    // redirige la petición a la API local que corre en la PC del usuario a través de ngrok.
-    const localApiUrl = process.env.LOCAL_API_URL;
-    
-    if (localApiUrl) {
-      console.log(`[API Products Search - PROXY MODE] Redirigiendo a: ${localApiUrl}/api/products/search?warehouse=${warehouse}`);
-      try {
-        const cleanApiUrl = localApiUrl.replace(/\/$/, ''); // Quitar barra diagonal al final si existe
-        const targetUrl = `${cleanApiUrl}/api/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}&warehouse=${encodeURIComponent(warehouse)}&limit=${encodeURIComponent(limitParam)}&includeHidden=${includeHidden}`;
-        
-        const res = await fetch(targetUrl, {
-          headers: { 
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          cache: 'no-store'
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          // Guardar en caché de la nube usando el TTL dinámico optimizado
-          await cache.set(cacheKey, data, cacheTtl);
-          return NextResponse.json(data);
-        } else {
-          console.warn(`[API Products Search - PROXY MODE] La API local retornó status ${res.status}.`);
-          return NextResponse.json(
-            { error: 'El almacén central no está disponible en este momento', erpUnavailable: true },
-            { status: 503 }
-          );
-        }
-      } catch (proxyErr) {
-        console.error(`[API Products Search - PROXY MODE] Error conectando a la API local de ngrok:`, proxyErr.message);
-        return NextResponse.json(
-          { error: 'El almacén central no está disponible en este momento', erpUnavailable: true },
-          { status: 503 }
-        );
-      }
-    }
+    // El modo Proxy directo en caliente a la base de datos local ha sido deshabilitado
+    // en favor de la arquitectura de sincronización asíncrona de PostgreSQL en la nube.
 
     // --- MODO LOCAL / API SERVER (ASÍNCRONO - DESACOPLADO) ---
     // En lugar de conectarse en caliente al ERP, consultamos directamente PostgreSQL (sincronizada de forma asíncrona).
