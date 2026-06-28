@@ -6,7 +6,7 @@ import {
   Save, CheckCircle, AlertCircle, Loader2,
   RefreshCw, Upload, X, Eye, EyeOff, Package,
   LayoutGrid, Trash2, Star, ImagePlus, Store,
-  Menu, ChevronRight, Sparkles
+  Menu, ChevronRight, Sparkles, Tag
 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminDashboard from '@/components/admin/AdminDashboard';
@@ -30,15 +30,42 @@ const BREADCRUMBS = {
   'intel-autotag': { path: ['E-commerce IA', 'Auto-Etiquetado'], title: 'Auto-Etiquetado', desc: 'Motor automático de clasificación' },
 };
 
-const CATEGORY_ICONS = {
-  'UÑAS': '💅', 'PESTAÑAS': '👁️', 'DECOLORADOR': '🧪', 'ACCESORIOS': '🛍️',
-  'HIDRATANTE': '🧴', 'ELECTRONICOS': '🔌', 'PIES': '🦶', 'PERFUME': '✨',
-  'FIJADOR': '💨', 'PARCHES': '🩹'
-};
 const CATEGORY_LABELS = {
   'UÑAS': 'Uñas', 'PESTAÑAS': 'Pestañas', 'DECOLORADOR': 'Decoloradores',
   'ACCESORIOS': 'Accesorios', 'HIDRATANTE': 'Hidratantes', 'ELECTRONICOS': 'Electrónicos',
   'PIES': 'Pies', 'PERFUME': 'Perfumes', 'FIJADOR': 'Fijadores', 'PARCHES': 'Parches'
+};
+
+const getCategoryIcon = (categoria) => {
+  const map = {
+    'UÑAS': { color: '#E11D48', bgColor: '#FFF1F2' },
+    'PESTAÑAS': { color: '#2563EB', bgColor: '#E8F0FE' },
+    'DECOLORADOR': { color: '#7C3AED', bgColor: '#F5F3FF' },
+    'ACCESORIOS': { color: '#059669', bgColor: '#E6F4EA' },
+    'HIDRATANTE': { color: '#0D9488', bgColor: '#F0FDFA' },
+    'ELECTRONICOS': { color: '#D97706', bgColor: '#FEF3C7' },
+    'PIES': { color: '#B45309', bgColor: '#FEF3C7' },
+    'PERFUME': { color: '#DB2777', bgColor: '#FDF2F8' },
+    'FIJADOR': { color: '#EA580C', bgColor: '#FFF7ED' },
+    'PARCHES': { color: '#DC2626', bgColor: '#FEE2E2' },
+  };
+  const cfg = map[categoria] || { color: '#4B5563', bgColor: '#F3F4F6' };
+  
+  return (
+    <div style={{
+      width: '38px',
+      height: '38px',
+      borderRadius: '10px',
+      backgroundColor: cfg.bgColor,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: cfg.color,
+      flexShrink: 0
+    }}>
+      <Tag size={16} />
+    </div>
+  );
 };
 
 export default function AdminPage() {
@@ -718,10 +745,10 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                       {categories.map((cat) => (
                         <div key={cat.categoria} style={{ ...s.listItem, opacity: cat.visible ? 1 : 0.5, borderColor: cat.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
-                          <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>{CATEGORY_ICONS[cat.categoria] || '📦'}</div>
+                          {getCategoryIcon(cat.categoria)}
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{CATEGORY_LABELS[cat.categoria] || cat.categoria}</div>
-                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>{cat.visible ? '✅ Visible' : '🚫 Oculta'}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>{cat.visible ? 'Visible en web' : 'Oculta en catálogo'}</div>
                           </div>
                           <div style={{ ...s.toggleTrack, backgroundColor: cat.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleCategoryVisibility(cat.categoria)}>
                             <div style={{ ...s.toggleThumb, transform: cat.visible ? 'translateX(20px)' : 'translateX(2px)' }} />
@@ -757,10 +784,22 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                       {warehouses.map((wh) => (
                         <div key={wh.codalm} style={{ ...s.listItem, opacity: wh.visible ? 1 : 0.5, borderColor: wh.visible ? 'rgba(34,197,94,0.2)' : 'rgba(142,154,167,0.1)' }}>
-                          <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>🏢</div>
+                          <div style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            backgroundColor: '#E8F0FE',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#2563EB',
+                            flexShrink: 0
+                          }}>
+                            <Store size={16} />
+                          </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: '0.92rem', fontWeight: '600', fontFamily: 'var(--font-title)' }}>{wh.nomalm}</div>
-                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>Código: <strong>{wh.codalm}</strong> | {wh.visible ? '✅ Activa' : '🚫 Inactiva'}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '1px' }}>Código: <strong>{wh.codalm}</strong> | {wh.visible ? 'Activa para ventas' : 'Inactiva/Oculta'}</div>
                           </div>
                           <div style={{ ...s.toggleTrack, backgroundColor: wh.visible ? '#22C55E' : '#D1D5DB' }} onClick={() => toggleWarehouseVisibility(wh.codalm)}>
                             <div style={{ ...s.toggleThumb, transform: wh.visible ? 'translateX(20px)' : 'translateX(2px)' }} />

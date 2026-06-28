@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, Filter, ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Image, ImageOff, Star, Eye, EyeOff, Package } from 'lucide-react';
+import { Search, X, Filter, ArrowUpDown, ChevronLeft, ChevronRight, Loader2, Image, ImageOff, Star, Eye, EyeOff, Package, AlertTriangle } from 'lucide-react';
 
 export default function AdminProductSearch({
   products,
@@ -115,13 +115,13 @@ export default function AdminProductSearch({
   };
 
   const FILTERS = [
-    { id: 'with-image', label: 'Con Imagen', icon: '📷' },
-    { id: 'no-image', label: 'Sin Imagen', icon: '🖼️' },
-    { id: 'featured', label: 'Destacado', icon: '⭐' },
-    { id: 'visible', label: 'Visible', icon: '👁️' },
-    { id: 'hidden', label: 'Oculto', icon: '🚫' },
-    { id: 'in-stock', label: 'Con Stock', icon: '📦' },
-    { id: 'no-stock', label: 'Sin Stock', icon: '⚠️' },
+    { id: 'with-image', label: 'Con Imagen', icon: Image, color: '#10B981', bgColor: '#E6F4EA' },
+    { id: 'no-image', label: 'Sin Imagen', icon: ImageOff, color: '#D97706', bgColor: '#FEF3C7' },
+    { id: 'featured', label: 'Destacado', icon: Star, color: '#E11D48', bgColor: '#FFF1F2' },
+    { id: 'visible', label: 'Visible', icon: Eye, color: '#2563EB', bgColor: '#E8F0FE' },
+    { id: 'hidden', label: 'Oculto', icon: EyeOff, color: '#4B5563', bgColor: '#F3F4F6' },
+    { id: 'in-stock', label: 'Con Stock', icon: Package, color: '#059669', bgColor: '#E6F4EA' },
+    { id: 'no-stock', label: 'Sin Stock', icon: AlertTriangle, color: '#DC2626', bgColor: '#FEE2E2' },
   ];
 
   const SORT_OPTIONS = [
@@ -198,20 +198,35 @@ export default function AdminProductSearch({
       <div style={st.filtersRow}>
         <Filter size={14} color="#9CA3AF" style={{ flexShrink: 0 }} />
         <div style={st.chipsList}>
-          {FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => toggleFilter(f.id)}
-              style={{
-                ...st.chip,
-                backgroundColor: activeFilters.has(f.id) ? 'var(--accent-soft, rgba(255,46,147,0.08))' : '#F3F4F6',
-                color: activeFilters.has(f.id) ? 'var(--accent-start)' : '#6B7280',
-                borderColor: activeFilters.has(f.id) ? 'var(--accent-start)' : 'transparent',
-              }}
-            >
-              <span style={{ fontSize: '0.7rem' }}>{f.icon}</span> {f.label}
-            </button>
-          ))}
+          {FILTERS.map(f => {
+            const active = activeFilters.has(f.id);
+            const Icon = f.icon;
+            return (
+              <button
+                key={f.id}
+                onClick={() => toggleFilter(f.id)}
+                style={{
+                  ...st.chip,
+                  backgroundColor: active ? f.color : f.bgColor,
+                  color: active ? '#FFFFFF' : f.color,
+                  borderColor: active ? f.color : 'transparent',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontWeight: '600',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  border: '1px solid transparent',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Icon size={12} style={{ flexShrink: 0 }} />
+                <span>{f.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -306,8 +321,8 @@ export default function AdminProductSearch({
                       <span style={st.prodCode}>{prod.id}</span>
                       <span style={st.prodPrice}>S/ {prod.price}</span>
                       {prod.stock !== undefined && <span style={st.prodStock}>{prod.stock} und.</span>}
-                      {hasImage && <span style={st.badge}>📷</span>}
-                      {prod.destacado && <span style={st.badge}>⭐</span>}
+                      {hasImage && <Image size={11} color="#10B981" style={{ flexShrink: 0 }} />}
+                      {prod.destacado && <Star size={11} color="#E11D48" fill="#E11D48" style={{ flexShrink: 0 }} />}
                       {!prodVisible && <span style={st.badgeHidden}>Oculto</span>}
                     </div>
                   </div>
