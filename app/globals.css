@@ -285,9 +285,8 @@ a {
 
 /* Wrapper unificado para centrado y alineación perfecta en pantallas grandes */
 .admin-main-content-wrapper {
-  max-width: 1720px;
+  max-width: 100%;
   width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -379,10 +378,24 @@ a {
   align-items: stretch;
 }
 
+/* Columna de catálogo expandible responsivamente */
 .admin-products-left {
   flex: 1;
   min-width: 320px;
   max-width: 540px;
+  transition: max-width 0.2s ease;
+}
+
+@media (min-width: 1440px) {
+  .admin-products-left {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 1680px) {
+  .admin-products-left {
+    max-width: 760px;
+  }
 }
 
 .admin-products-right {
