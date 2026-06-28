@@ -686,7 +686,7 @@ a {
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #FF5A8D; /* Rosa brillante premium */
+  background-color: #FFB3D1; /* Rosa bebé suave */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -703,9 +703,9 @@ a {
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #FF356F; /* Rosa más intenso al hover */
+  background-color: #FF8EBA; /* Rosa un poco más intenso al hover */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 90, 141, 0.35);
+  box-shadow: 0 6px 16px rgba(255, 179, 209, 0.4);
 }
 
 .product-add-to-cart-btn:active {
@@ -830,12 +830,12 @@ a {
 
 /* Cuando el favorito está activo — fondo rosado pastel con corazón blanco */
 .product-favorite-btn.active {
-  background-color: #FF5A8D;
+  background-color: #FFB3D1;
   border: none;
 }
 
 .product-favorite-btn.active:hover {
-  background-color: #FF356F;
+  background-color: #FF8EBA;
   border: none;
 }
 
