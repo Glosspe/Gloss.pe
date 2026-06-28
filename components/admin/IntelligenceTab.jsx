@@ -1000,7 +1000,7 @@ export default function IntelligenceTab({ activeSubSection }) {
         <div style={styles.card} className="soft-card">
           <div style={styles.cardHeader}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Tag size={18} color="var(--accent-start)" />
+              <Tag size={18} color="#475569" />
               <h3 style={{ ...styles.cardTitle, fontSize: '0.95rem' }}>Auto-Etiquetado de Productos</h3>
             </div>
           </div>
@@ -1013,13 +1013,14 @@ export default function IntelligenceTab({ activeSubSection }) {
               style={{ 
                 ...styles.autoTagBtn, 
                 width: '100%', 
-                backgroundColor: 'var(--accent-start)', 
+                backgroundColor: '#1E293B', 
                 color: '#FFFFFF',
                 border: 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                fontWeight: '600'
               }} 
               className="soft-button"
               disabled={isSaving}
@@ -1036,7 +1037,7 @@ export default function IntelligenceTab({ activeSubSection }) {
         <div style={styles.card} className="soft-card">
           <div style={styles.cardHeader}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Shuffle size={18} color="var(--accent-start)" />
+              <Shuffle size={18} color="#475569" />
               <h3 style={{ ...styles.cardTitle, fontSize: '0.95rem' }}>Auto-Venta Cruzada Transaccional</h3>
             </div>
           </div>
@@ -1049,7 +1050,7 @@ export default function IntelligenceTab({ activeSubSection }) {
               style={{ 
                 ...styles.autoTagBtn, 
                 width: '100%', 
-                backgroundColor: 'var(--accent-start)', 
+                backgroundColor: '#1E293B', 
                 color: '#FFFFFF',
                 border: 'none',
                 display: 'flex',
