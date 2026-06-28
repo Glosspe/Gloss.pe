@@ -10,7 +10,12 @@ import AdminConfirmModal from './AdminConfirmModal';
 import AdminTagProductsModal from './AdminTagProductsModal';
 
 export default function IntelligenceTab({ activeSubSection }) {
-  const [configs, setConfigs] = useState({ LOW_STOCK_THRESHOLD: '5' });
+  const [configs, setConfigs] = useState({ 
+    LOW_STOCK_THRESHOLD: '5',
+    CROSS_SELL_DAYS: '90',
+    CROSS_SELL_MIN_ORDERS: '3',
+    CROSS_SELL_LIMIT: '6'
+  });
   const [shortcuts, setShortcuts] = useState([]);
   const [tags, setTags] = useState([]);
   const [crossSells, setCrossSells] = useState([]);
@@ -131,18 +136,28 @@ export default function IntelligenceTab({ activeSubSection }) {
     setMessage({ type: '', text: '' });
     try {
       const token = localStorage.getItem('gloss_admin_token');
-      const res = await fetch('/api/admin/intelligence?action=configs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ clave: 'LOW_STOCK_THRESHOLD', valor: configs.LOW_STOCK_THRESHOLD })
-      });
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Configuración de Stock Crítico guardada con éxito.' });
+      const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+      
+      const keys = ['LOW_STOCK_THRESHOLD', 'CROSS_SELL_DAYS', 'CROSS_SELL_MIN_ORDERS', 'CROSS_SELL_LIMIT'];
+      const requests = keys.map(key => 
+        fetch('/api/admin/intelligence?action=configs', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ clave: key, valor: String(configs[key] || '') })
+        })
+      );
+      
+      const responses = await Promise.all(requests);
+      const allOk = responses.every(res => res.ok);
+      
+      if (allOk) {
+        setMessage({ type: 'success', text: 'Configuraciones del E-commerce guardadas con éxito.' });
       } else {
-        setMessage({ type: 'error', text: 'Error al guardar la configuración.' });
+        setMessage({ type: 'error', text: 'Algunas configuraciones no pudieron ser guardadas.' });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: 'Error de red.' });
+      console.error(err);
+      setMessage({ type: 'error', text: 'Error de red al guardar las configuraciones.' });
     } finally {
       setIsSaving(false);
     }
@@ -405,26 +420,122 @@ export default function IntelligenceTab({ activeSubSection }) {
   };
 
   const renderConfig = () => (
-    <div style={styles.card} className="soft-card">
-      <div style={styles.cardHeader}>
-        <HelpCircle size={20} color="var(--accent-start)" />
-        <h3 style={styles.cardTitle}>Alerta de Stock Crítico</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+      {/* Cabecera del Panel */}
+      <div style={styles.card} className="soft-card">
+        <div style={styles.cardHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Settings size={20} color="#475569" />
+            <h3 style={styles.cardTitle}>Configuración del Motor de Inteligencia</h3>
+          </div>
+        </div>
+        <p style={styles.cardSub}>
+          Administra las reglas de negocio globales y los umbrales de procesamiento para el e-commerce de Tienda Gloss.
+        </p>
       </div>
-      <p style={styles.cardSub}>Configura el umbral mínimo bajo el cual se mostrará el banner de urgencia al cliente.</p>
-      
-      <form onSubmit={handleSaveConfig} style={styles.formRow}>
-        <input 
-          type="number"
-          min="1"
-          max="100"
-          value={configs.LOW_STOCK_THRESHOLD}
-          onChange={(e) => setConfigs({ ...configs, LOW_STOCK_THRESHOLD: e.target.value })}
-          style={styles.input}
-          required
-        />
-        <button type="submit" disabled={isSaving} style={styles.saveBtn} className="soft-button">
-          <Save size={16} /> Guardar
-        </button>
+
+      {/* Formulario en Grilla */}
+      <form onSubmit={handleSaveConfig} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '20px',
+          width: '100%'
+        }}>
+          {/* Configuración 1: Stock Crítico */}
+          <div style={{ ...styles.card, padding: '20px' }} className="soft-card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: '0 0 4px 0' }}>Alerta de Stock Crítico</h4>
+            <p style={{ fontSize: '0.72rem', color: '#64748B', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Umbral mínimo de unidades bajo el cual se mostrará el banner de urgencia en la web para alertar al cliente.
+            </p>
+            <input 
+              type="number"
+              min="1"
+              max="100"
+              value={configs.LOW_STOCK_THRESHOLD || ''}
+              onChange={(e) => setConfigs({ ...configs, LOW_STOCK_THRESHOLD: e.target.value })}
+              style={{ ...styles.input, maxWidth: '140px' }}
+              required
+            />
+          </div>
+
+          {/* Configuración 2: Días Análisis Transaccional */}
+          <div style={{ ...styles.card, padding: '20px' }} className="soft-card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: '0 0 4px 0' }}>Días Historial de Ventas (ERP)</h4>
+            <p style={{ fontSize: '0.72rem', color: '#64748B', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Días de antigüedad de facturas/boletas del ERP Navasoft para el cálculo automático de Venta Cruzada.
+            </p>
+            <input 
+              type="number"
+              min="30"
+              max="720"
+              value={configs.CROSS_SELL_DAYS || ''}
+              onChange={(e) => setConfigs({ ...configs, CROSS_SELL_DAYS: e.target.value })}
+              style={{ ...styles.input, maxWidth: '140px' }}
+              required
+            />
+          </div>
+
+          {/* Configuración 3: Coincidencia Mínima Boletas */}
+          <div style={{ ...styles.card, padding: '20px' }} className="soft-card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: '0 0 4px 0' }}>Coincidencia Mínima en Ventas</h4>
+            <p style={{ fontSize: '0.72rem', color: '#64748B', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Número mínimo de pedidos distintos donde dos productos deben haberse comprado juntos para ser sugeridos.
+            </p>
+            <input 
+              type="number"
+              min="1"
+              max="50"
+              value={configs.CROSS_SELL_MIN_ORDERS || ''}
+              onChange={(e) => setConfigs({ ...configs, CROSS_SELL_MIN_ORDERS: e.target.value })}
+              style={{ ...styles.input, maxWidth: '140px' }}
+              required
+            />
+          </div>
+
+          {/* Configuración 4: Límite Recomendaciones */}
+          <div style={{ ...styles.card, padding: '20px' }} className="soft-card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: '0 0 4px 0' }}>Límite de Recomendaciones Web</h4>
+            <p style={{ fontSize: '0.72rem', color: '#64748B', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Límite máximo de productos sugeridos a mostrar en el carrusel de recomendación en la ficha de detalle.
+            </p>
+            <input 
+              type="number"
+              min="1"
+              max="20"
+              value={configs.CROSS_SELL_LIMIT || ''}
+              onChange={(e) => setConfigs({ ...configs, CROSS_SELL_LIMIT: e.target.value })}
+              style={{ ...styles.input, maxWidth: '140px' }}
+              required
+            />
+          </div>
+        </div>
+
+        {/* Botón Guardar */}
+        <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px' }}>
+          <button 
+            type="submit" 
+            disabled={isSaving} 
+            style={{ 
+              ...styles.saveBtn, 
+              backgroundColor: '#1E293B', 
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '12px 24px',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              height: 'auto',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }} 
+            className="soft-button"
+          >
+            <Save size={16} /> Guardar Cambios de Configuración
+          </button>
+        </div>
       </form>
     </div>
   );
