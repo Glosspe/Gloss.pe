@@ -378,10 +378,25 @@ export async function GET(request) {
     // Filtrar productos ocultos (visible=false en PostgreSQL)
     let visibleProducts = formattedProducts.filter(p => {
       const enrichment = enrichedMap[p.id];
+      console.log(`[DEPURACIÓN FILTRADO] Evaluando producto: ${p.id} (${p.name}), Categoría: ${p.category}`);
+      if (enrichment) {
+        console.log(`[DEPURACIÓN FILTRADO] Encontrado en Postgres. visible: ${enrichment.visible}, destacado: ${enrichment.destacado}`);
+      } else {
+        console.log(`[DEPURACIÓN FILTRADO] No configurado en Postgres.`);
+      }
+      console.log(`[DEPURACIÓN FILTRADO] Categorías deshabilitadas en Postgres:`, disabledCategories);
+
       // Si el producto tiene config y está marcado como oculto, excluirlo
-      if (enrichment && enrichment.visible === false) return false;
+      if (enrichment && enrichment.visible === false) {
+        console.log(`[DEPURACIÓN FILTRADO] EXCLUIDO: Marcado como visible=false en Postgres.`);
+        return false;
+      }
       // Si la categoría del producto está deshabilitada, excluirlo
-      if (disabledCategories.includes(p.category)) return false;
+      if (disabledCategories.includes(p.category)) {
+        console.log(`[DEPURACIÓN FILTRADO] EXCLUIDO: Categoría "${p.category}" deshabilitada.`);
+        return false;
+      }
+      console.log(`[DEPURACIÓN FILTRADO] APROBADO: Producto visible.`);
       return true;
     });
 
