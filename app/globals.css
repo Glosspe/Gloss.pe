@@ -451,18 +451,18 @@ a {
 /* Ajustes responsivos para pantallas medianas/grandes (grilla de múltiples columnas con tarjetas más estrechas) */
 @media (min-width: 768px) {
   .product-add-to-cart-btn {
-    height: 38px; /* Reducido para PC */
-    padding: 8px 16px; /* Reducido para PC */
-    font-size: 0.78rem; /* Reducido para PC */
+    height: 36px;
+    padding: 8px 14px;
+    font-size: 0.75rem;
   }
   .product-favorite-btn {
-    width: 38px; /* Reducido para PC */
-    height: 38px; /* Reducido para PC */
-    min-width: 38px; /* Reducido para PC */
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
   }
   .product-favorite-btn svg {
-    width: 16px; /* Reducido para PC */
-    height: 16px; /* Reducido para PC */
+    width: 15px;
+    height: 15px;
   }
 }
 
