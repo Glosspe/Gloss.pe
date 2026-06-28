@@ -267,6 +267,7 @@ export async function GET(request) {
               WHERE d.fecha >= DATEADD(day, -90, GETDATE())
                 AND p01.estado = 1
                 AND p01.pvns < 15
+                AND d.cdocu IN ('01', '03', '65') -- Filtrar estrictamente por Facturas, Boletas y Notas de Venta (excluye traslados logísticos y devoluciones)
                 ${warehouseFilter}
               GROUP BY d.codi
               ORDER BY unidades_vendidas DESC
@@ -284,6 +285,7 @@ export async function GET(request) {
               WHERE d.fecha >= DATEADD(day, -90, GETDATE())
                 AND p01.estado = 1
                 AND p01.pvns >= 15
+                AND d.cdocu IN ('01', '03', '65') -- Filtrar estrictamente por Facturas, Boletas y Notas de Venta (excluye traslados logísticos y devoluciones)
                 ${warehouseFilter}
               GROUP BY d.codi
               ORDER BY unidades_vendidas DESC
