@@ -69,11 +69,58 @@ export async function POST(request) {
     // Acción 5: Ejecutar Auto-Tagging por reglas (No requiere body JSON)
     if (action === 'auto-tag') {
       console.log('[API Admin Intelligence] Iniciando proceso de Auto-Etiquetado...');
+
+      // Modo Proxy: Si la variable de entorno LOCAL_API_URL está presente (ej. en Railway),
+      // redirige la petición a la API local que corre en la PC del usuario a través del túnel de ngrok.
+      const localApiUrl = process.env.LOCAL_API_URL;
+      if (localApiUrl) {
+        console.log(`[API Admin Intelligence - PROXY MODE] Redirigiendo auto-tag a la API local: ${localApiUrl}/api/admin/intelligence?action=auto-tag`);
+        try {
+          const cleanApiUrl = localApiUrl.replace(/\/$/, '');
+          const targetUrl = `${cleanApiUrl}/api/admin/intelligence?action=auto-tag`;
+          
+          const authHeader = request.headers.get('Authorization') || '';
+
+          const res = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': authHeader 
+            },
+            cache: 'no-store'
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            return NextResponse.json(data);
+          } else {
+            const errorText = await res.text();
+            console.warn(`[API Admin Intelligence - PROXY MODE] La API local retornó status ${res.status}: ${errorText}`);
+            return NextResponse.json(
+              { error: 'La API local del ERP retornó un error durante el auto-etiquetado', details: errorText },
+              { status: res.status }
+            );
+          }
+        } catch (proxyErr) {
+          console.error(`[API Admin Intelligence - PROXY MODE] Error conectando a la API local a través del túnel:`, proxyErr.message);
+          return NextResponse.json(
+            { error: 'El servidor local del ERP no está disponible para auto-etiquetado a través del túnel', details: proxyErr.message },
+            { status: 503 }
+          );
+        }
+      }
+
+      // Modo Local: Se ejecuta directamente en la PC del usuario conectando al ERP local
       let pool;
       try {
         pool = await getErpConnection();
       } catch (err) {
-        return NextResponse.json({ error: 'ERP no accesible para auto-etiquetado' }, { status: 503 });
+        console.error('[API Admin Intelligence] Error al obtener conexion del ERP:', err);
+        return NextResponse.json({ 
+          error: 'ERP no accesible para auto-etiquetado', 
+          details: err.message, 
+          stack: err.stack 
+        }, { status: 503 });
       }
 
       // Cargar todos los productos activos del ERP con sus descripciones
