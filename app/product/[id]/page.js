@@ -178,8 +178,9 @@ export default function ProductDetailPage({ params }) {
   const stockBadge = getStockBadge(product.stock, product.lowStockThreshold || 5);
   const kitTotalPrice = product.price + equivalents.reduce((acc, eq) => acc + (eq.stock > 0 ? eq.price : 0), 0);
 
-  // Mensaje para WhatsApp
-  const whatsappUrl = `https://wa.me/51900000000?text=${encodeURIComponent(
+  // Mensaje para WhatsApp utilizando el número corporativo configurado de forma dinámica
+  const targetWhatsapp = product.whatsappNumber || '51900000000';
+  const whatsappUrl = `https://wa.me/${targetWhatsapp}?text=${encodeURIComponent(
     `Hola Gloss, estoy interesada en el producto: ${product.name} (Código: ${product.id}).`
   )}`;
 

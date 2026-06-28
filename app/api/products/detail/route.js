@@ -157,6 +157,7 @@ export async function GET(request) {
       destacado: product.destacado,
       hasEquivalents: product.hasEquivalents,
       visible: product.visible,
+      whatsappNumber: process.env.WHATSAPP_NUMBER || '51900000000',
       isMock: false
     };
 
