@@ -5,6 +5,7 @@ import {
   Sparkles, Save, Trash2, Plus, RefreshCw, 
   HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2 
 } from 'lucide-react';
+import AdminConfirmModal from './AdminConfirmModal';
 
 export default function IntelligenceTab({ activeSubSection }) {
   const [configs, setConfigs] = useState({ LOW_STOCK_THRESHOLD: '5' });
@@ -15,6 +16,16 @@ export default function IntelligenceTab({ activeSubSection }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Confirm Modal local
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirmar',
+    variant: 'danger',
+    onConfirm: null
+  });
 
   // Lógica de visualización colapsable de formularios
   const [showShortcutForm, setShowShortcutForm] = useState(false);
@@ -123,24 +134,56 @@ export default function IntelligenceTab({ activeSubSection }) {
     }
   };
 
-  const handleDeleteShortcut = async (id) => {
-    if (!confirm('¿Seguro de eliminar este atajo?')) return;
-    setIsSaving(true);
-    try {
-      const token = localStorage.getItem('gloss_admin_token');
-      const res = await fetch(`/api/admin/intelligence?action=shortcuts&id=${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        loadIntelData();
-        setMessage({ type: 'success', text: 'Atajo eliminado.' });
+  const triggerConfirm = (title, message, variant, onConfirmCallback) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmText: 'Aceptar',
+      variant,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isProcessing: true }));
+        try {
+          await onConfirmCallback();
+        } finally {
+          setConfirmModal({
+            isOpen: false,
+            title: '',
+            message: '',
+            confirmText: 'Confirmar',
+            variant: 'danger',
+            onConfirm: null,
+            isProcessing: false
+          });
+        }
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Error al eliminar.' });
-    } finally {
-      setIsSaving(false);
-    }
+    });
+  };
+
+  const handleDeleteShortcut = (id) => {
+    triggerConfirm(
+      '¿Eliminar este atajo?',
+      'Se removerá la píldora de búsqueda sugerida del catálogo de forma permanente.',
+      'danger',
+      async () => {
+        setIsSaving(true);
+        try {
+          const token = localStorage.getItem('gloss_admin_token');
+          const res = await fetch(`/api/admin/intelligence?action=shortcuts&id=${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            loadIntelData();
+            setMessage({ type: 'success', text: 'Atajo eliminado.' });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: 'Error al eliminar.' });
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    );
   };
 
   const handleAddCrossSell = async (e) => {
@@ -205,49 +248,61 @@ export default function IntelligenceTab({ activeSubSection }) {
     }
   };
 
-  const handleDeleteTag = async (id) => {
-    if (!confirm('¿Seguro de eliminar esta etiqueta?')) return;
-    setIsSaving(true);
-    try {
-      const token = localStorage.getItem('gloss_admin_token');
-      const res = await fetch(`/api/admin/intelligence?action=tags&id=${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        loadIntelData();
-        setMessage({ type: 'success', text: 'Etiqueta eliminada con éxito.' });
+  const handleDeleteTag = (id) => {
+    triggerConfirm(
+      '¿Eliminar esta etiqueta?',
+      'Esta acción removerá la etiqueta de necesidad y la asociación de productos del ERP de forma permanente.',
+      'danger',
+      async () => {
+        setIsSaving(true);
+        try {
+          const token = localStorage.getItem('gloss_admin_token');
+          const res = await fetch(`/api/admin/intelligence?action=tags&id=${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            loadIntelData();
+            setMessage({ type: 'success', text: 'Etiqueta eliminada con éxito.' });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: 'Error de red.' });
+        } finally {
+          setIsSaving(false);
+        }
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Error de red.' });
-    } finally {
-      setIsSaving(false);
-    }
+    );
   };
 
-  const handleRunAutoTagging = async () => {
-    if (!confirm('¿Deseas gatillar el Auto-Etiquetado Inteligente? Analizará la descripción de los productos en el ERP y asociará etiquetas #AntiFrizz, #ControlCaida, #UñasFuertes, etc.')) return;
-    setIsSaving(true);
-    setMessage({ type: '', text: '' });
-    try {
-      const token = localStorage.getItem('gloss_admin_token');
-      const res = await fetch('/api/admin/intelligence?action=auto-tag', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        loadIntelData();
-        setMessage({ 
-          type: 'success', 
-          text: `Auto-etiquetado completado. Resumen: ${data.summary.map(s => `${s.etiqueta} (${s.totalAsociados})`).join(', ')}` 
-        });
+  const handleRunAutoTagging = () => {
+    triggerConfirm(
+      '¿Ejecutar Auto-Etiquetado?',
+      'El motor inteligente analizará el detalle de productos en el ERP y creará las asociaciones de etiquetas automáticamente. Esto puede tomar unos segundos.',
+      'primary',
+      async () => {
+        setIsSaving(true);
+        setMessage({ type: '', text: '' });
+        try {
+          const token = localStorage.getItem('gloss_admin_token');
+          const res = await fetch('/api/admin/intelligence?action=auto-tag', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            loadIntelData();
+            setMessage({ 
+              type: 'success', 
+              text: `Auto-etiquetado completado. Resumen: ${data.summary.map(s => `${s.etiqueta} (${s.totalAsociados})`).join(', ')}` 
+            });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: 'Error al procesar auto-etiquetado.' });
+        } finally {
+          setIsSaving(false);
+        }
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Error al procesar auto-etiquetado.' });
-    } finally {
-      setIsSaving(false);
-    }
+    );
   };
 
   const renderConfig = () => (
@@ -599,6 +654,18 @@ export default function IntelligenceTab({ activeSubSection }) {
           </div>
         )
       )}
+
+      {/* ── Confirm Modal ── */}
+      <AdminConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        variant={confirmModal.variant}
+        isProcessing={confirmModal.isProcessing}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
