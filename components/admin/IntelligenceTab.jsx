@@ -885,11 +885,6 @@ export default function IntelligenceTab({ activeSubSection }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
-                borderLeft: p.status === 'INCONSISTENT' 
-                  ? '4px solid #EF4444' 
-                  : p.status === 'UNASSIGNED' 
-                  ? '4px solid #F59E0B' 
-                  : '4px solid #10B981',
                 transition: 'all 0.15s ease'
               }}
               className="soft-card"
