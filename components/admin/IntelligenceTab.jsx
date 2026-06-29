@@ -938,87 +938,89 @@ export default function IntelligenceTab({ activeSubSection }) {
   }, [auditProducts]);
 
   const renderCategoryAudit = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-      {/* Cabecera & Controles de Auditoría */}
-      <div style={styles.card} className="soft-card">
-        <div style={styles.cardHeader}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldAlert size={20} color="var(--accent-start)" />
-            <h3 style={styles.cardTitle}>Auditoría de Categorías e Inconsistencias</h3>
-          </div>
-          <button 
-            onClick={loadAuditData} 
-            disabled={auditLoading}
-            style={{
-              ...styles.openFormBtn,
-              backgroundColor: 'rgba(255, 46, 147, 0.05)',
-              color: 'var(--accent-start)',
-              borderColor: 'rgba(255, 46, 147, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontWeight: 600,
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.05)'; }}
-          >
-            <RefreshCw size={14} style={{ animation: auditLoading ? 'spin 1s linear infinite' : 'none' }} /> 
-            {auditLoading ? 'Analizando ERP...' : 'Refrescar Auditoría'}
-          </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+      {/* Cabecera compacta de una línea */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '2px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ShieldAlert size={18} color="var(--accent-start)" />
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1E293B', margin: 0 }}>Auditoría de Categorías</h3>
+          <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 400 }} className="hide-mobile">
+            — Discrepancias ERP / Catálogo
+          </span>
         </div>
-        <p style={styles.cardSub}>
-          Esta herramienta analiza de forma pasiva el catálogo de productos del ERP local (Navasoft) buscando discrepancias lógicas de clasificación (ej: un shampoo clasificado en la categoría "Rostro"). Corrige la subfamilia en tu ERP para resolver las alertas.
-        </p>
+        <button 
+          onClick={loadAuditData} 
+          disabled={auditLoading}
+          style={{
+            ...styles.openFormBtn,
+            padding: '6px 12px',
+            fontSize: '0.8rem',
+            backgroundColor: 'rgba(255, 46, 147, 0.05)',
+            color: 'var(--accent-start)',
+            borderColor: 'rgba(255, 46, 147, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontWeight: 600,
+            margin: 0,
+            height: '32px'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.1)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 46, 147, 0.05)'; }}
+        >
+          <RefreshCw size={12} style={{ animation: auditLoading ? 'spin 1s linear infinite' : 'none' }} /> 
+          {auditLoading ? 'Analizando...' : 'Refrescar'}
+        </button>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards Grid - Fila Ultra Compacta */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: '10px',
         width: '100%'
       }}>
         {/* KPI 1: Total */}
-        <div style={{ ...styles.card, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }} className="soft-card">
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(59, 130, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', flexShrink: 0 }}>
-            <Package size={20} />
+        <div style={{ ...styles.card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', minHeight: '52px' }} className="soft-card">
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(59, 130, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', flexShrink: 0 }}>
+            <Package size={16} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Productos ERP</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{auditStats.total}</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>Productos ERP</span>
+            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', marginTop: '2px', lineHeight: 1 }}>{auditStats.total}</span>
           </div>
         </div>
         
         {/* KPI 2: Inconsistentes */}
-        <div style={{ ...styles.card, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }} className="soft-card">
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(239, 68, 68, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', flexShrink: 0 }}>
-            <ShieldAlert size={20} />
+        <div style={{ ...styles.card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', minHeight: '52px' }} className="soft-card">
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(239, 68, 68, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', flexShrink: 0 }}>
+            <ShieldAlert size={16} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inconsistentes</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#EF4444', lineHeight: 1 }}>{auditStats.inconsistent}</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>Inconsistentes</span>
+            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#EF4444', marginTop: '2px', lineHeight: 1 }}>{auditStats.inconsistent}</span>
           </div>
         </div>
 
         {/* KPI 3: Sin Categoría */}
-        <div style={{ ...styles.card, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }} className="soft-card">
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F59E0B', flexShrink: 0 }}>
-            <HelpCircle size={20} />
+        <div style={{ ...styles.card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', minHeight: '52px' }} className="soft-card">
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F59E0B', flexShrink: 0 }}>
+            <HelpCircle size={16} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categoría Genérica</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F59E0B', lineHeight: 1 }}>{auditStats.unassigned}</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>Genéricos / Sin Cat.</span>
+            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#F59E0B', marginTop: '2px', lineHeight: 1 }}>{auditStats.unassigned}</span>
           </div>
         </div>
 
         {/* KPI 4: Correctos */}
-        <div style={{ ...styles.card, padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }} className="soft-card">
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', flexShrink: 0 }}>
-            <CheckCircle size={20} />
+        <div style={{ ...styles.card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', minHeight: '52px' }} className="soft-card">
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981', flexShrink: 0 }}>
+            <CheckCircle size={16} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Correctos</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10B981', lineHeight: 1 }}>{auditStats.correct}</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>Correctos</span>
+            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#10B981', marginTop: '2px', lineHeight: 1 }}>{auditStats.correct}</span>
           </div>
         </div>
       </div>
@@ -1026,10 +1028,10 @@ export default function IntelligenceTab({ activeSubSection }) {
       {/* Filtros e Inputs de Búsqueda */}
       <div style={{
         ...styles.card,
-        padding: '14px 20px',
+        padding: '10px 16px',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '12px',
+        gap: '8px',
         alignItems: 'center',
         justifyContent: 'space-between'
       }} className="soft-card">
