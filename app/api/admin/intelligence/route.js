@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getErpConnection } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // ── GET: Obtener configuraciones de Inteligencia de E-commerce ──
 export async function GET(request) {
   try {
@@ -164,7 +166,7 @@ export async function GET(request) {
         // Esto reduce el peso del payload en un 95%, eliminando de raíz los errores 502 por timeout de red.
         const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
 
-        return NextResponse.json(discrepantProducts);
+        return NextResponse.json(discrepantProducts.slice(0, 200));
       }
 
       // Cargar productos del ERP con su subfamilia (Ejecución local en PC local)
@@ -290,7 +292,7 @@ export async function GET(request) {
       // Filtrar para retornar únicamente productos que requieren acción (inconsistentes o sin categoría)
       const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
 
-      return NextResponse.json(discrepantProducts);
+      return NextResponse.json(discrepantProducts.slice(0, 200));
     }
 
     return NextResponse.json({ error: 'Acción GET no válida' }, { status: 400 });
