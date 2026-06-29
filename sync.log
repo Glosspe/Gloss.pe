@@ -3103,3 +3103,299 @@
 [2026-06-29T00:07:02.306Z] === SINCRONIZACIÓN COMPLETADA CON ÉXITO ===
 
 [2026-06-29T00:07:02.307Z] Conexión con SQL Server cerrada.
+[2026-06-29T00:08:42.972Z] === INICIANDO LOTE DE SINCRONIZACIÓN ASÍNCRONA ===
+[2026-06-29T00:08:44.000Z] Sedes activas leídas de PostgreSQL: 04, 01, 05, 02, 06
+[2026-06-29T00:08:44.092Z] Conectado a SQL Server local exitosamente.
+[2026-06-29T00:08:44.092Z] Consultando catálogo y stocks en Navasoft...
+[2026-06-29T00:08:44.335Z] Encontrados 5861 productos activos en Navasoft.
+[2026-06-29T00:08:44.336Z] Consultando equivalencias de productos en Navasoft...
+[2026-06-29T00:08:44.380Z] Leídas 4 relaciones de equivalencia.
+[2026-06-29T00:08:44.380Z] Consultando marcas activas en Navasoft...
+[2026-06-29T00:08:44.431Z] Leídas 143 marcas activas.
+[2026-06-29T00:08:44.432Z] Consultando árbol de categorías en Navasoft...
+[2026-06-29T00:08:44.479Z] Generadas 10 familias con sus subcategorías para la nube.
+[2026-06-29T00:08:44.479Z] Enviando productos a la API de la nube: https://glosspe-production.up.railway.app/api/sync/catalog
+[2026-06-29T00:08:45.735Z] Lote 1 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:46.603Z] Lote 2 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:47.446Z] Lote 3 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:48.031Z] Lote 4 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:48.577Z] Lote 5 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:49.129Z] Lote 6 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:49.691Z] Lote 7 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:50.236Z] Lote 8 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:50.756Z] Lote 9 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:51.295Z] Lote 10 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:51.832Z] Lote 11 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:52.360Z] Lote 12 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:52.880Z] Lote 13 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:53.460Z] Lote 14 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:54.005Z] Lote 15 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:54.562Z] Lote 16 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:55.133Z] Lote 17 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:55.660Z] Lote 18 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:56.223Z] Lote 19 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:56.751Z] Lote 20 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:57.318Z] Lote 21 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:57.871Z] Lote 22 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:58.381Z] Lote 23 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:58.889Z] Lote 24 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:59.432Z] Lote 25 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:08:59.955Z] Lote 26 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:00.493Z] Lote 27 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:01.032Z] Lote 28 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:01.554Z] Lote 29 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:02.080Z] Lote 30 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:02.608Z] Lote 31 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:03.124Z] Lote 32 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:03.875Z] Lote 33 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:04.387Z] Lote 34 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:04.968Z] Lote 35 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:05.525Z] Lote 36 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:06.069Z] Lote 37 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:06.588Z] Lote 38 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:07.122Z] Lote 39 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:07.641Z] Lote 40 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:08.147Z] Lote 41 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:08.656Z] Lote 42 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:09.195Z] Lote 43 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:09.757Z] Lote 44 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:10.313Z] Lote 45 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:10.849Z] Lote 46 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:11.381Z] Lote 47 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:11.886Z] Lote 48 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:12.418Z] Lote 49 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:12.938Z] Lote 50 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:13.443Z] Lote 51 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:14.051Z] Lote 52 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:14.572Z] Lote 53 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:15.086Z] Lote 54 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:15.632Z] Lote 55 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:16.159Z] Lote 56 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:16.666Z] Lote 57 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:17.171Z] Lote 58 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:09:17.563Z] Lote 59 de 59 enviado con éxito. (61 productos)
+[2026-06-29T00:09:17.564Z] === SINCRONIZACIÓN COMPLETADA CON ÉXITO ===
+
+[2026-06-29T00:09:17.565Z] Conexión con SQL Server cerrada.
+[2026-06-29T00:10:42.972Z] === INICIANDO LOTE DE SINCRONIZACIÓN ASÍNCRONA ===
+[2026-06-29T00:10:44.003Z] Sedes activas leídas de PostgreSQL: 04, 01, 05, 02, 06
+[2026-06-29T00:10:44.094Z] Conectado a SQL Server local exitosamente.
+[2026-06-29T00:10:44.095Z] Consultando catálogo y stocks en Navasoft...
+[2026-06-29T00:10:44.338Z] Encontrados 5861 productos activos en Navasoft.
+[2026-06-29T00:10:44.338Z] Consultando equivalencias de productos en Navasoft...
+[2026-06-29T00:10:44.382Z] Leídas 4 relaciones de equivalencia.
+[2026-06-29T00:10:44.383Z] Consultando marcas activas en Navasoft...
+[2026-06-29T00:10:44.433Z] Leídas 143 marcas activas.
+[2026-06-29T00:10:44.434Z] Consultando árbol de categorías en Navasoft...
+[2026-06-29T00:10:44.478Z] Generadas 10 familias con sus subcategorías para la nube.
+[2026-06-29T00:10:44.479Z] Enviando productos a la API de la nube: https://glosspe-production.up.railway.app/api/sync/catalog
+[2026-06-29T00:10:45.503Z] Lote 1 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:46.321Z] Lote 2 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:46.853Z] Lote 3 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:47.390Z] Lote 4 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:47.904Z] Lote 5 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:48.443Z] Lote 6 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:48.954Z] Lote 7 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:49.472Z] Lote 8 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:49.991Z] Lote 9 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:50.531Z] Lote 10 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:51.053Z] Lote 11 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:51.575Z] Lote 12 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:52.130Z] Lote 13 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:52.698Z] Lote 14 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:53.223Z] Lote 15 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:53.731Z] Lote 16 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:54.279Z] Lote 17 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:54.782Z] Lote 18 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:55.296Z] Lote 19 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:55.827Z] Lote 20 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:56.365Z] Lote 21 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:56.886Z] Lote 22 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:57.481Z] Lote 23 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:57.999Z] Lote 24 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:58.529Z] Lote 25 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:59.128Z] Lote 26 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:10:59.672Z] Lote 27 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:00.201Z] Lote 28 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:00.730Z] Lote 29 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:01.377Z] Lote 30 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:01.897Z] Lote 31 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:02.433Z] Lote 32 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:02.953Z] Lote 33 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:03.508Z] Lote 34 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:04.078Z] Lote 35 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:04.619Z] Lote 36 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:05.155Z] Lote 37 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:05.681Z] Lote 38 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:06.189Z] Lote 39 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:06.707Z] Lote 40 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:07.231Z] Lote 41 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:07.730Z] Lote 42 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:08.740Z] Lote 43 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:09.259Z] Lote 44 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:09.781Z] Lote 45 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:10.326Z] Lote 46 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:10.902Z] Lote 47 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:11.406Z] Lote 48 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:11.926Z] Lote 49 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:12.474Z] Lote 50 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:13.003Z] Lote 51 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:13.548Z] Lote 52 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:14.102Z] Lote 53 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:14.633Z] Lote 54 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:15.137Z] Lote 55 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:15.882Z] Lote 56 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:16.402Z] Lote 57 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:16.920Z] Lote 58 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:11:17.262Z] Lote 59 de 59 enviado con éxito. (61 productos)
+[2026-06-29T00:11:17.262Z] === SINCRONIZACIÓN COMPLETADA CON ÉXITO ===
+
+[2026-06-29T00:11:17.263Z] Conexión con SQL Server cerrada.
+[2026-06-29T00:12:42.974Z] === INICIANDO LOTE DE SINCRONIZACIÓN ASÍNCRONA ===
+[2026-06-29T00:12:43.985Z] Sedes activas leídas de PostgreSQL: 04, 01, 05, 02, 06
+[2026-06-29T00:12:44.099Z] Conectado a SQL Server local exitosamente.
+[2026-06-29T00:12:44.100Z] Consultando catálogo y stocks en Navasoft...
+[2026-06-29T00:12:44.343Z] Encontrados 5861 productos activos en Navasoft.
+[2026-06-29T00:12:44.343Z] Consultando equivalencias de productos en Navasoft...
+[2026-06-29T00:12:44.387Z] Leídas 4 relaciones de equivalencia.
+[2026-06-29T00:12:44.388Z] Consultando marcas activas en Navasoft...
+[2026-06-29T00:12:44.439Z] Leídas 143 marcas activas.
+[2026-06-29T00:12:44.440Z] Consultando árbol de categorías en Navasoft...
+[2026-06-29T00:12:44.484Z] Generadas 10 familias con sus subcategorías para la nube.
+[2026-06-29T00:12:44.484Z] Enviando productos a la API de la nube: https://glosspe-production.up.railway.app/api/sync/catalog
+[2026-06-29T00:12:45.443Z] Lote 1 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:46.256Z] Lote 2 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:46.779Z] Lote 3 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:47.299Z] Lote 4 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:47.810Z] Lote 5 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:48.884Z] Lote 6 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:49.541Z] Lote 7 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:50.081Z] Lote 8 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:50.608Z] Lote 9 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:51.127Z] Lote 10 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:51.635Z] Lote 11 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:52.148Z] Lote 12 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:52.598Z] Lote 13 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:53.097Z] Lote 14 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:53.613Z] Lote 15 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:54.111Z] Lote 16 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:54.623Z] Lote 17 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:55.128Z] Lote 18 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:55.627Z] Lote 19 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:56.146Z] Lote 20 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:56.643Z] Lote 21 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:57.140Z] Lote 22 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:57.633Z] Lote 23 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:58.125Z] Lote 24 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:58.619Z] Lote 25 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:59.121Z] Lote 26 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:12:59.644Z] Lote 27 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:00.152Z] Lote 28 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:00.600Z] Lote 29 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:01.118Z] Lote 30 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:01.692Z] Lote 31 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:02.384Z] Lote 32 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:02.910Z] Lote 33 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:03.614Z] Lote 34 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:04.138Z] Lote 35 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:04.650Z] Lote 36 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:05.167Z] Lote 37 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:05.668Z] Lote 38 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:06.199Z] Lote 39 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:06.735Z] Lote 40 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:07.248Z] Lote 41 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:07.771Z] Lote 42 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:08.298Z] Lote 43 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:08.813Z] Lote 44 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:09.362Z] Lote 45 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:09.875Z] Lote 46 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:10.377Z] Lote 47 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:10.884Z] Lote 48 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:11.367Z] Lote 49 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:12.068Z] Lote 50 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:12.568Z] Lote 51 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:13.082Z] Lote 52 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:13.571Z] Lote 53 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:14.067Z] Lote 54 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:14.565Z] Lote 55 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:15.075Z] Lote 56 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:15.579Z] Lote 57 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:16.101Z] Lote 58 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:13:16.500Z] Lote 59 de 59 enviado con éxito. (61 productos)
+[2026-06-29T00:13:16.501Z] === SINCRONIZACIÓN COMPLETADA CON ÉXITO ===
+
+[2026-06-29T00:13:16.501Z] Conexión con SQL Server cerrada.
+[2026-06-29T00:14:42.974Z] === INICIANDO LOTE DE SINCRONIZACIÓN ASÍNCRONA ===
+[2026-06-29T00:14:43.931Z] Sedes activas leídas de PostgreSQL: 04, 01, 05, 02, 06
+[2026-06-29T00:14:44.051Z] Conectado a SQL Server local exitosamente.
+[2026-06-29T00:14:44.051Z] Consultando catálogo y stocks en Navasoft...
+[2026-06-29T00:14:44.290Z] Encontrados 5861 productos activos en Navasoft.
+[2026-06-29T00:14:44.290Z] Consultando equivalencias de productos en Navasoft...
+[2026-06-29T00:14:44.334Z] Leídas 4 relaciones de equivalencia.
+[2026-06-29T00:14:44.334Z] Consultando marcas activas en Navasoft...
+[2026-06-29T00:14:44.385Z] Leídas 143 marcas activas.
+[2026-06-29T00:14:44.385Z] Consultando árbol de categorías en Navasoft...
+[2026-06-29T00:14:44.430Z] Generadas 10 familias con sus subcategorías para la nube.
+[2026-06-29T00:14:44.431Z] Enviando productos a la API de la nube: https://glosspe-production.up.railway.app/api/sync/catalog
+[2026-06-29T00:14:45.309Z] Lote 1 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:46.102Z] Lote 2 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:46.633Z] Lote 3 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:47.182Z] Lote 4 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:47.726Z] Lote 5 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:48.271Z] Lote 6 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:48.837Z] Lote 7 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:49.395Z] Lote 8 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:49.941Z] Lote 9 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:50.713Z] Lote 10 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:51.230Z] Lote 11 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:51.737Z] Lote 12 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:52.239Z] Lote 13 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:52.759Z] Lote 14 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:53.261Z] Lote 15 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:53.764Z] Lote 16 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:54.516Z] Lote 17 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:55.058Z] Lote 18 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:55.545Z] Lote 19 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:56.557Z] Lote 20 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:57.128Z] Lote 21 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:57.624Z] Lote 22 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:58.406Z] Lote 23 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:58.951Z] Lote 24 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:14:59.496Z] Lote 25 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:00.020Z] Lote 26 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:00.517Z] Lote 27 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:01.294Z] Lote 28 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:01.800Z] Lote 29 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:02.301Z] Lote 30 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:03.105Z] Lote 31 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:03.635Z] Lote 32 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:04.256Z] Lote 33 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:04.854Z] Lote 34 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:05.681Z] Lote 35 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:06.647Z] Lote 36 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:10.119Z] Lote 37 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:10.793Z] [ERROR LOTE] Error en lote 38. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"xmGU74N9Qm-7WDrm6WHkDg"}
+[2026-06-29T00:15:10.969Z] [ERROR LOTE] Error en lote 39. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"GSqwJvvsRreBLPZU9I3ezw"}
+[2026-06-29T00:15:12.163Z] [ERROR LOTE] Error en lote 40. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"o19DncY3TDOlORG-lt7tkg"}
+[2026-06-29T00:15:12.340Z] [ERROR LOTE] Error en lote 41. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"oGoA2636ScWaosnQnpoFkQ"}
+[2026-06-29T00:15:12.517Z] [ERROR LOTE] Error en lote 42. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"wEjTEj6WRFKJ_T9O2prcFg"}
+[2026-06-29T00:15:12.693Z] [ERROR LOTE] Error en lote 43. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"YSwEp-IOTHONSZJF-_9nXA"}
+[2026-06-29T00:15:12.871Z] [ERROR LOTE] Error en lote 44. Status: 502. Detalle: {"status":"error","code":502,"message":"Application failed to respond","request_id":"xba3GarBRLOCp352n6XIxQ"}
+[2026-06-29T00:15:14.283Z] Lote 45 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:14.917Z] Lote 46 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:15.511Z] Lote 47 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:16.087Z] Lote 48 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:16.663Z] Lote 49 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:17.246Z] Lote 50 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:17.823Z] Lote 51 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:18.424Z] Lote 52 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:18.988Z] Lote 53 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:19.544Z] Lote 54 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:20.114Z] Lote 55 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:20.689Z] Lote 56 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:21.265Z] Lote 57 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:21.825Z] Lote 58 de 59 enviado con éxito. (100 productos)
+[2026-06-29T00:15:22.235Z] Lote 59 de 59 enviado con éxito. (61 productos)
+[2026-06-29T00:15:22.236Z] === SINCRONIZACIÓN COMPLETADA CON ÉXITO ===
+
+[2026-06-29T00:15:22.237Z] Conexión con SQL Server cerrada.

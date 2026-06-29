@@ -62,13 +62,18 @@ export async function GET(request) {
 
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o audita sobre PostgreSQL de Railway
+      // Bypass de Producción: Si corre en producción (Railway), se salta la conexión del ERP local
+      // previniendo timeouts TCP de 72 segundos al intentar abrir el puerto de SQL Server de forma síncrona.
       let pool;
-      let usePgFallback = false;
-      try {
-        pool = await getErpConnection();
-      } catch (err) {
-        console.warn('[API Admin Intelligence] ERP no accesible para auditoría de categorías. Usando PostgreSQL como fallback...');
-        usePgFallback = true;
+      let usePgFallback = process.env.NODE_ENV === 'production' || !process.env.DB_SERVER;
+
+      if (!usePgFallback) {
+        try {
+          pool = await getErpConnection();
+        } catch (err) {
+          console.warn('[API Admin Intelligence] ERP no accesible para auditoría de categorías. Usando PostgreSQL como fallback...');
+          usePgFallback = true;
+        }
       }
 
       if (usePgFallback) {
@@ -315,13 +320,18 @@ export async function POST(request) {
 
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o ejecuta auto-tagging en la nube
+      // Bypass de Producción: Si corre en producción (Railway), se salta la conexión del ERP local
+      // previniendo timeouts TCP de 72 segundos al intentar abrir el puerto de SQL Server de forma síncrona.
       let pool;
-      let usePgFallback = false;
-      try {
-        pool = await getErpConnection();
-      } catch (err) {
-        console.warn('[API Admin Intelligence] ERP no accesible para auto-etiquetado. Usando PostgreSQL como fallback...');
-        usePgFallback = true;
+      let usePgFallback = process.env.NODE_ENV === 'production' || !process.env.DB_SERVER;
+
+      if (!usePgFallback) {
+        try {
+          pool = await getErpConnection();
+        } catch (err) {
+          console.warn('[API Admin Intelligence] ERP no accesible para auto-etiquetado. Usando PostgreSQL como fallback...');
+          usePgFallback = true;
+        }
       }
 
       const rules = [
@@ -396,13 +406,18 @@ export async function POST(request) {
 
 
       // Modo Local / Fallback PostgreSQL: Conecta al ERP o responde éxito informativo
+      // Bypass de Producción: Si corre en producción (Railway), se salta la conexión del ERP local
+      // previniendo timeouts TCP de 72 segundos al intentar abrir el puerto de SQL Server de forma síncrona.
       let pool;
-      let usePgFallback = false;
-      try {
-        pool = await getErpConnection();
-      } catch (err) {
-        console.warn('[API Admin Intelligence] ERP no accesible para auto-cross-sell. Retornando éxito informativo...');
-        usePgFallback = true;
+      let usePgFallback = process.env.NODE_ENV === 'production' || !process.env.DB_SERVER;
+
+      if (!usePgFallback) {
+        try {
+          pool = await getErpConnection();
+        } catch (err) {
+          console.warn('[API Admin Intelligence] ERP no accesible para auto-cross-sell. Retornando éxito informativo...');
+          usePgFallback = true;
+        }
       }
 
       if (usePgFallback) {
