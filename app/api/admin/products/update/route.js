@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import cache from '@/lib/cache';
+import { verifyAdminRequest } from '@/lib/auth';
 
 export async function POST(request) {
   try {
-    // 1. Validar la sesión del administrador
-    const token = request.headers.get('Authorization');
-    if (!token || !token.startsWith('Bearer gloss-admin-')) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    // 1. Validar la sesión del administrador usando JWT criptográfico
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
     }
 
     const { codart, imagenes, descripcionEnriquecida, destacado, visible, categoria } = await request.json();

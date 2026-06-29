@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getErpConnection } from '@/lib/db';
+import { verifyAdminRequest } from '@/lib/auth';
 
 // Almacenes por defecto como fallback en caso de que la DB ERP no esté accesible
 const FALLBACK_ALMACENES = [
@@ -25,9 +26,9 @@ const WAREHOUSE_FALLBACK_INFO = {
 // GET: Obtener todas las sedes con su estado de visibilidad/activación, región y dirección
 export async function GET(request) {
   try {
-    // Validar token de administrador
-    const token = request.headers.get('Authorization');
-    const isAdmin = token && token.startsWith('Bearer gloss-admin-');
+    // Validar token de administrador usando JWT criptográfico
+    const admin = await verifyAdminRequest(request);
+    const isAdmin = !!admin;
 
     // Consultar PostgreSQL
     let dbWarehouses = await prisma.webAlmacenConfig.findMany({
@@ -123,9 +124,9 @@ export async function GET(request) {
 // POST: Actualizar visibilidad de sedes
 export async function POST(request) {
   try {
-    const token = request.headers.get('Authorization');
-    if (!token || !token.startsWith('Bearer gloss-admin-')) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
     }
 
     const { warehouses } = await request.json();

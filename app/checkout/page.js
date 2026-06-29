@@ -191,6 +191,36 @@ ${formattedItems}
     }
   };
 
+  if (cart.length === 0 && !isSubmitting) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.topNav}>
+          <Link href="/" style={styles.backLink}>
+            <ArrowLeft size={20} color="var(--text-primary)" />
+            <span style={styles.backText}>Volver al Catálogo</span>
+          </Link>
+          <h2 style={styles.logo}>Tienda Gloss</h2>
+        </div>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '80px 20px',
+          gap: '16px'
+        }}>
+          <ShoppingBag size={48} color="var(--accent-start)" style={{ marginBottom: '16px' }} />
+          <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '1.3rem', fontWeight: '500', color: 'var(--text-primary)', margin: 0 }}>Tu carrito de compras está vacío</h3>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: '320px', lineHeight: '1.45', margin: 0 }}>Agrega algunos productos de nuestro catálogo para realizar tu pedido.</p>
+          <Link href="/" className="soft-button" style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+            Explorar Catálogo
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
       {/* Barra superior de navegación */}

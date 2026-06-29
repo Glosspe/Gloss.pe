@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { verifyAdminRequest } from '@/lib/auth';
 
 // Categorías por defecto — se sincronizan automáticamente con el ERP vía /api/products/categories.
 // Estas solo se usan como seed inicial si PostgreSQL no tiene categorías configuradas.
@@ -16,9 +17,9 @@ const DEFAULT_CATEGORIES = [
 // GET: Listar todas las categorías con su estado de visibilidad
 export async function GET(request) {
   try {
-    // Verificar sesión para admin
-    const token = request.headers.get('Authorization');
-    const isAdmin = token && token.startsWith('Bearer gloss-admin-');
+    // Verificar sesión para admin usando JWT criptográfico
+    const admin = await verifyAdminRequest(request);
+    const isAdmin = !!admin;
 
     let categories = await prisma.webCategoriaConfig.findMany({
       orderBy: { orden: 'asc' }
@@ -51,9 +52,9 @@ export async function GET(request) {
 // POST: Actualizar visibilidad de categorías
 export async function POST(request) {
   try {
-    const token = request.headers.get('Authorization');
-    if (!token || !token.startsWith('Bearer gloss-admin-')) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
     }
 
     const { categories } = await request.json();

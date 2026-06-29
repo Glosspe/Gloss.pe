@@ -114,8 +114,16 @@ export async function GET(request) {
     const stockExpression = `(${selectStockParts.join(' + ')})`;
     const joinsSql = joinParts.join('\n          ');
 
-    // Construir consulta para los códigos finales
-    const codesList = finalCodes.map((c, i) => `'${c}'`).join(',');
+    // Construir consulta parametrizada de forma dinámica para evitar inyección SQL
+    const requestSql = pool.request();
+    const paramNames = [];
+    finalCodes.forEach((code, index) => {
+      const paramName = `code_${index}`;
+      requestSql.input(paramName, sql.VarChar, code);
+      paramNames.push(`@${paramName}`);
+    });
+    const codesList = paramNames.length > 0 ? paramNames.join(',') : "''";
+
     const detailQuery = `
       SELECT 
         RTRIM(p01.codi) as id,
@@ -135,7 +143,7 @@ export async function GET(request) {
       WHERE p01.codi IN (${codesList}) AND p01.estado = 1
     `;
 
-    const detailResult = await pool.request().query(detailQuery);
+    const detailResult = await requestSql.query(detailQuery);
     const rawProducts = detailResult.recordset;
 
     // Obtener enriquecimiento de imágenes y visibilidad desde Postgres

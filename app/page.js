@@ -58,9 +58,10 @@ export default function HomePage() {
       } catch (err) {
         console.error('[Frontend] Error fetching products:', err);
         if (active) {
-          // Si hay cualquier error de red o de carga del catálogo, consideramos que el ERP no está disponible
-          // para no confundir al cliente mostrando un catálogo mock desactualizado
-          setIsErpUnavailable(true);
+          // Cargamos productos mock locales como fallback de respaldo para que la web siga online y usable
+          setProducts(MOCK_PRODUCTS.slice(0, 24));
+          setIsOffline(true);
+          setIsErpUnavailable(false);
           setIsLoading(false);
         }
       }

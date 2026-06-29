@@ -11,8 +11,10 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
     "html5-qrcode": "^2.3.8",
     "ioredis": "^5.11.1",
+    "jose": "^6.2.3",
     "lucide-react": "^1.21.0",
     "mssql": "^12.6.0",
     "next": "16.2.9",

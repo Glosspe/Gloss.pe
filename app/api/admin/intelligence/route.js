@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getErpConnection } from '@/lib/db';
+import { verifyAdminRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 // ── GET: Obtener configuraciones de Inteligencia de E-commerce ──
 export async function GET(request) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -467,6 +473,11 @@ export async function GET(request) {
 // ── POST: Crear, actualizar o procesar acciones ──
 export async function POST(request) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -713,6 +724,11 @@ export async function POST(request) {
 // ── DELETE: Eliminar recursos (atajos o etiquetas) ──
 export async function DELETE(request) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado. Se requiere token de administrador válido.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
     const id = searchParams.get('id');

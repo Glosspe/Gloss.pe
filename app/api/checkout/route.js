@@ -26,44 +26,57 @@ export async function POST(request) {
       finalCodAlm = '05';
     }
 
-    // 2. Generar un número de pedido correlativo web único (secuencial)
-    // Envolvemos esto en un flujo robusto en PostgreSQL
+    // 2. Generar y registrar el número de pedido correlativo web único de forma robusta
+    // Bucle optimista de reintentos para evitar colisiones/condiciones de carrera concurrentes
     let nroPedido = 'GLOSS-1001';
-    try {
-      const lastPedido = await prisma.webPedido.findFirst({
-        orderBy: { fechaCreacion: 'desc' }
-      });
-      
-      if (lastPedido && lastPedido.nroPedido) {
-        const lastNum = parseInt(lastPedido.nroPedido.split('-')[1], 10);
-        nroPedido = `GLOSS-${lastNum + 1}`;
-      }
-    } catch (dbErr) {
-      console.warn('[Checkout API] No se pudo leer el último pedido en PostgreSQL, usando ID aleatorio:', dbErr.message);
-      nroPedido = `GLOSS-${Math.floor(1000 + Math.random() * 9000)}`;
-    }
-
-    // 3. Registrar el pedido en la base de datos PostgreSQL local (Railway)
     let localPedido = null;
-    try {
-      localPedido = await prisma.webPedido.create({
-        data: {
-          nroPedido,
-          clienteNombre: name,
-          clienteTelefono: phone,
-          clienteDocumento: docNumber,
-          direccion: address,
-          productos: JSON.stringify(items),
-          total: parseFloat(total),
-          estado: 'PENDIENTE',
-          notes: notes || ''
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      try {
+        const lastPedido = await prisma.webPedido.findFirst({
+          orderBy: { fechaCreacion: 'desc' }
+        });
+        
+        if (lastPedido && lastPedido.nroPedido) {
+          const lastNum = parseInt(lastPedido.nroPedido.split('-')[1], 10);
+          nroPedido = `GLOSS-${lastNum + 1}`;
         }
-      });
-      console.log(`[Checkout API] Pedido guardado en PostgreSQL local: ${nroPedido}`);
-    } catch (pgErr) {
-      console.error('[Checkout API] Error crítico al guardar en PostgreSQL de Railway:', pgErr.message);
-      // No bloqueamos aquí, generamos un objeto temporal por si PostgreSQL falla en pruebas locales iniciales
-      localPedido = { nroPedido };
+      } catch (dbErr) {
+        console.warn('[Checkout API] No se pudo leer el último pedido en PostgreSQL, usando ID aleatorio:', dbErr.message);
+        nroPedido = `GLOSS-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+
+      // 3. Registrar el pedido en la base de datos PostgreSQL local (Railway)
+      try {
+        localPedido = await prisma.webPedido.create({
+          data: {
+            nroPedido,
+            clienteNombre: name,
+            clienteTelefono: phone,
+            clienteDocumento: docNumber,
+            direccion: address,
+            productos: JSON.stringify(items),
+            total: parseFloat(total),
+            estado: 'PENDIENTE',
+            notes: notes || ''
+          }
+        });
+        console.log(`[Checkout API] Pedido guardado exitosamente en PostgreSQL local (Intento ${attempts}): ${nroPedido}`);
+        break; // Éxito, salir del bucle
+      } catch (pgErr) {
+        // P2002 indica error de restricción de clave única (Unique Constraint) de Prisma en PostgreSQL
+        if (pgErr.code === 'P2002' && pgErr.meta?.target?.includes('nroPedido')) {
+          console.warn(`[Checkout API] Colisión de nroPedido detectada para ${nroPedido}. Reintentando con el siguiente...`);
+          continue;
+        }
+        console.error('[Checkout API] Error crítico al guardar en PostgreSQL de Railway:', pgErr.message);
+        // Si no es un error de duplicado (ej. BD caída), creamos un fallback local para no bloquear la compra por WhatsApp
+        localPedido = { nroPedido };
+        break;
+      }
     }
 
     // 4. Intentar registrar la Cotización en el ERP Navasoft (SQL Server BdNava04)
@@ -208,7 +221,7 @@ export async function POST(request) {
     }
 
     // Invalidar activamente todo el caché de búsquedas y equivalentes para que el stock se actualice de inmediato en la web
-    cache.clear();
+    await cache.clear();
 
     // 5. Devolver la respuesta exitosa al cliente
     return NextResponse.json({
