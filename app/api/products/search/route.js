@@ -166,11 +166,58 @@ export async function GET(request) {
       };
     }
 
-    // Filtro de Categoría
+    // Cargar CATEGORIES_TREE de caché o base de datos para la traducción inteligente de categorías
+    let categoriesTree = [];
+    try {
+      const cachedTree = await cache.get('categories-tree');
+      if (cachedTree) {
+        categoriesTree = cachedTree;
+      } else {
+        const treeConfig = await prisma.webGlobalConfig.findUnique({
+          where: { clave: 'CATEGORIES_TREE' }
+        });
+        if (treeConfig && treeConfig.valor) {
+          categoriesTree = JSON.parse(treeConfig.valor);
+          await cache.set('categories-tree', categoriesTree, 300);
+        }
+      }
+    } catch (e) {
+      console.warn('[API Products Search] Error al cargar categorías para traducción:', e.message);
+    }
+
+    // Filtro de Categoría Inteligente (Traducción de IDs de menú a nombres/códigos del ERP)
     if (category && category.trim() !== '' && category !== 'Todos') {
       if (category === 'Trending') {
         whereCondition.destacado = true;
+      } else if (category.startsWith('FAM:')) {
+        // Filtrar por familia completa (ej: FAM:05 -> Cabello)
+        const famCode = category.replace('FAM:', '').trim();
+        const familyData = categoriesTree.find(f => f.id === famCode);
+        const subCatNames = familyData ? familyData.subcategories.map(s => s.name.toUpperCase()) : [];
+        
+        whereCondition.OR = [
+          { codart: { startsWith: famCode } },
+          ...(subCatNames.length > 0 ? [{ categoria: { in: subCatNames } }] : [])
+        ];
+      } else if (/^\d{2}-\d{2}$/.test(category) || /^\d{4}$/.test(category)) {
+        // Filtrar por subcategoría específica (ej: "05-01" o "0501" -> Decoloradores)
+        const cleanSubCode = category.replace('-', '').trim();
+        const famCode = cleanSubCode.substring(0, 2);
+        const subCodeWithDash = `${famCode}-${cleanSubCode.substring(2)}`;
+        
+        let subName = '';
+        const familyData = categoriesTree.find(f => f.id === famCode);
+        if (familyData) {
+          const subData = familyData.subcategories.find(s => s.id === subCodeWithDash || s.id === cleanSubCode);
+          if (subData) subName = subData.name.toUpperCase();
+        }
+        
+        whereCondition.OR = [
+          { codart: { startsWith: cleanSubCode } },
+          ...(subName ? [{ categoria: { equals: subName, mode: 'insensitive' } }] : [])
+        ];
       } else {
+        // Fallback por texto directo
         whereCondition.categoria = {
           contains: category,
           mode: 'insensitive'
@@ -193,7 +240,7 @@ export async function GET(request) {
       }
     }
 
-    const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
+    const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNDAwIDQwMCI+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ2IiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjRkYyRTkzIiBvcGFjaXR5PSIwLjEyIiBsZXR0ZXItc3BhY2luZz0iMC4xOGVtIj5HTE9TUzwvdGV4dD48L3N2Zz4=';
 
     // Consultar PostgreSQL — excluir campos pesados en queries masivos para reducir uso de RAM
     const selectFields = topLimit > 200 ? {
