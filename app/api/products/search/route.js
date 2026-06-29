@@ -67,12 +67,13 @@ export async function GET(request) {
     const includeHidden = searchParams.get('includeHidden') === 'true';
     
     let topLimit = 100;
+    const maxLimitAllowed = includeHidden ? 10000 : 1000; // Si es el admin, permitir hasta 10,000 para cargar todo el catálogo.
     if (limitParam === 'all') {
-      topLimit = 1000;
+      topLimit = maxLimitAllowed;
     } else if (limitParam) {
       const parsed = parseInt(limitParam, 10);
       if (!isNaN(parsed) && parsed > 0) {
-        topLimit = Math.min(parsed, 1000);
+        topLimit = Math.min(parsed, maxLimitAllowed);
       }
     }
     
