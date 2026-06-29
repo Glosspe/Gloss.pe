@@ -30,6 +30,7 @@ export default function IntelligenceTab({ activeSubSection }) {
 
   // Estados para Auditoría de Categorías
   const [auditProducts, setAuditProducts] = useState([]);
+  const [auditBackendStats, setAuditBackendStats] = useState({ total: 0, inconsistent: 0, unassigned: 0, correct: 0 });
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditSearch, setAuditSearch] = useState('');
   const [auditFilter, setAuditFilter] = useState('ALL'); // ALL, ALERT, CORRECT, UNASSIGNED
@@ -71,10 +72,14 @@ export default function IntelligenceTab({ activeSubSection }) {
     try {
       const token = localStorage.getItem('gloss_admin_token');
       const headers = { 'Authorization': `Bearer ${token}` };
-      const res = await fetch('/api/admin/intelligence?action=category-audit', { headers });
+      const url = `/api/admin/intelligence?action=category-audit&search=${encodeURIComponent(auditSearch)}`;
+      const res = await fetch(url, { headers });
       if (res.ok) {
         const data = await res.json();
-        setAuditProducts(data);
+        setAuditProducts(data.products || []);
+        if (data.stats) {
+          setAuditBackendStats(data.stats);
+        }
       }
     } catch (err) {
       console.error('[loadAuditData] Error:', err);
@@ -100,6 +105,14 @@ export default function IntelligenceTab({ activeSubSection }) {
       if (res.ok) {
         setAuditProducts(prev => prev.map(p => {
           if (p.id === codart) {
+            const oldStatus = p.status;
+            setAuditBackendStats(prevStats => {
+              const newStats = { ...prevStats };
+              if (oldStatus === 'INCONSISTENT') newStats.inconsistent = Math.max(0, newStats.inconsistent - 1);
+              else if (oldStatus === 'UNASSIGNED') newStats.unassigned = Math.max(0, newStats.unassigned - 1);
+              newStats.correct++;
+              return newStats;
+            });
             return { ...p, status: 'CORRECT', categoryName: selectedCategoryName };
           }
           return p;
@@ -959,16 +972,7 @@ export default function IntelligenceTab({ activeSubSection }) {
     });
   }, [auditProducts, auditSearch, auditFilter]);
 
-  const auditStats = React.useMemo(() => {
-    const stats = { total: 0, inconsistent: 0, unassigned: 0, correct: 0 };
-    auditProducts.forEach(p => {
-      stats.total++;
-      if (p.status === 'INCONSISTENT') stats.inconsistent++;
-      else if (p.status === 'UNASSIGNED') stats.unassigned++;
-      else if (p.status === 'CORRECT') stats.correct++;
-    });
-    return stats;
-  }, [auditProducts]);
+  const auditStats = auditBackendStats;
 
   const renderCategoryAudit = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
@@ -1064,7 +1068,7 @@ export default function IntelligenceTab({ activeSubSection }) {
         padding: '10px 16px',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '8px',
+gap: '8px',
         alignItems: 'center',
         justifyContent: 'space-between'
       }} className="soft-card">
@@ -1072,9 +1076,14 @@ export default function IntelligenceTab({ activeSubSection }) {
           <Search size={16} style={{ position: 'absolute', left: '12px', color: '#94A3B8' }} />
           <input 
             type="text"
-            placeholder="Buscar por ID de producto o nombre..."
+            placeholder="Buscar por ID o nombre (Presiona Enter)..."
             value={auditSearch}
             onChange={(e) => setAuditSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                loadAuditData();
+              }
+            }}
             style={{
               ...styles.input,
               paddingLeft: '38px',

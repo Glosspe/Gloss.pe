@@ -222,10 +222,33 @@ export async function GET(request) {
           };
         });
 
+        // Calcular estadísticas reales basadas en el catálogo enriquecido completo
+        const stats = {
+          total: auditedProducts.length,
+          inconsistent: auditedProducts.filter(p => p.status === 'INCONSISTENT').length,
+          unassigned: auditedProducts.filter(p => p.status === 'UNASSIGNED').length,
+          correct: auditedProducts.filter(p => p.status === 'CORRECT').length
+        };
+
         // Filtrar para retornar únicamente productos que requieren acción (inconsistentes o sin categoría).
         const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
 
-        return NextResponse.json(discrepantProducts.slice(0, 200));
+        // Soportar filtrado de búsqueda en el backend para poder buscar en todo el catálogo de inmediato
+        const search = request.nextUrl.searchParams.get('search') || '';
+        let filtered = discrepantProducts;
+        if (search) {
+          const searchLower = search.toLowerCase();
+          filtered = discrepantProducts.filter(p => 
+            p.name.toLowerCase().includes(searchLower) ||
+            p.id.toLowerCase().includes(searchLower) ||
+            (p.userCode && p.userCode.toLowerCase().includes(searchLower))
+          );
+        }
+
+        return NextResponse.json({
+          stats,
+          products: filtered.slice(0, 200)
+        });
       }
 
       // Cargar productos del ERP con su subfamilia (Ejecución local en PC local)
@@ -405,10 +428,33 @@ export async function GET(request) {
         };
       });
 
+      // Calcular estadísticas reales basadas en el catálogo enriquecido completo
+      const stats = {
+        total: auditedProducts.length,
+        inconsistent: auditedProducts.filter(p => p.status === 'INCONSISTENT').length,
+        unassigned: auditedProducts.filter(p => p.status === 'UNASSIGNED').length,
+        correct: auditedProducts.filter(p => p.status === 'CORRECT').length
+      };
+
       // Filtrar para retornar únicamente productos que requieren acción (inconsistentes o sin categoría)
       const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
 
-      return NextResponse.json(discrepantProducts.slice(0, 200));
+      // Soportar filtrado de búsqueda en el backend para poder buscar en todo el catálogo de inmediato
+      const search = request.nextUrl.searchParams.get('search') || '';
+      let filtered = discrepantProducts;
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = discrepantProducts.filter(p => 
+          p.name.toLowerCase().includes(searchLower) ||
+          p.id.toLowerCase().includes(searchLower) ||
+          (p.userCode && p.userCode.toLowerCase().includes(searchLower))
+        );
+      }
+
+      return NextResponse.json({
+        stats,
+        products: filtered.slice(0, 200)
+      });
     }
 
     return NextResponse.json({ error: 'Acción GET no válida' }, { status: 400 });
