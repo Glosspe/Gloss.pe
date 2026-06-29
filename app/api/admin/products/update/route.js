@@ -18,28 +18,29 @@ export async function POST(request) {
 
     console.log(`[Admin Update Product] Modificando enriquecimiento para artículo: ${codart}, categoria: ${categoria}`);
 
-    // Convertir array de imágenes a string JSON para guardarlo en la columna
-    // Ahora soporta data URIs (Base64) además de URLs
-    const imagenesString = JSON.stringify(imagenes || []);
+    // Construir objetos de actualización y creación de forma selectiva para no borrar
+    // información existente (como imágenes, destacado, etc.) si no vienen en el request.
+    const updateData = {};
+    if (imagenes !== undefined) updateData.imagenes = JSON.stringify(imagenes || []);
+    if (descripcionEnriquecida !== undefined) updateData.descripcionEnriquecida = descripcionEnriquecida;
+    if (destacado !== undefined) updateData.destacado = !!destacado;
+    if (visible !== undefined) updateData.visible = !!visible;
+    if (categoria !== undefined) updateData.categoria = categoria;
+
+    const createData = {
+      codart,
+      imagenes: imagenes !== undefined ? JSON.stringify(imagenes || []) : '[]',
+      descripcionEnriquecida: descripcionEnriquecida || null,
+      destacado: !!destacado,
+      visible: visible !== undefined ? !!visible : true,
+      categoria: categoria || null
+    };
 
     // 2. Ejecutar Upsert (crear o actualizar) en PostgreSQL mediante Prisma
     const updatedProduct = await prisma.webProductoImagen.upsert({
       where: { codart },
-      update: {
-        imagenes: imagenesString,
-        descripcionEnriquecida: descripcionEnriquecida || null,
-        destacado: !!destacado,
-        visible: visible !== undefined ? !!visible : true,
-        ...(categoria !== undefined ? { categoria } : {})
-      },
-      create: {
-        codart,
-        imagenes: imagenesString,
-        descripcionEnriquecida: descripcionEnriquecida || null,
-        destacado: !!destacado,
-        visible: visible !== undefined ? !!visible : true,
-        ...(categoria !== undefined ? { categoria } : {})
-      }
+      update: updateData,
+      create: createData
     });
 
     // Invalidar activamente todo el caché de la tienda para que el cambio de precio/foto/oferta sea visible de inmediato
