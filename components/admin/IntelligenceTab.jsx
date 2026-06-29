@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Save, Trash2, Plus, RefreshCw, 
-  HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2,
+  HelpCircle, Tag, Shuffle, CheckCircle, AlertCircle, Loader2, Check,
   ShieldAlert, Search, Package, Zap, Eye, Brain, Lightbulb, ChevronDown,
   Settings
 } from 'lucide-react';
@@ -80,6 +80,39 @@ export default function IntelligenceTab({ activeSubSection }) {
       console.error('[loadAuditData] Error:', err);
     } finally {
       setAuditLoading(false);
+    }
+  };
+
+  const handleApplyCategory = async (codart, selectedCategoryName) => {
+    try {
+      const token = localStorage.getItem('gloss_admin_token');
+      const res = await fetch('/api/admin/products/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          codart,
+          categoria: selectedCategoryName
+        })
+      });
+      if (res.ok) {
+        setAuditProducts(prev => prev.map(p => {
+          if (p.id === codart) {
+            return { ...p, status: 'CORRECT', categoryName: selectedCategoryName };
+          }
+          return p;
+        }));
+        setMessage({ type: 'success', text: `Producto ${codart} reclasificado exitosamente a "${selectedCategoryName}".` });
+        setTimeout(() => setMessage({ type: '', text: '' }), 4000);
+      } else {
+        const errorData = await res.json();
+        setMessage({ type: 'error', text: 'Error al reclasificar: ' + (errorData.error || 'Desconocido') });
+      }
+    } catch (err) {
+      console.error('[handleApplyCategory] Error:', err);
+      setMessage({ type: 'error', text: 'Error de red al intentar reclasificar el producto.' });
     }
   };
 
@@ -1236,7 +1269,7 @@ export default function IntelligenceTab({ activeSubSection }) {
               </div>
 
               {/* Propuesta IA */}
-              <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '3px', flexShrink: 0 }}>
+              <div style={{ width: '210px', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
                 {p.status !== 'CORRECT' && p.suggestedCategory && (
                   <>
                     <span style={{ 
@@ -1248,11 +1281,61 @@ export default function IntelligenceTab({ activeSubSection }) {
                       gap: '4px'
                     }}>
                       <Lightbulb size={12} color="#1E3A8A" />
-                      <span>Sugerencia Web:</span>
+                      <span>Ideas de Clasificación:</span>
                     </span>
-                    <span style={{ fontSize: '0.72rem', color: '#1E3A8A', fontWeight: 600, backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #DBEAFE', display: 'inline-block', width: 'fit-content' }}>
-                      {p.suggestedCategory} &gt; {p.suggestedSubcategory}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <select 
+                        id={`select-cat-${p.id}`}
+                        style={{
+                          fontSize: '0.7rem',
+                          color: '#1E3A8A',
+                          fontWeight: 600,
+                          backgroundColor: '#EFF6FF',
+                          padding: '3px 6px',
+                          borderRadius: '6px',
+                          border: '1px solid #DBEAFE',
+                          outline: 'none',
+                          cursor: 'pointer',
+                          flex: 1,
+                          maxWidth: '170px'
+                        }}
+                      >
+                        {(p.suggestions && p.suggestions.length > 0 ? p.suggestions : [{ category: p.suggestedCategory, subcategory: p.suggestedSubcategory }]).map((sug, idx) => (
+                          <option key={idx} value={sug.subcategory}>
+                            {sug.category} &gt; {sug.subcategory}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const selectEl = document.getElementById(`select-cat-${p.id}`);
+                          if (selectEl) {
+                            handleApplyCategory(p.id, selectEl.value);
+                          }
+                        }}
+                        style={{
+                          padding: '4px',
+                          borderRadius: '50%',
+                          backgroundColor: '#10B981',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '20px',
+                          height: '20px',
+                          transition: 'all 0.15s ease',
+                          flexShrink: 0
+                        }}
+                        title="Aplicar Clasificación"
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = '#059669'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.backgroundColor = '#10B981'; }}
+                      >
+                        <Check size={11} strokeWidth={3} />
+                      </button>
+                    </div>
                   </>
                 )}
               </div>

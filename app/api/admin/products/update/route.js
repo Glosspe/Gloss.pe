@@ -10,13 +10,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { codart, imagenes, descripcionEnriquecida, destacado, visible } = await request.json();
+    const { codart, imagenes, descripcionEnriquecida, destacado, visible, categoria } = await request.json();
 
     if (!codart) {
       return NextResponse.json({ error: 'Falta el código de artículo' }, { status: 400 });
     }
 
-    console.log(`[Admin Update Product] Modificando enriquecimiento para artículo: ${codart}`);
+    console.log(`[Admin Update Product] Modificando enriquecimiento para artículo: ${codart}, categoria: ${categoria}`);
 
     // Convertir array de imágenes a string JSON para guardarlo en la columna
     // Ahora soporta data URIs (Base64) además de URLs
@@ -30,6 +30,7 @@ export async function POST(request) {
         descripcionEnriquecida: descripcionEnriquecida || null,
         destacado: !!destacado,
         visible: visible !== undefined ? !!visible : true,
+        ...(categoria !== undefined ? { categoria } : {})
       },
       create: {
         codart,
@@ -37,6 +38,7 @@ export async function POST(request) {
         descripcionEnriquecida: descripcionEnriquecida || null,
         destacado: !!destacado,
         visible: visible !== undefined ? !!visible : true,
+        ...(categoria !== undefined ? { categoria } : {})
       }
     });
 

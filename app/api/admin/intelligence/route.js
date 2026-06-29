@@ -100,31 +100,72 @@ export async function GET(request) {
           let alertMessage = '';
           let suggestedCategory = '';
           let suggestedSubcategory = '';
+          let suggestions = [];
 
-          const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
+          // Detección de Eléctricos de Belleza (planchas, tenazas, cortadoras, etc.)
+          const isElectricBeautyName = /tenaza|rizador|rizadora|plancha|secadora|secador|cortadora|depiladora|depilador|afeitadora|afeitador|patillera|trimmer|wahl|pritech|rozia|babyliss|maquina de cortar|maquina de corte/i.test(nameLower);
+          const isElectricBeautyCategory = /eléctrico|electrico|aparatos|tecnologia|electrónico|electronico/i.test(catNameLower);
+
+          const isCapilarName = !isElectricBeautyName && /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
           const isCapilarCategory = /cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio/i.test(catNameLower);
 
-          const isFacialName = !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
+          const isFacialName = !isElectricBeautyName && !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
           const isFacialCategory = /rostro|facial|cutis|piel|cremas/i.test(catNameLower);
 
-          const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
+          const isUñasName = !isElectricBeautyName && /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
           const isUñasCategory = /uñas|manicure|pedicure|esmalte/i.test(catNameLower);
 
-          if (isCapilarName && !isCapilarCategory) {
+          if (isElectricBeautyName && !isElectricBeautyCategory) {
+            status = 'INCONSISTENT';
+            alertMessage = `El nombre sugiere un aparato eléctrico de belleza, pero su categoría es "${catName || 'Sin Nombre'}".`;
+            suggestedCategory = 'Eléctricos de Belleza';
+            suggestedSubcategory = 'Herramientas de Estilizado';
+            suggestions = [
+              { category: 'Eléctricos de Belleza', subcategory: 'Herramientas de Estilizado' },
+              { category: 'Cabello', subcategory: 'Accesorios de Cabello' },
+              { category: 'Aparatos Eléctricos', subcategory: 'Cuidado Personal' }
+            ];
+          } else if (isElectricBeautyName && isElectricBeautyCategory) {
+            // Incluso si está en ELECTRONICOS en el ERP, se sugiere clasificarlo en una categoría web de belleza
+            status = 'INCONSISTENT';
+            alertMessage = `El producto es un eléctrico de belleza. Se sugiere clasificarlo en una subfamilia web de estilizado.`;
+            suggestedCategory = 'Eléctricos de Belleza';
+            suggestedSubcategory = 'Herramientas de Estilizado';
+            suggestions = [
+              { category: 'Eléctricos de Belleza', subcategory: 'Herramientas de Estilizado' },
+              { category: 'Cabello', subcategory: 'Accesorios de Cabello' },
+              { category: 'Aparatos Eléctricos', subcategory: 'Cuidado Personal' }
+            ];
+          } else if (isCapilarName && !isCapilarCategory) {
             status = 'INCONSISTENT';
             alertMessage = `El nombre sugiere cuidado capilar, pero su categoría es "${catName || 'Sin Nombre'}".`;
             suggestedCategory = 'Cabello';
             suggestedSubcategory = 'Cuidado Capilar';
+            suggestions = [
+              { category: 'Cabello', subcategory: 'Cuidado Capilar' },
+              { category: 'Cabello', subcategory: 'Tratamientos Capilares' },
+              { category: 'Belleza', subcategory: 'Cuidado del Cabello' }
+            ];
           } else if (isFacialName && !isFacialCategory) {
             status = 'INCONSISTENT';
             alertMessage = `El producto sugiere cuidado de la piel/facial, pero su categoría es "${catName || 'Sin Nombre'}".`;
             suggestedCategory = 'Rostro';
             suggestedSubcategory = 'Cuidado Facial';
+            suggestions = [
+              { category: 'Rostro', subcategory: 'Cuidado Facial' },
+              { category: 'Rostro', subcategory: 'Skincare y Cremas' },
+              { category: 'Rostro', subcategory: 'Tratamiento Facial' }
+            ];
           } else if (isUñasName && !isUñasCategory) {
             status = 'INCONSISTENT';
             alertMessage = `El producto sugiere manicure/uñas, pero su categoría es "${catName || 'Sin Nombre'}".`;
             suggestedCategory = 'Uñas';
             suggestedSubcategory = 'Esmaltes y Manicure';
+            suggestions = [
+              { category: 'Uñas', subcategory: 'Esmaltes y Manicure' },
+              { category: 'Uñas', subcategory: 'Accesorios de Uñas' },
+              { category: 'Manicure', subcategory: 'Uñas y Pedicure' }
+            ];
           } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '' || catNameLower.includes('accesorio')) {
             if (isCapilarName || isFacialName || isUñasName) {
               status = 'INCONSISTENT';
@@ -132,18 +173,34 @@ export async function GET(request) {
               if (isCapilarName) {
                 suggestedCategory = 'Cabello';
                 suggestedSubcategory = 'Cuidado Capilar';
+                suggestions = [
+                  { category: 'Cabello', subcategory: 'Cuidado Capilar' },
+                  { category: 'Cabello', subcategory: 'Tratamientos Capilares' }
+                ];
               } else if (isFacialName) {
                 suggestedCategory = 'Rostro';
                 suggestedSubcategory = 'Cuidado Facial';
+                suggestions = [
+                  { category: 'Rostro', subcategory: 'Cuidado Facial' },
+                  { category: 'Rostro', subcategory: 'Skincare y Cremas' }
+                ];
               } else {
                 suggestedCategory = 'Uñas';
                 suggestedSubcategory = 'Esmaltes y Manicure';
+                suggestions = [
+                  { category: 'Uñas', subcategory: 'Esmaltes y Manicure' },
+                  { category: 'Uñas', subcategory: 'Accesorios de Uñas' }
+                ];
               }
             } else {
               status = 'UNASSIGNED';
               alertMessage = `El producto está en una categoría genérica o vacía.`;
               suggestedCategory = 'Por Definir';
               suggestedSubcategory = 'Pendiente Clasificación';
+              suggestions = [
+                { category: 'Por Definir', subcategory: 'Pendiente Clasificación' },
+                { category: 'Variados', subcategory: 'Sin Categoría' }
+              ];
             }
           }
 
@@ -159,6 +216,7 @@ export async function GET(request) {
             alertMessage,
             suggestedCategory,
             suggestedSubcategory,
+            suggestions,
             image: imgs.length > 0 ? imgs[0] : null,
             visible: p.visible !== false
           };
@@ -227,31 +285,71 @@ export async function GET(request) {
         let alertMessage = '';
         let suggestedCategory = '';
         let suggestedSubcategory = '';
+        let suggestions = [];
 
-        const isCapilarName = /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
+        // Detección de Eléctricos de Belleza (planchas, tenazas, cortadoras, etc.)
+        const isElectricBeautyName = /tenaza|rizador|rizadora|plancha|secadora|secador|cortadora|depiladora|depilador|afeitadora|afeitador|patillera|trimmer|wahl|pritech|rozia|babyliss|maquina de cortar|maquina de corte/i.test(nameLower);
+        const isElectricBeautyCategory = /eléctrico|electrico|aparatos|tecnologia|electrónico|electronico/i.test(catNameLower);
+
+        const isCapilarName = !isElectricBeautyName && /shampoo|acondicionador|shamp|capilar|keratina|laceador|lacio|rizo|cabello|mascarilla capilar|ampolla capilar|crema de peinar|crema para peinar|oleo capilar|tratamiento capilar|silicona capilar|tinte|decolorante|oxidante|activador/i.test(nameLower);
         const isCapilarCategory = /cabello|capilar|shampoo|acondicionador|tinte|botox|post lacio/i.test(catNameLower);
 
-        const isFacialName = !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
+        const isFacialName = !isElectricBeautyName && !isCapilarName && /crema|hidratante|serum|suero|limpiador|tonico|facial|rostro|contorno|bloqueador|antiedad|antiarrugas|micelar|desmaquill|exfoliante|skincare|skin care|protector solar/i.test(nameLower);
         const isFacialCategory = /rostro|facial|cutis|piel|cremas/i.test(catNameLower);
 
-        const isUñasName = /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
+        const isUñasName = !isElectricBeautyName && /esmalte|quitaesmalte|nail|uñas|limador|top coat|base coat|acrilico|pedicure|manicure|corta uñas|corta uña|cortaúñas|cortaúña/i.test(nameLower);
         const isUñasCategory = /uñas|manicure|pedicure|esmalte/i.test(catNameLower);
 
-        if (isCapilarName && !isCapilarCategory) {
+        if (isElectricBeautyName && !isElectricBeautyCategory) {
+          status = 'INCONSISTENT';
+          alertMessage = `El nombre sugiere un aparato eléctrico de belleza, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
+          suggestedCategory = 'Eléctricos de Belleza';
+          suggestedSubcategory = 'Herramientas de Estilizado';
+          suggestions = [
+            { category: 'Eléctricos de Belleza', subcategory: 'Herramientas de Estilizado' },
+            { category: 'Cabello', subcategory: 'Accesorios de Cabello' },
+            { category: 'Aparatos Eléctricos', subcategory: 'Cuidado Personal' }
+          ];
+        } else if (isElectricBeautyName && isElectricBeautyCategory) {
+          status = 'INCONSISTENT';
+          alertMessage = `El producto es un eléctrico de belleza. Se sugiere clasificarlo en una subfamilia web de estilizado.`;
+          suggestedCategory = 'Eléctricos de Belleza';
+          suggestedSubcategory = 'Herramientas de Estilizado';
+          suggestions = [
+            { category: 'Eléctricos de Belleza', subcategory: 'Herramientas de Estilizado' },
+            { category: 'Cabello', subcategory: 'Accesorios de Cabello' },
+            { category: 'Aparatos Eléctricos', subcategory: 'Cuidado Personal' }
+          ];
+        } else if (isCapilarName && !isCapilarCategory) {
           status = 'INCONSISTENT';
           alertMessage = `El nombre sugiere cuidado capilar, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Cabello';
           suggestedSubcategory = 'Cuidado Capilar';
+          suggestions = [
+            { category: 'Cabello', subcategory: 'Cuidado Capilar' },
+            { category: 'Cabello', subcategory: 'Tratamientos Capilares' },
+            { category: 'Belleza', subcategory: 'Cuidado del Cabello' }
+          ];
         } else if (isFacialName && !isFacialCategory) {
           status = 'INCONSISTENT';
           alertMessage = `El producto sugiere cuidado de la piel/facial, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Rostro';
           suggestedSubcategory = 'Cuidado Facial';
+          suggestions = [
+            { category: 'Rostro', subcategory: 'Cuidado Facial' },
+            { category: 'Rostro', subcategory: 'Skincare y Cremas' },
+            { category: 'Rostro', subcategory: 'Tratamiento Facial' }
+          ];
         } else if (isUñasName && !isUñasCategory) {
           status = 'INCONSISTENT';
           alertMessage = `El producto sugiere manicure/uñas, pero su categoría ERP actual es "${catName || 'Sin Nombre'}".`;
           suggestedCategory = 'Uñas';
           suggestedSubcategory = 'Esmaltes y Manicure';
+          suggestions = [
+            { category: 'Uñas', subcategory: 'Esmaltes y Manicure' },
+            { category: 'Uñas', subcategory: 'Accesorios de Uñas' },
+            { category: 'Manicure', subcategory: 'Uñas y Pedicure' }
+          ];
         } else if (!catName || catNameLower === 'otros' || catNameLower === 'varios' || catNameLower === 'sin categoria' || catNameLower === 'genericos' || catName === '' || catNameLower.includes('accesorio')) {
           if (isCapilarName || isFacialName || isUñasName) {
             status = 'INCONSISTENT';
@@ -259,18 +357,34 @@ export async function GET(request) {
             if (isCapilarName) {
               suggestedCategory = 'Cabello';
               suggestedSubcategory = 'Cuidado Capilar';
+              suggestions = [
+                { category: 'Cabello', subcategory: 'Cuidado Capilar' },
+                { category: 'Cabello', subcategory: 'Tratamientos Capilares' }
+              ];
             } else if (isFacialName) {
               suggestedCategory = 'Rostro';
               suggestedSubcategory = 'Cuidado Facial';
+              suggestions = [
+                { category: 'Rostro', subcategory: 'Cuidado Facial' },
+                { category: 'Rostro', subcategory: 'Skincare y Cremas' }
+              ];
             } else {
               suggestedCategory = 'Uñas';
               suggestedSubcategory = 'Esmaltes y Manicure';
+              suggestions = [
+                { category: 'Uñas', subcategory: 'Esmaltes y Manicure' },
+                { category: 'Uñas', subcategory: 'Accesorios de Uñas' }
+              ];
             }
           } else {
             status = 'UNASSIGNED';
             alertMessage = `El producto está en una categoría genérica ("${catName || 'Vacía'}"). Debería asignarse a una categoría de venta final en el ERP.`;
             suggestedCategory = 'Por Definir';
             suggestedSubcategory = 'Pendiente Clasificación';
+            suggestions = [
+              { category: 'Por Definir', subcategory: 'Pendiente Clasificación' },
+              { category: 'Variados', subcategory: 'Sin Categoría' }
+            ];
           }
         }
 
@@ -285,6 +399,7 @@ export async function GET(request) {
           alertMessage,
           suggestedCategory,
           suggestedSubcategory,
+          suggestions,
           image: enrichment.image || null,
           visible: enrichment.visible !== false
         };
