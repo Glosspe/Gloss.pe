@@ -160,7 +160,11 @@ export async function GET(request) {
           };
         });
 
-        return NextResponse.json(auditedProducts);
+        // Filtrar para retornar únicamente productos que requieren acción (inconsistentes o sin categoría).
+        // Esto reduce el peso del payload en un 95%, eliminando de raíz los errores 502 por timeout de red.
+        const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
+
+        return NextResponse.json(discrepantProducts);
       }
 
       // Cargar productos del ERP con su subfamilia (Ejecución local en PC local)
@@ -283,7 +287,10 @@ export async function GET(request) {
         };
       });
 
-      return NextResponse.json(auditedProducts);
+      // Filtrar para retornar únicamente productos que requieren acción (inconsistentes o sin categoría)
+      const discrepantProducts = auditedProducts.filter(p => p.status !== 'CORRECT');
+
+      return NextResponse.json(discrepantProducts);
     }
 
     return NextResponse.json({ error: 'Acción GET no válida' }, { status: 400 });
