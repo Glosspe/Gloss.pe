@@ -505,12 +505,13 @@ export async function POST(request) {
 
       if (usePgFallback) {
         // Ejecutar sobre base de datos PostgreSQL de la nube (Railway)
+        // Solo seleccionamos codart y nombre para minimizar uso de RAM (descripcionEnriquecida es muy pesada)
         const productsFromDb = await prisma.webProductoImagen.findMany({
-          select: { codart: true, nombre: true, descripcionEnriquecida: true }
+          select: { codart: true, nombre: true }
         });
 
         productsFromDb.forEach(p => {
-          const searchText = `${p.nombre || ''} ${p.descripcionEnriquecida || ''}`.toLowerCase();
+          const searchText = (p.nombre || '').toLowerCase();
           rules.forEach(r => {
             const match = r.keywords.some(k => searchText.includes(k));
             if (match) {

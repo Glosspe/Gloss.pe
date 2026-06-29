@@ -68,11 +68,11 @@ export async function GET(request) {
     
     let topLimit = 100;
     if (limitParam === 'all') {
-      topLimit = 15000;
+      topLimit = 1000;
     } else if (limitParam) {
       const parsed = parseInt(limitParam, 10);
       if (!isNaN(parsed) && parsed > 0) {
-        topLimit = Math.min(parsed, 15000);
+        topLimit = Math.min(parsed, 1000);
       }
     }
     
@@ -195,10 +195,17 @@ export async function GET(request) {
 
     const PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="46" font-weight="600" fill="%23FF2E93" opacity="0.12" letter-spacing="0.18em">GLOSS</text></svg>';
 
-    // Consultar PostgreSQL
+    // Consultar PostgreSQL — excluir campos pesados en queries masivos para reducir uso de RAM
+    const selectFields = topLimit > 200 ? {
+      codart: true, nombre: true, marca: true, precio: true, stock: true,
+      categoria: true, imagenes: true, visible: true, destacado: true,
+      hasEquivalents: true
+    } : undefined; // undefined = seleccionar todo
+
     let productsFromDb = await prisma.webProductoImagen.findMany({
       where: whereCondition,
-      take: topLimit
+      take: topLimit,
+      ...(selectFields ? { select: selectFields } : {})
     });
 
     // Fallback inteligente para la Home (Trending) si no hay suficientes productos destacados en la base de datos
