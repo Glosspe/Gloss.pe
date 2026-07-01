@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { 
   ShoppingBag, ArrowLeft, Loader2, CheckCircle2, User, Phone, 
-  MapPin, FileText, Store, Truck, Bike 
+  MapPin, FileText, Store, Truck, Bike, ChevronDown 
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,6 +30,26 @@ export default function CheckoutPage() {
   const [isValidatingDoc, setIsValidatingDoc] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Control de Dropdowns Personalizados
+  const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
+  const [isSedeDropdownOpen, setIsSedeDropdownOpen] = useState(false);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setIsDocDropdownOpen(false);
+      setIsSedeDropdownOpen(false);
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleClickOutside);
+      }
+    };
+  }, []);
 
   // Cargar sedes activas dinámicamente
   useEffect(() => {
@@ -356,22 +376,57 @@ ${formattedItems}
               {/* Selector de Sede si elige Recojo */}
               {deliveryMethod === 'recojo' && (
                 <div style={styles.inputGroup} className="fade-in">
-                  <label style={styles.label} htmlFor="selectedSede">Selecciona la Sede de Recojo *</label>
-                  <div style={styles.inputIconWrapper}>
-                    <MapPin size={18} color="var(--text-secondary)" style={styles.inputIcon} />
-                    <select
-                      id="selectedSede"
-                      value={selectedSede}
-                      onChange={(e) => setSelectedSede(e.target.value)}
-                      style={styles.selectWithIcon}
-                      className="soft-select"
+                  <label style={styles.label}>Selecciona la Sede de Recojo *</label>
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSedeDropdownOpen(!isSedeDropdownOpen);
+                        setIsDocDropdownOpen(false);
+                      }}
+                      style={styles.customSelectTrigger}
                     >
-                      {warehouses.map(w => (
-                        <option key={w.codigo} value={w.codigo}>
-                          {w.nombre} (Cod: {w.codigo}) - {w.direccion}
-                        </option>
-                      ))}
-                    </select>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <MapPin size={16} color="var(--accent-start)" />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
+                          {warehouses.find(w => w.codigo === selectedSede)?.nombre || 'Selecciona una sede'}
+                        </span>
+                      </div>
+                      <ChevronDown 
+                        size={16} 
+                        color="#6B7280" 
+                        style={{ 
+                          transform: isSedeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 200ms ease'
+                        }} 
+                      />
+                    </button>
+
+                    {/* Popover flotante personalizado */}
+                    {isSedeDropdownOpen && (
+                      <div style={styles.customSelectDropdown} className="fade-in">
+                        {warehouses.map(w => (
+                          <div
+                            key={w.codigo}
+                            onClick={() => {
+                              setSelectedSede(w.codigo);
+                              setIsSedeDropdownOpen(false);
+                            }}
+                            style={{
+                              ...styles.customSelectOption,
+                              backgroundColor: selectedSede === w.codigo ? 'var(--accent-soft)' : '#FFFFFF',
+                              color: selectedSede === w.codigo ? 'var(--accent-start)' : 'var(--text-primary)',
+                              fontWeight: selectedSede === w.codigo ? 700 : 500
+                            }}
+                            className="custom-select-option-hover"
+                          >
+                            <div style={{ fontWeight: 600 }}>{w.nombre}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>{w.direccion}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -395,22 +450,54 @@ ${formattedItems}
 
               {/* Fila de Tipo y Nro de Documento */}
               <div style={styles.row}>
-                <div style={{ ...styles.inputGroup, flex: 0.35 }}>
-                  <label style={styles.label} htmlFor="docType">Documento *</label>
-                  <select
-                    id="docType"
-                    value={docType}
-                    onChange={(e) => {
-                      setDocType(e.target.value);
-                      setDocNumber('');
-                      setName('');
+                <div style={{ ...styles.inputGroup, flex: 0.35, position: 'relative' }}>
+                  <label style={styles.label}>Documento *</label>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDocDropdownOpen(!isDocDropdownOpen);
+                      setIsSedeDropdownOpen(false);
                     }}
-                    style={styles.select}
-                    className="soft-select"
+                    style={styles.customSelectTrigger}
                   >
-                    <option value="DNI">DNI</option>
-                    <option value="RUC">RUC</option>
-                  </select>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#374151' }}>{docType}</span>
+                    <ChevronDown 
+                      size={14} 
+                      color="#6B7280" 
+                      style={{ 
+                        transform: isDocDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 200ms ease'
+                      }} 
+                    />
+                  </button>
+
+                  {/* Popover flotante personalizado */}
+                  {isDocDropdownOpen && (
+                    <div style={{ ...styles.customSelectDropdown, minWidth: '100px', right: 0 }} className="fade-in">
+                      {['DNI', 'RUC'].map(type => (
+                        <div
+                          key={type}
+                          onClick={() => {
+                            setDocType(type);
+                            setDocNumber('');
+                            setName('');
+                            setIsDocDropdownOpen(false);
+                          }}
+                          style={{
+                            ...styles.customSelectOption,
+                            backgroundColor: docType === type ? 'var(--accent-soft)' : '#FFFFFF',
+                            color: docType === type ? 'var(--accent-start)' : 'var(--text-primary)',
+                            fontWeight: docType === type ? 700 : 500,
+                            padding: '10px 14px'
+                          }}
+                          className="custom-select-option-hover"
+                        >
+                          {type}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ ...styles.inputGroup, flex: 0.65 }}>
@@ -856,5 +943,46 @@ const styles = {
     outline: 'none',
     backgroundColor: '#FFFFFF',
     cursor: 'pointer',
+  },
+  customSelectTrigger: {
+    width: '100%',
+    padding: '12px 14px',
+    borderRadius: '12px',
+    border: '1.5px solid rgba(142, 154, 167, 0.15)',
+    fontSize: '0.88rem',
+    fontFamily: 'inherit',
+    color: 'var(--text-primary)',
+    outline: 'none',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    transition: 'border-color 150ms ease, box-shadow 150ms ease',
+  },
+  customSelectDropdown: {
+    position: 'absolute',
+    top: 'calc(100% + 6px)',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    border: '1px solid rgba(142, 154, 167, 0.12)',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
+    maxHeight: '220px',
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    overflowX: 'hidden',
+  },
+  customSelectOption: {
+    padding: '12px 16px',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    transition: 'background-color 150ms ease, color 150ms ease',
+    textAlign: 'left',
+    display: 'flex',
+    flexDirection: 'column',
   },
 };
