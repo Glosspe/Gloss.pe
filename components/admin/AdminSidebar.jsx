@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Package, Box, Star, Tags, LayoutGrid, Store,
   Brain, Settings, Zap, Tag, Shuffle, Wand2, ShieldAlert,
-  ChevronDown, ChevronRight, LogOut, X, Menu
+  ChevronDown, ChevronRight, LogOut, X, Menu, ShoppingBag, Users
 } from 'lucide-react';
 
 const menuItems = [
@@ -15,6 +15,13 @@ const menuItems = [
     children: [
       { id: 'products', label: 'Productos', icon: Box },
       { id: 'featured', label: 'Destacados', icon: Star },
+    ]
+  },
+  {
+    id: 'sales', label: 'Ventas', icon: ShoppingBag, type: 'group',
+    children: [
+      { id: 'pedidos', label: 'Pedidos', icon: ShoppingBag },
+      { id: 'clientes', label: 'Clientes', icon: Users },
     ]
   },
   {

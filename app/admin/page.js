@@ -13,6 +13,8 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminProductSearch from '@/components/admin/AdminProductSearch';
 import AdminConfirmModal from '@/components/admin/AdminConfirmModal';
 import IntelligenceTab from '@/components/admin/IntelligenceTab';
+import AdminOrdersTab from '@/components/admin/AdminOrdersTab';
+import AdminCustomersTab from '@/components/admin/AdminCustomersTab';
 
 // ═══════════════════════════════════════════
 // ═══ Breadcrumb Map ═══
@@ -21,6 +23,8 @@ const BREADCRUMBS = {
   'dashboard': { path: ['Dashboard'], title: 'Panel de Control', desc: 'Resumen general de tu tienda' },
   'products': { path: ['Catálogo', 'Productos'], title: 'Gestión de Productos', desc: 'Edita imágenes, descripciones y visibilidad' },
   'featured': { path: ['Catálogo', 'Destacados'], title: 'Productos Destacados', desc: 'Gestiona los productos del carrusel principal' },
+  'pedidos': { path: ['Gestión', 'Pedidos'], title: 'Pedidos y Ventas', desc: 'Gestiona transacciones, vouchers y sincronización con el ERP' },
+  'clientes': { path: ['Gestión', 'Clientes'], title: 'CRM de Clientes', desc: 'Gestiona la información y el contacto de tus compradores' },
   'categories': { path: ['Clasificación', 'Categorías'], title: 'Gestión de Categorías', desc: 'Controla qué categorías se muestran' },
   'warehouses': { path: ['Clasificación', 'Sedes'], title: 'Gestión de Sedes', desc: 'Activa o desactiva puntos de venta' },
   'intel-config': { path: ['E-commerce IA', 'Configuración'], title: 'Configuración General', desc: 'Parámetros del motor de inteligencia' },
@@ -492,6 +496,16 @@ export default function AdminPage() {
                 onNavigate={setActiveSection}
                 adminUser={adminUser}
               />
+            )}
+
+            {/* ══════ PEDIDOS ══════ */}
+            {activeSection === 'pedidos' && (
+              <AdminOrdersTab />
+            )}
+
+            {/* ══════ CLIENTES ══════ */}
+            {activeSection === 'clientes' && (
+              <AdminCustomersTab />
             )}
 
             {/* ══════ PRODUCTOS ══════ */}

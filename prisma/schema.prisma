@@ -68,6 +68,21 @@ model WebPedido {
   @@map("web_pedidos")
 }
 
+// Modelo de clientes locales del e-commerce (CRM)
+model WebCliente {
+  id               String   @id @default(uuid())
+  documento        String   @unique // DNI o RUC del cliente
+  nombre           String
+  telefono         String
+  direccion        String?
+  correo           String?
+  notasAdmin       String?  @db.Text // Notas internas de seguimiento administrativo
+  fechaRegistro    DateTime @default(now())
+  fechaActualizado DateTime @updatedAt
+
+  @@map("web_clientes")
+}
+
 // Modelo para controlar qué sedes/almacenes están habilitados para calcular el stock en la web
 model WebAlmacenConfig {
   id        String   @id @default(uuid())

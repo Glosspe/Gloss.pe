@@ -7,27 +7,58 @@ import cache from '@/lib/cache';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { phone, docType, docNumber, name, address, notes, items, total, warehouse } = body;
+    const { 
+      phone, 
+      docType, 
+      docNumber, 
+      name, 
+      address, 
+      notes, 
+      items, 
+      total, 
+      warehouse,      // Legacy / Región
+      region,         // 'Chiclayo' o 'Jaén'
+      deliveryMethod, // 'recojo', 'delivery', 'envio_agencia'
+      pickupSedeId,   // '01', '02', '04', '05', '06'
+      email,          // Opcional
+      coordenadas     // Opcional lat,lng
+    } = body;
 
     // 1. Validaciones básicas de entrada
     if (!phone || !docNumber || !name || !address || !items || items.length === 0) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
     }
 
-    console.log(`[Checkout API] Iniciando procesamiento de pedido para: ${name} (${phone}), sede: ${warehouse}`);
+    console.log(`[Checkout API] Procesando pedido para: ${name} (${phone}), región: ${region || warehouse}, método: ${deliveryMethod}`);
 
-    // Determinar el almacén físico final en el ERP
-    let finalCodAlm = '01'; // Por defecto Alfonso Ugarte
-    const cleanWh = (warehouse || '').toString().trim();
-    const validAlmacenes = ['01', '02', '04', '05', '06'];
-    if (validAlmacenes.includes(cleanWh)) {
-      finalCodAlm = cleanWh;
-    } else if (cleanWh.toUpperCase() === 'JAÉN' || cleanWh.toUpperCase() === 'JAEN') {
-      finalCodAlm = '05';
+    // 2. Determinar la Sede (erpPto) y el Almacén físico final en el ERP
+    let erpPto = '01'; // Por defecto Sede Principal Alfonso Ugarte
+    let finalCodAlm = '01'; // Por defecto Almacén Alfonso Ugarte
+
+    const method = (deliveryMethod || 'delivery').toString().toLowerCase();
+    if (method === 'recojo' && pickupSedeId) {
+      const cleanPickup = pickupSedeId.toString().trim();
+      const validSedes = ['01', '02', '04', '05', '06'];
+      if (validSedes.includes(cleanPickup)) {
+        erpPto = cleanPickup;
+        finalCodAlm = cleanPickup;
+      }
+    } else if (method === 'delivery') {
+      const cleanReg = (region || warehouse || '').toString().toUpperCase();
+      if (cleanReg.includes('JAEN') || cleanReg.includes('JAÉN') || cleanReg === '05') {
+        erpPto = '05';
+        finalCodAlm = '05';
+      } else {
+        erpPto = '01';
+        finalCodAlm = '01';
+      }
+    } else {
+      // Envío nacional / Courier se despacha desde Alfonso Ugarte
+      erpPto = '01';
+      finalCodAlm = '01';
     }
 
-    // 2. Generar y registrar el número de pedido correlativo web único de forma robusta
-    // Bucle optimista de reintentos para evitar colisiones/condiciones de carrera concurrentes
+    // 3. Generar y registrar el número de pedido correlativo web único en PostgreSQL
     let nroPedido = 'GLOSS-1001';
     let localPedido = null;
     let attempts = 0;
@@ -49,7 +80,6 @@ export async function POST(request) {
         nroPedido = `GLOSS-${Math.floor(1000 + Math.random() * 9000)}`;
       }
 
-      // 3. Registrar el pedido en la base de datos PostgreSQL local (Railway)
       try {
         localPedido = await prisma.webPedido.create({
           data: {
@@ -61,27 +91,47 @@ export async function POST(request) {
             productos: JSON.stringify(items),
             total: parseFloat(total),
             estado: 'PENDIENTE',
-            notes: notes || ''
+            coordenadas: coordenadas || null,
+            nroCotizacionErp: 'PENDIENTE_ERP'
           }
         });
-        console.log(`[Checkout API] Pedido guardado exitosamente en PostgreSQL local (Intento ${attempts}): ${nroPedido}`);
+        console.log(`[Checkout API] Pedido guardado en PostgreSQL local: ${nroPedido}`);
         break; // Éxito, salir del bucle
       } catch (pgErr) {
-        // P2002 indica error de restricción de clave única (Unique Constraint) de Prisma en PostgreSQL
         if (pgErr.code === 'P2002' && pgErr.meta?.target?.includes('nroPedido')) {
-          console.warn(`[Checkout API] Colisión de nroPedido detectada para ${nroPedido}. Reintentando con el siguiente...`);
+          console.warn(`[Checkout API] Colisión de nroPedido detectada para ${nroPedido}. Reintentando...`);
           continue;
         }
-        console.error('[Checkout API] Error crítico al guardar en PostgreSQL de Railway:', pgErr.message);
-        // Si no es un error de duplicado (ej. BD caída), creamos un fallback local para no bloquear la compra por WhatsApp
+        console.error('[Checkout API] Error crítico al guardar en PostgreSQL:', pgErr.message);
         localPedido = { nroPedido };
         break;
       }
     }
 
-    // 4. Intentar registrar la Cotización en el ERP Navasoft (SQL Server BdNava04)
-    // Usamos un bloque try-catch aislado para tolerancia a fallos. Si la BD del ERP de la oficina física está
-    // desconectada o falla el esquema, la compra web SIGUE ADELANTE y se le envía a WhatsApp al cliente.
+    // Upsert local del cliente para el módulo de CRM
+    try {
+      await prisma.webCliente.upsert({
+        where: { documento: docNumber.trim() },
+        update: {
+          nombre: name,
+          telefono: phone,
+          direccion: address,
+          correo: email || null
+        },
+        create: {
+          documento: docNumber.trim(),
+          nombre: name,
+          telefono: phone,
+          direccion: address,
+          correo: email || null
+        }
+      });
+      console.log(`[Checkout API] Datos de cliente local actualizados en PostgreSQL para el CRM.`);
+    } catch (cliPgErr) {
+      console.error('[Checkout API] Error al persistir cliente en PostgreSQL local:', cliPgErr.message);
+    }
+
+    // 4. Sincronización en caliente con Navasoft ERP (sin alterar la estructura del ERP)
     let nroCotizacionErp = null;
     let erpSyncSuccess = false;
 
@@ -92,11 +142,77 @@ export async function POST(request) {
       await transaction.begin();
 
       try {
-        // 4.1 Generar Correlativo de Cotización en el ERP (Ejemplo: cdocu = 'CO')
-        const erpPto = '01'; // Punto de venta por defecto para la tienda web
-        const docTypeErp = 'CO'; // 'CO' representa Cotización en Navasoft
+        const cleanDoc = docNumber.trim();
+
+        // 4.1 Identificar o registrar al cliente en el maestro del ERP (mst01cli)
+        const reqCheckCli = new sql.Request(transaction);
+        const checkRes = await reqCheckCli
+          .input('doc', cleanDoc)
+          .query(`
+            SELECT TOP 1 codcli FROM mst01cli 
+            WHERE LTRIM(RTRIM(ruccli)) = @doc OR LTRIM(RTRIM(nrodni)) = @doc
+          `);
+
+        let finalCodCli = 'C00000'; // Fallback por defecto
+
+        if (checkRes.recordset.length > 0) {
+          finalCodCli = checkRes.recordset[0].codcli.trim();
+          console.log(`[Checkout API - ERP] Cliente ya existe en Navasoft con código: ${finalCodCli}`);
+        } else {
+          // Cliente nuevo: Generar código correlativo CXXXXX
+          const reqMaxCli = new sql.Request(transaction);
+          const maxCliRes = await reqMaxCli.query(`
+            SELECT MAX(codcli) as maxCod FROM mst01cli 
+            WHERE codcli LIKE 'C%' AND LEN(codcli) = 6
+          `);
+
+          let nextCodCli = 'C10000';
+          if (maxCliRes.recordset.length > 0 && maxCliRes.recordset[0].maxCod) {
+            const maxCod = maxCliRes.recordset[0].maxCod.trim();
+            const numStr = maxCod.substring(1);
+            if (!isNaN(numStr)) {
+              const nextNum = parseInt(numStr, 10) + 1;
+              nextCodCli = `C${nextNum.toString().padStart(5, '0')}`;
+            }
+          }
+
+          finalCodCli = nextCodCli;
+          const isRuc = cleanDoc.length === 11;
+          const flaper = isRuc ? 2 : 1; // 1 = Natural, 2 = Jurídica
+          const coddocide = isRuc ? '06' : '01'; // 01 = DNI, 06 = RUC
+
+          const reqInsertCli = new sql.Request(transaction);
+          await reqInsertCli
+            .input('codcli', sql.Char(6), finalCodCli)
+            .input('nomcli', sql.VarChar(60), name.substring(0, 60))
+            .input('dircli', sql.VarChar(80), address.substring(0, 80))
+            .input('ruccli', sql.Char(11), isRuc ? cleanDoc : '')
+            .input('nrodni', sql.Char(8), isRuc ? '' : cleanDoc)
+            .input('flaper', sql.Int, flaper)
+            .input('coddocide', sql.Char(2), coddocide)
+            .input('email', sql.VarChar(100), (email || '').substring(0, 100))
+            .query(`
+              INSERT INTO mst01cli (
+                codcli, nomcli, dircli, ruccli, nrodni, 
+                flaper, coddocide, estado, fecing, fecreg,
+                codven, codcob, codact, codcdv, codpos,
+                coddis, codpro, coddep, codpai, codzon, 
+                flalin, mcredi, email
+              )
+              VALUES (
+                @codcli, @nomcli, @dircli, @ruccli, @nrodni,
+                @flaper, @coddocide, 1, GETDATE(), GETDATE(),
+                'V0000', 'V0000', '01', '01', '01',
+                '31', '01', '15', '01', '01',
+                1, 0, @email
+              )
+            `);
+          console.log(`[Checkout API - ERP] Registrado nuevo cliente en caliente: ${finalCodCli} - ${name}`);
+        }
+
+        // 4.2 Obtener correlativo de Cotización (cdocu = '31') para la sede seleccionada
+        const docTypeErp = '31'; // Tipo de documento oficial '31' = Cotizaciones en Navasoft
         
-        // Consultar correlativo actual en tbl01cor
         const reqCor = new sql.Request(transaction);
         const resCor = await reqCor
           .input('cdocu', docTypeErp)
@@ -116,17 +232,14 @@ export async function POST(request) {
           nextNdocu = `${series}-${nextNum}`;
         }
 
-        // 4.2 Inserción de la Cabecera de la Cotización (en ped01cab o cot01cab según tu Navasoft)
-        // Usamos una lógica de inserción tolerante: intentaremos en 'ped01cab' primero, ya que en la mayoría de Navasoft
-        // los pedidos y cotizaciones comparten la misma estructura con un código de documento cdocu = 'CO'.
         const peruvianDate = new Intl.DateTimeFormat('en-CA', {
           timeZone: 'America/Lima',
           year: 'numeric', month: '2-digit', day: '2-digit'
         }).format(new Date());
-        
-        const finalCodCli = 'C00000'; // Cliente genérico o varios de Navasoft
-        const formattedCompro = `${docTypeErp}/${nextNdocu.substring(nextNdocu.length - 6)}`;
 
+        const formattedCompro = `WEB/${nroPedido}`;
+
+        // 4.3 Inserción de la Cabecera de la Cotización en mst01cot
         const reqMst = new sql.Request(transaction);
         await reqMst
           .input('cdocu', docTypeErp)
@@ -137,34 +250,25 @@ export async function POST(request) {
           .input('nomcli', sql.Char(60), name.substring(0, 60))
           .input('ruccli', sql.Char(11), docNumber.substring(0, 11))
           .input('totn', sql.Decimal(18, 4), total)
-          .input('toti', sql.Decimal(18, 4), total * 0.18 / 1.18) // Cálculo de IGV
-          .input('tota', sql.Decimal(18, 4), total / 1.18)        // Base imponible
+          .input('toti', sql.Decimal(18, 4), total * 0.18 / 1.18)
+          .input('tota', sql.Decimal(18, 4), total / 1.18)
           .input('mone', 'S')
           .input('tcam', sql.Decimal(18, 4), 1.0)
           .input('Codpto', erpPto)
           .input('CodAlm', finalCodAlm)
-          .input('codusu', 'WEB')
-          .input('flag', '0')
-          .input('compro', formattedCompro)
+          .input('obser', sql.VarChar(100), `WEB: ${nroPedido} - ${method.toUpperCase()}`)
           .query(`
-            IF OBJECT_ID('dbo.ped01cab') IS NOT NULL
-            BEGIN
-              INSERT INTO ped01cab (cdocu, ndocu, fecha, fven, codcli, nomcli, ruccli, totn, toti, tota, mone, tcam, Codpto, CodAlm, codusu, flag, compro, Fecreg)
-              VALUES (@cdocu, @ndocu, @fecha, @fven, @codcli, @nomcli, @ruccli, @totn, @toti, @tota, @mone, @tcam, @Codpto, @CodAlm, @codusu, @flag, @compro, GETDATE())
-            END
-            ELSE IF OBJECT_ID('dbo.cot01cab') IS NOT NULL
-            BEGIN
-              INSERT INTO cot01cab (cdocu, ndocu, fecha, fven, codcli, nomcli, ruccli, totn, toti, tota, mone, tcam, Codpto, CodAlm, codusu, flag, compro, Fecreg)
-              VALUES (@cdocu, @ndocu, @fecha, @fven, @codcli, @nomcli, @ruccli, @totn, @toti, @tota, @mone, @tcam, @Codpto, @CodAlm, @codusu, @flag, @compro, GETDATE())
-            END
+            INSERT INTO mst01cot (cdocu, ndocu, fecha, fven, codcli, nomcli, ruccli, totn, toti, tota, mone, tcam, Codpto, CodAlm, flag, codven, codcdv, estado, obser, fecreg)
+            VALUES (@cdocu, @ndocu, @fecha, @fven, @codcli, @nomcli, @ruccli, @totn, @toti, @tota, @mone, @tcam, @Codpto, @CodAlm, '0', 'V0000', '01', '1', @obser, GETDATE())
           `);
 
-        // 4.3 Inserción de Detalles de la Cotización (en ped01det o cot01det)
+        // 4.4 Inserción de Detalles de la Cotización en dtl01cot
         for (const [idx, item] of items.entries()) {
           const reqDtl = new sql.Request(transaction);
           await reqDtl
             .input('cdocu', docTypeErp)
             .input('ndocu', nextNdocu)
+            .input('codcli', sql.Char(6), finalCodCli)
             .input('item', sql.Int, idx + 1)
             .input('codi', sql.Char(11), item.id.substring(0, 11))
             .input('descr', item.name.substring(0, 80))
@@ -174,20 +278,12 @@ export async function POST(request) {
             .input('totn', sql.Decimal(18, 4), item.price * item.quantity)
             .input('Codalm', finalCodAlm)
             .query(`
-              IF OBJECT_ID('dbo.ped01det') IS NOT NULL
-              BEGIN
-                INSERT INTO ped01det (cdocu, ndocu, item, codi, descr, cant, preu, tota, totn, Codalm, flag)
-                VALUES (@cdocu, @ndocu, @item, @codi, @descr, @cant, @preu, @tota, @totn, @Codalm, '0')
-              END
-              ELSE IF OBJECT_ID('dbo.cot01det') IS NOT NULL
-              BEGIN
-                INSERT INTO cot01det (cdocu, ndocu, item, codi, descr, cant, preu, tota, totn, Codalm, flag)
-                VALUES (@cdocu, @ndocu, @item, @codi, @descr, @cant, @preu, @tota, @totn, @Codalm, '0')
-              END
+              INSERT INTO dtl01cot (fecha, cdocu, ndocu, codcli, item, codi, descr, cant, preu, tota, totn, mone, tcam, flag, codalm, aigv)
+              VALUES (GETDATE(), @cdocu, @ndocu, @codcli, @item, @codi, @descr, @cant, @preu, @tota, @totn, 'S', 1.0, '0', @Codalm, '1')
             `);
         }
 
-        // 4.4 Actualizar el correlativo de Cotización en el ERP si lo leímos de la tabla
+        // 4.5 Actualizar el correlativo de Cotización en el ERP
         if (hasCorrelativo) {
           const reqUpdateCor = new sql.Request(transaction);
           await reqUpdateCor
@@ -200,9 +296,9 @@ export async function POST(request) {
         await transaction.commit();
         nroCotizacionErp = nextNdocu;
         erpSyncSuccess = true;
-        console.log(`[Checkout API] Cotización registrada con éxito en el ERP: ${nroCotizacionErp}`);
+        console.log(`[Checkout API] Cotización registrada exitosamente en el ERP: ${nroCotizacionErp} para la sede: ${erpPto}`);
 
-        // Actualizar el número de cotización en PostgreSQL
+        // Actualizar el número de cotización en PostgreSQL local
         if (localPedido && localPedido.id) {
           await prisma.webPedido.update({
             where: { id: localPedido.id },
@@ -216,11 +312,10 @@ export async function POST(request) {
       }
 
     } catch (erpErr) {
-      console.warn('[Checkout API] No se pudo sincronizar con Navasoft ERP en este momento. Sincronización diferida:', erpErr.message);
-      // Guardamos la bitácora, el pedido sigue adelante con la info de PostgreSQL local
+      console.warn('[Checkout API] No se pudo sincronizar en caliente con Navasoft. Sincronización diferida:', erpErr.message);
     }
 
-    // Invalidar activamente todo el caché de búsquedas y equivalentes para que el stock se actualice de inmediato en la web
+    // Invalidar caché de búsquedas y equivalentes para reflejar cambios
     await cache.clear();
 
     // 5. Devolver la respuesta exitosa al cliente
