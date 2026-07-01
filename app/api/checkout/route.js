@@ -159,55 +159,59 @@ export async function POST(request) {
           finalCodCli = checkRes.recordset[0].codcli.trim();
           console.log(`[Checkout API - ERP] Cliente ya existe en Navasoft con código: ${finalCodCli}`);
         } else {
-          // Cliente nuevo: Generar código correlativo CXXXXX
-          const reqMaxCli = new sql.Request(transaction);
-          const maxCliRes = await reqMaxCli.query(`
-            SELECT MAX(codcli) as maxCod FROM mst01cli 
-            WHERE codcli LIKE 'C%' AND LEN(codcli) = 6
-          `);
-
+          // Cliente nuevo: Generar código correlativo robusto usando psn0100 (secuenciador oficial del ERP)
+          const reqPsn = new sql.Request(transaction);
+          const psnRes = await reqPsn.query("SELECT codcli FROM psn0100");
+          
           let nextCodCli = 'C10000';
-          if (maxCliRes.recordset.length > 0 && maxCliRes.recordset[0].maxCod) {
-            const maxCod = maxCliRes.recordset[0].maxCod.trim();
-            const numStr = maxCod.substring(1);
-            if (!isNaN(numStr)) {
-              const nextNum = parseInt(numStr, 10) + 1;
-              nextCodCli = `C${nextNum.toString().padStart(5, '0')}`;
-            }
+          if (psnRes.recordset.length > 0 && psnRes.recordset[0].codcli) {
+            const lastCode = psnRes.recordset[0].codcli.trim();
+            const prefix = lastCode.substring(0, 1);
+            const num = parseInt(lastCode.substring(1), 10) + 1;
+            nextCodCli = prefix + num.toString().padStart(5, '0');
           }
 
           finalCodCli = nextCodCli;
+
+          // Actualizar secuenciador en psn0100
+          const reqUpdatePsn = new sql.Request(transaction);
+          await reqUpdatePsn
+            .input('nextCode', sql.Char(6), finalCodCli)
+            .query("UPDATE psn0100 SET codcli = @nextCode");
+
           const isRuc = cleanDoc.length === 11;
           const flaper = isRuc ? 2 : 1; // 1 = Natural, 2 = Jurídica
           const coddocide = isRuc ? '06' : '01'; // 01 = DNI, 06 = RUC
+          const tipdoc = isRuc ? '6' : '1'; // Histórico para Navasoft
 
           const reqInsertCli = new sql.Request(transaction);
           await reqInsertCli
             .input('codcli', sql.Char(6), finalCodCli)
-            .input('nomcli', sql.VarChar(60), name.substring(0, 60))
-            .input('dircli', sql.VarChar(80), address.substring(0, 80))
+            .input('nomcli', sql.VarChar(60), name.substring(0, 60).toUpperCase())
+            .input('dircli', sql.VarChar(80), address.substring(0, 80).toUpperCase())
             .input('ruccli', sql.Char(11), isRuc ? cleanDoc : '')
             .input('nrodni', sql.Char(8), isRuc ? '' : cleanDoc)
             .input('flaper', sql.Int, flaper)
             .input('coddocide', sql.Char(2), coddocide)
+            .input('tipdoc', sql.Char(1), tipdoc)
             .input('email', sql.VarChar(100), (email || '').substring(0, 100))
             .query(`
               INSERT INTO mst01cli (
                 codcli, nomcli, dircli, ruccli, nrodni, 
-                flaper, coddocide, estado, fecing, fecreg,
+                flaper, coddocide, tipdoc, estado, fecing, fecreg,
                 codven, codcob, codact, codcdv, codpos,
                 coddis, codpro, coddep, codpai, codzon, 
                 flalin, mcredi, email
               )
               VALUES (
                 @codcli, @nomcli, @dircli, @ruccli, @nrodni,
-                @flaper, @coddocide, 1, GETDATE(), GETDATE(),
+                @flaper, @coddocide, @tipdoc, 1, GETDATE(), GETDATE(),
                 'V0000', 'V0000', '01', '01', '01',
                 '31', '01', '15', '01', '01',
                 1, 0, @email
               )
             `);
-          console.log(`[Checkout API - ERP] Registrado nuevo cliente en caliente: ${finalCodCli} - ${name}`);
+          console.log(`[Checkout API - ERP] Registrado nuevo cliente en caliente usando psn0100: ${finalCodCli} - ${name}`);
         }
 
         // 4.2 Obtener correlativo de Cotización (cdocu = '31') para la sede seleccionada
