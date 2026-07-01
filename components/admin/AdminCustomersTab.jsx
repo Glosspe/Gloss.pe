@@ -91,6 +91,7 @@ export default function AdminCustomersTab() {
         },
         body: JSON.stringify({
           documento: selectedCliente.documento,
+          nombre: selectedCliente.nombre,
           notasAdmin: editNotes,
           correo: editEmail,
           telefono: editPhone,
