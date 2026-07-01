@@ -318,13 +318,25 @@ export async function POST(request) {
     // Invalidar caché de búsquedas y equivalentes para reflejar cambios
     await cache.clear();
 
-    // 5. Devolver la respuesta exitosa al cliente
+    // 5. Devolver la respuesta exitosa al cliente con el número de WhatsApp configurado
+    let finalWhatsAppNumber = process.env.WHATSAPP_NUMBER || '51900000000';
+    try {
+      const waConfig = await prisma.webGlobalConfig.findUnique({
+        where: { clave: 'WHATSAPP_CONTACT_NUMBER' }
+      });
+      if (waConfig && waConfig.valor) {
+        finalWhatsAppNumber = waConfig.valor.trim();
+      }
+    } catch (waErr) {
+      console.warn('[Checkout API] No se pudo leer WHATSAPP_CONTACT_NUMBER de la BD:', waErr.message);
+    }
+
     return NextResponse.json({
       success: true,
       nroPedido,
       nroCotizacion: nroCotizacionErp || 'PENDIENTE_ERP',
       erpSynced: erpSyncSuccess,
-      whatsappNumber: process.env.WHATSAPP_NUMBER || '51900000000'
+      whatsappNumber: finalWhatsAppNumber
     });
 
   } catch (error) {

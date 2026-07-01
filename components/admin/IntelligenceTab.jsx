@@ -15,7 +15,8 @@ export default function IntelligenceTab({ activeSubSection }) {
     LOW_STOCK_THRESHOLD: '5',
     CROSS_SELL_DAYS: '90',
     CROSS_SELL_MIN_ORDERS: '3',
-    CROSS_SELL_LIMIT: '6'
+    CROSS_SELL_LIMIT: '6',
+    WHATSAPP_CONTACT_NUMBER: '51900000000'
   });
   const [shortcuts, setShortcuts] = useState([]);
   const [tags, setTags] = useState([]);
@@ -187,7 +188,7 @@ export default function IntelligenceTab({ activeSubSection }) {
       const token = localStorage.getItem('gloss_admin_token');
       const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
       
-      const keys = ['LOW_STOCK_THRESHOLD', 'CROSS_SELL_DAYS', 'CROSS_SELL_MIN_ORDERS', 'CROSS_SELL_LIMIT'];
+      const keys = ['LOW_STOCK_THRESHOLD', 'CROSS_SELL_DAYS', 'CROSS_SELL_MIN_ORDERS', 'CROSS_SELL_LIMIT', 'WHATSAPP_CONTACT_NUMBER'];
       const requests = keys.map(key => 
         fetch('/api/admin/intelligence?action=configs', {
           method: 'POST',
@@ -555,6 +556,21 @@ export default function IntelligenceTab({ activeSubSection }) {
               value={configs.CROSS_SELL_LIMIT || ''}
               onChange={(e) => setConfigs({ ...configs, CROSS_SELL_LIMIT: e.target.value })}
               style={{ ...styles.input, maxWidth: '140px' }}
+              required
+            />
+          </div>
+
+          {/* Configuración 5: Número de WhatsApp de Contacto */}
+          <div style={{ ...styles.card, padding: '20px' }} className="soft-card">
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: '0 0 4px 0' }}>Número de WhatsApp de Contacto</h4>
+            <p style={{ fontSize: '0.72rem', color: '#64748B', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Número de celular de la tienda para la recepción de pedidos en producción (ej. 51900000000).
+            </p>
+            <input 
+              type="text"
+              value={configs.WHATSAPP_CONTACT_NUMBER || ''}
+              onChange={(e) => setConfigs({ ...configs, WHATSAPP_CONTACT_NUMBER: e.target.value })}
+              style={{ ...styles.input, maxWidth: '240px' }}
               required
             />
           </div>
