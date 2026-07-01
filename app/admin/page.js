@@ -133,7 +133,12 @@ export default function AdminPage() {
   useEffect(() => {
     const token = localStorage.getItem('gloss_admin_token');
     const user = localStorage.getItem('gloss_admin_user');
-    if (!token) {
+    
+    // Si el token es del formato estático viejo o no existe, redirigir al login seguro con Google
+    const isJwt = token && token.split('.').length === 3;
+    if (!token || !isJwt) {
+      localStorage.removeItem('gloss_admin_token');
+      localStorage.removeItem('gloss_admin_user');
       router.push('/admin/login');
     } else {
       setAdminUser(user ? JSON.parse(user) : { nombre: 'Administrador' });
