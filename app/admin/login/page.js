@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
     script.defer = true;
     
     script.onload = () => {
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '358304226248-sdk7nk79svm2hgjjeb3f6lmj8n744i95.apps.googleusercontent.com';
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '343548222295-12oqv1f8f7l654645tsmms7habkh63dr.apps.googleusercontent.com';
       try {
         window.google.accounts.id.initialize({
           client_id: clientId,
