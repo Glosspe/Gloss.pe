@@ -48,7 +48,7 @@ export async function GET(request) {
     let erpClientes = [];
     if (search) {
       let pool;
-      let usePgFallback = process.env.NODE_ENV === 'production' || !process.env.DB_SERVER;
+      let usePgFallback = !process.env.DB_SERVER;
 
       if (!usePgFallback) {
         try {
