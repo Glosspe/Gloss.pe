@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, ArrowLeft, Loader2, CheckCircle2, User, Phone, MapPin, FileText } from 'lucide-react';
+import { 
+  ShoppingBag, ArrowLeft, Loader2, CheckCircle2, User, Phone, 
+  MapPin, FileText, Store, Truck, Bike 
+} from 'lucide-react';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
@@ -301,36 +304,51 @@ ${formattedItems}
                     onClick={() => setDeliveryMethod('recojo')}
                     style={{
                       ...styles.methodBtn,
-                      backgroundColor: deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#FAF9F8',
-                      color: deliveryMethod === 'recojo' ? '#FFFFFF' : '#374151',
-                      border: deliveryMethod === 'recojo' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      backgroundColor: deliveryMethod === 'recojo' ? '#FDF2F8' : '#F9FAFB',
+                      color: deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#4B5563',
+                      border: deliveryMethod === 'recojo' ? '1.5px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
                     }}
                   >
-                    🏪 Recojo en Tienda
+                    <Store size={16} color={deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#6B7280'} />
+                    <span>Recojo en Tienda</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeliveryMethod('delivery')}
                     style={{
                       ...styles.methodBtn,
-                      backgroundColor: deliveryMethod === 'delivery' ? 'var(--accent-start)' : '#FAF9F8',
-                      color: deliveryMethod === 'delivery' ? '#FFFFFF' : '#374151',
-                      border: deliveryMethod === 'delivery' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      backgroundColor: deliveryMethod === 'delivery' ? '#ECFDF5' : '#F9FAFB',
+                      color: deliveryMethod === 'delivery' ? '#059669' : '#4B5563',
+                      border: deliveryMethod === 'delivery' ? '1.5px solid #059669' : '1px solid rgba(142, 154, 167, 0.12)'
                     }}
                   >
-                    🛵 Delivery Local
+                    <Bike size={16} color={deliveryMethod === 'delivery' ? '#059669' : '#6B7280'} />
+                    <span>Delivery Local</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeliveryMethod('envio')}
                     style={{
                       ...styles.methodBtn,
-                      backgroundColor: deliveryMethod === 'envio' ? 'var(--accent-start)' : '#FAF9F8',
-                      color: deliveryMethod === 'envio' ? '#FFFFFF' : '#374151',
-                      border: deliveryMethod === 'envio' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      backgroundColor: deliveryMethod === 'envio' ? '#EFF6FF' : '#F9FAFB',
+                      color: deliveryMethod === 'envio' ? '#2563EB' : '#4B5563',
+                      border: deliveryMethod === 'envio' ? '1.5px solid #2563EB' : '1px solid rgba(142, 154, 167, 0.12)'
                     }}
                   >
-                    🚚 Envío Nacional
+                    <Truck size={16} color={deliveryMethod === 'envio' ? '#2563EB' : '#6B7280'} />
+                    <span>Envío Nacional</span>
                   </button>
                 </div>
               </div>
@@ -459,9 +477,10 @@ ${formattedItems}
                   </div>
                 </div>
               ) : (
-                <div style={styles.infoAlert} className="fade-in">
+                <div style={{ ...styles.infoAlert, display: 'flex', alignItems: 'center', gap: '8px' }} className="fade-in">
+                  <Store size={15} color="var(--accent-start)" />
                   <span style={{ fontSize: '0.78rem', color: 'var(--accent-start)', fontWeight: 600 }}>
-                    🏪 Recogerás tu pedido en la sede seleccionada. No es necesario ingresar una dirección de entrega.
+                    Recogerás tu pedido en la sede seleccionada. No es necesario ingresar una dirección de entrega.
                   </span>
                 </div>
               )}
