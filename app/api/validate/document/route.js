@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 // APIs de prueba o producción en Perú para consultar RENIEC/SUNAT
 // Proveedores comunes: apisperu.com, migo.pe, etc.
 // Dejamos configurado el flujo para que use un token en variables de entorno si existe
-const TOKEN_API_PERU = process.env.API_PERU_TOKEN;
+// Token oficial de apiperu.dev provisto por el cliente
+const TOKEN_API_PERU = process.env.API_PERU_TOKEN || '76ca7246c8a8c464fd551b6555e780791a69ff89acb8887558d65b23f05ab81b';
 
 export async function GET(request) {
   try {
@@ -16,43 +17,62 @@ export async function GET(request) {
     }
 
     const cleanNum = documentNumber.trim();
-    console.log(`[API Documento] Validando ${documentType}: ${cleanNum}`);
+    console.log(`[API Documento] Validando ${documentType}: ${cleanNum} usando apiperu.dev`);
 
-    // ---- CASO 1: Consulta Real (Si hay un Token configurado en el .env) ----
+    // ---- CASO 1: Consulta Real a apiperu.dev ----
     if (TOKEN_API_PERU) {
       try {
         let url = '';
+        let bodyData = {};
+        
         if (documentType === 'DNI') {
-          url = `https://api.apisperu.com/v1/dni/${cleanNum}?token=${TOKEN_API_PERU}`;
+          url = 'https://apiperu.dev/api/dni';
+          bodyData = { dni: cleanNum };
         } else if (documentType === 'RUC') {
-          url = `https://api.apisperu.com/v1/ruc/${cleanNum}?token=${TOKEN_API_PERU}`;
+          url = 'https://apiperu.dev/api/ruc';
+          bodyData = { ruc: cleanNum };
         }
 
         if (url) {
-          const res = await fetch(url);
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${TOKEN_API_PERU}`
+            },
+            body: JSON.stringify(bodyData)
+          });
+
           if (res.ok) {
-            const data = await res.json();
-            
-            if (documentType === 'DNI') {
-              return NextResponse.json({
-                success: true,
-                type: 'DNI',
-                number: cleanNum,
-                name: `${data.nombres} ${data.apellidoPaterno} ${data.apellidoMaterno}`.trim()
-              });
+            const json = await res.json();
+            if (json.success && json.data) {
+              const data = json.data;
+              if (documentType === 'DNI') {
+                return NextResponse.json({
+                  success: true,
+                  type: 'DNI',
+                  number: cleanNum,
+                  name: data.nombre_completo || `${data.nombres} ${data.apellido_paterno} ${data.apellido_materno}`.trim()
+                });
+              } else {
+                return NextResponse.json({
+                  success: true,
+                  type: 'RUC',
+                  number: cleanNum,
+                  name: data.nombre_o_razon_social || '',
+                  address: data.direccion_completa || data.direccion || ''
+                });
+              }
             } else {
-              return NextResponse.json({
-                success: true,
-                type: 'RUC',
-                number: cleanNum,
-                name: data.razonSocial,
-                address: data.direccion || ''
-              });
+              console.warn('[API Documento] apiperu.dev retornó success=false:', json);
             }
+          } else {
+            console.warn(`[API Documento] apiperu.dev respondió con código de error HTTP ${res.status}`);
           }
         }
       } catch (fetchErr) {
-        console.error('[API Documento] Falló consulta real a API Perú, usando simulador:', fetchErr.message);
+        console.error('[API Documento] Falló consulta real a apiperu.dev, usando simulador:', fetchErr.message);
       }
     }
 
