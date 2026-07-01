@@ -20,8 +20,8 @@ export async function POST(request) {
         return NextResponse.json({ error: 'La cuenta de Google del usuario no está verificada' }, { status: 401 });
       }
 
-      // Verificar si el correo electrónico está en la lista de administradores autorizados
-      const allowedEmailsStr = process.env.ALLOWED_ADMIN_EMAILS || 'administrador@tiendagloss.com,gloss.pe.oficial@gmail.com,sistemas@gloss.pe,ventas@gloss.pe';
+      // Verificar si el correo electrónico está en la lista de administradores autorizados (únicamente importacionesgya1339@gmail.com por defecto)
+      const allowedEmailsStr = process.env.ALLOWED_ADMIN_EMAILS || 'importacionesgya1339@gmail.com';
       const allowedEmails = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase());
 
       if (!allowedEmails.includes(googleUser.email.toLowerCase())) {
