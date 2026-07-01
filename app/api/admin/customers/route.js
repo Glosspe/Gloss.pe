@@ -5,7 +5,7 @@ import { verifyAdminRequest } from '@/lib/auth';
 // GET: Obtener clientes registrados con estadísticas agregadas de pedidos
 export async function GET(request) {
   try {
-    const admin = await verifyAdminRequest();
+    const admin = await verifyAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
@@ -88,7 +88,7 @@ export async function GET(request) {
 // POST: Guardar/actualizar notas administrativas o detalles de un cliente
 export async function POST(request) {
   try {
-    const admin = await verifyAdminRequest();
+    const admin = await verifyAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }

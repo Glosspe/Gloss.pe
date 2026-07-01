@@ -8,7 +8,7 @@ import cache from '@/lib/cache';
 // GET: Obtener pedidos de la web con filtros y paginación
 export async function GET(request) {
   try {
-    const admin = await verifyAdminRequest();
+    const admin = await verifyAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
@@ -67,7 +67,7 @@ export async function GET(request) {
 // PUT: Actualizar estado del pedido o re-sincronizar con el ERP en caliente
 export async function PUT(request) {
   try {
-    const admin = await verifyAdminRequest();
+    const admin = await verifyAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }

@@ -32,7 +32,9 @@ export default function AdminCustomersTab() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch(`/api/admin/customers?search=${encodeURIComponent(search)}&page=${page}&limit=10`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('gloss_admin_token') : '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`/api/admin/customers?search=${encodeURIComponent(search)}&page=${page}&limit=10`, { headers });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -80,9 +82,13 @@ export default function AdminCustomersTab() {
     setErrorMsg('');
     setSuccessMsg('');
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('gloss_admin_token') : '';
       const res = await fetch('/api/admin/customers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         body: JSON.stringify({
           documento: selectedCliente.documento,
           notasAdmin: editNotes,

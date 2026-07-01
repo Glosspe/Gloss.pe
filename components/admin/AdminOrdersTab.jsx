@@ -33,7 +33,9 @@ export default function AdminOrdersTab() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch(`/api/admin/orders?search=${encodeURIComponent(search)}&estado=${estado}&page=${page}&limit=10`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('gloss_admin_token') : '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`/api/admin/orders?search=${encodeURIComponent(search)}&estado=${estado}&page=${page}&limit=10`, { headers });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -83,9 +85,13 @@ export default function AdminOrdersTab() {
     setErrorMsg('');
     setSuccessMsg('');
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('gloss_admin_token') : '';
       const res = await fetch('/api/admin/orders', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         body: JSON.stringify({ pedidoId, action: 'update_status', nuevoEstado })
       });
       
@@ -117,9 +123,13 @@ export default function AdminOrdersTab() {
     setErrorMsg('');
     setSuccessMsg('');
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('gloss_admin_token') : '';
       const res = await fetch('/api/admin/orders', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         body: JSON.stringify({ pedidoId, action: 'resync_erp' })
       });
 
