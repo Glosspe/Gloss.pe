@@ -328,12 +328,14 @@ ${formattedItems}
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      backgroundColor: deliveryMethod === 'recojo' ? '#FDF2F8' : '#F9FAFB',
-                      color: deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#4B5563',
-                      border: deliveryMethod === 'recojo' ? '1.5px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                      backgroundColor: deliveryMethod === 'recojo' ? '#F9FAFB' : '#FFFFFF',
+                      color: deliveryMethod === 'recojo' ? '#111827' : '#6B7280',
+                      border: deliveryMethod === 'recojo' ? '1.5px solid #111827' : '1px solid rgba(142, 154, 167, 0.15)',
+                      boxShadow: deliveryMethod === 'recojo' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+                      fontWeight: deliveryMethod === 'recojo' ? 700 : 500
                     }}
                   >
-                    <Store size={16} color={deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#6B7280'} />
+                    <Store size={16} color={deliveryMethod === 'recojo' ? '#111827' : '#9CA3AF'} />
                     <span>Recojo en Tienda</span>
                   </button>
                   <button
@@ -345,12 +347,14 @@ ${formattedItems}
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      backgroundColor: deliveryMethod === 'delivery' ? '#ECFDF5' : '#F9FAFB',
-                      color: deliveryMethod === 'delivery' ? '#059669' : '#4B5563',
-                      border: deliveryMethod === 'delivery' ? '1.5px solid #059669' : '1px solid rgba(142, 154, 167, 0.12)'
+                      backgroundColor: deliveryMethod === 'delivery' ? '#F9FAFB' : '#FFFFFF',
+                      color: deliveryMethod === 'delivery' ? '#111827' : '#6B7280',
+                      border: deliveryMethod === 'delivery' ? '1.5px solid #111827' : '1px solid rgba(142, 154, 167, 0.15)',
+                      boxShadow: deliveryMethod === 'delivery' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+                      fontWeight: deliveryMethod === 'delivery' ? 700 : 500
                     }}
                   >
-                    <Bike size={16} color={deliveryMethod === 'delivery' ? '#059669' : '#6B7280'} />
+                    <Bike size={16} color={deliveryMethod === 'delivery' ? '#111827' : '#9CA3AF'} />
                     <span>Delivery Local</span>
                   </button>
                   <button
@@ -362,12 +366,14 @@ ${formattedItems}
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      backgroundColor: deliveryMethod === 'envio' ? '#EFF6FF' : '#F9FAFB',
-                      color: deliveryMethod === 'envio' ? '#2563EB' : '#4B5563',
-                      border: deliveryMethod === 'envio' ? '1.5px solid #2563EB' : '1px solid rgba(142, 154, 167, 0.12)'
+                      backgroundColor: deliveryMethod === 'envio' ? '#F9FAFB' : '#FFFFFF',
+                      color: deliveryMethod === 'envio' ? '#111827' : '#6B7280',
+                      border: deliveryMethod === 'envio' ? '1.5px solid #111827' : '1px solid rgba(142, 154, 167, 0.15)',
+                      boxShadow: deliveryMethod === 'envio' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+                      fontWeight: deliveryMethod === 'envio' ? 700 : 500
                     }}
                   >
-                    <Truck size={16} color={deliveryMethod === 'envio' ? '#2563EB' : '#6B7280'} />
+                    <Truck size={16} color={deliveryMethod === 'envio' ? '#111827' : '#9CA3AF'} />
                     <span>Envío Nacional</span>
                   </button>
                 </div>
@@ -388,7 +394,7 @@ ${formattedItems}
                       style={styles.customSelectTrigger}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <MapPin size={16} color="var(--accent-start)" />
+                        <MapPin size={16} color="#4B5563" />
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
                           {warehouses.find(w => w.codigo === selectedSede)?.nombre || 'Selecciona una sede'}
                         </span>
@@ -415,8 +421,8 @@ ${formattedItems}
                             }}
                             style={{
                               ...styles.customSelectOption,
-                              backgroundColor: selectedSede === w.codigo ? 'var(--accent-soft)' : '#FFFFFF',
-                              color: selectedSede === w.codigo ? 'var(--accent-start)' : 'var(--text-primary)',
+                              backgroundColor: selectedSede === w.codigo ? '#F3F4F6' : '#FFFFFF',
+                              color: selectedSede === w.codigo ? '#111827' : 'var(--text-primary)',
                               fontWeight: selectedSede === w.codigo ? 700 : 500
                             }}
                             className="custom-select-option-hover"
@@ -565,8 +571,8 @@ ${formattedItems}
                 </div>
               ) : (
                 <div style={{ ...styles.infoAlert, display: 'flex', alignItems: 'center', gap: '8px' }} className="fade-in">
-                  <Store size={15} color="var(--accent-start)" />
-                  <span style={{ fontSize: '0.78rem', color: 'var(--accent-start)', fontWeight: 600 }}>
+                  <Store size={15} color="#4B5563" />
+                  <span style={{ fontSize: '0.78rem', color: '#4B5563', fontWeight: 600 }}>
                     Recogerás tu pedido en la sede seleccionada. No es necesario ingresar una dirección de entrega.
                   </span>
                 </div>
@@ -928,8 +934,8 @@ const styles = {
   infoAlert: {
     padding: '12px 14px',
     borderRadius: '10px',
-    backgroundColor: 'var(--accent-soft)',
-    border: '1px solid rgba(142, 154, 167, 0.08)',
+    backgroundColor: '#F9FAFB',
+    border: '1px solid rgba(142, 154, 167, 0.15)',
     marginTop: '6px',
   },
   selectWithIcon: {
