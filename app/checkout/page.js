@@ -18,10 +18,38 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Opciones de Despacho (Nuevas)
+  const [deliveryMethod, setDeliveryMethod] = useState('recojo'); // 'recojo' | 'delivery' | 'envio'
+  const [warehouses, setWarehouses] = useState([]);
+  const [selectedSede, setSelectedSede] = useState('');
+
   // Estados de UI
   const [isValidatingDoc, setIsValidatingDoc] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Cargar sedes activas dinámicamente
+  useEffect(() => {
+    async function loadWarehouses() {
+      try {
+        const res = await fetch('/api/admin/warehouses');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            // Filtrar solo sedes visibles
+            const active = data.warehouses.filter(w => w.visible);
+            setWarehouses(active);
+            if (active.length > 0) {
+              setSelectedSede(active[0].codigo);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[Checkout] Error al cargar sedes:', err);
+      }
+    }
+    loadWarehouses();
+  }, []);
 
   // Redireccionar si el carrito está vacío y no estamos en envío exitoso
   useEffect(() => {
@@ -88,13 +116,24 @@ export default function CheckoutPage() {
       setErrorMessage('Tu carrito está vacío.');
       return;
     }
-    if (!phone || !docNumber || !name || !address) {
+    
+    // Si el método es recojo en tienda, no es obligatorio el campo de dirección
+    const finalAddress = deliveryMethod === 'recojo'
+      ? (() => {
+          const w = warehouses.find(wh => wh.codigo === selectedSede);
+          return w ? `RECOJO EN TIENDA: ${w.nombre} (Dirección: ${w.direccion})` : `RECOJO EN TIENDA: Sede ${selectedSede}`;
+        })()
+      : address;
+
+    if (!phone || !docNumber || !name || (deliveryMethod !== 'recojo' && !address)) {
       setErrorMessage('Por favor, completa todos los campos obligatorios.');
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage('');
+
+    const targetWarehouseCode = deliveryMethod === 'recojo' ? selectedSede : selectedWarehouse;
 
     try {
       // 1. Enviar el pedido a la API de integración
@@ -106,9 +145,9 @@ export default function CheckoutPage() {
           docType,
           docNumber,
           name,
-          address,
+          address: finalAddress,
           notes,
-          warehouse: selectedWarehouse,
+          warehouse: targetWarehouseCode,
           items: cart.map(item => ({
             id: item.id,
             name: item.name,
@@ -132,12 +171,19 @@ export default function CheckoutPage() {
         `• ${item.quantity}x ${item.name} (${item.brand}) - S/ ${(item.price * item.quantity).toFixed(2)}`
       ).join('\n');
 
+      const methodLabel = deliveryMethod === 'recojo'
+        ? `Recojo en Tienda (Sede: ${warehouses.find(w => w.codigo === selectedSede)?.nombre || 'Seleccionada'})`
+        : deliveryMethod === 'delivery'
+          ? 'Delivery Local'
+          : 'Envío Nacional / Interprovincial';
+
       const whatsappMessage = `¡Hola Tienda Gloss! 👋 Acabo de realizar un pedido desde la web.
 
 🛍️ *Pedido Nro:* #${data.nroPedido}
 👤 *Cliente:* ${name} (${docType}: ${docNumber})
 📱 *WhatsApp:* ${phone}
-📍 *Dirección:* ${address}
+🚚 *Tipo de Entrega:* ${methodLabel}
+📍 *Dirección:* ${finalAddress}
 ${notes ? `📝 *Nota:* ${notes}\n` : ''}
 🛒 *Productos:*
 ${formattedItems}
@@ -153,7 +199,7 @@ ${formattedItems}
 
       // 4. Guardar datos de perfil e historial de pedidos localmente
       try {
-        const profile = { phone, docType, docNumber, name, address };
+        const profile = { phone, docType, docNumber, name, address: deliveryMethod === 'recojo' ? '' : address };
         localStorage.setItem('gloss_profile', JSON.stringify(profile));
 
         const newOrder = {
@@ -246,6 +292,72 @@ ${formattedItems}
             )}
 
             <form onSubmit={handleSubmit} style={styles.form}>
+              {/* Tipo de Despacho / Entrega */}
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Método de Entrega *</label>
+                <div style={styles.methodSelectorGrid}>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('recojo')}
+                    style={{
+                      ...styles.methodBtn,
+                      backgroundColor: deliveryMethod === 'recojo' ? 'var(--accent-start)' : '#FAF9F8',
+                      color: deliveryMethod === 'recojo' ? '#FFFFFF' : '#374151',
+                      border: deliveryMethod === 'recojo' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                    }}
+                  >
+                    🏪 Recojo en Tienda
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('delivery')}
+                    style={{
+                      ...styles.methodBtn,
+                      backgroundColor: deliveryMethod === 'delivery' ? 'var(--accent-start)' : '#FAF9F8',
+                      color: deliveryMethod === 'delivery' ? '#FFFFFF' : '#374151',
+                      border: deliveryMethod === 'delivery' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                    }}
+                  >
+                    🛵 Delivery Local
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('envio')}
+                    style={{
+                      ...styles.methodBtn,
+                      backgroundColor: deliveryMethod === 'envio' ? 'var(--accent-start)' : '#FAF9F8',
+                      color: deliveryMethod === 'envio' ? '#FFFFFF' : '#374151',
+                      border: deliveryMethod === 'envio' ? '1px solid var(--accent-start)' : '1px solid rgba(142, 154, 167, 0.12)'
+                    }}
+                  >
+                    🚚 Envío Nacional
+                  </button>
+                </div>
+              </div>
+
+              {/* Selector de Sede si elige Recojo */}
+              {deliveryMethod === 'recojo' && (
+                <div style={styles.inputGroup} className="fade-in">
+                  <label style={styles.label} htmlFor="selectedSede">Selecciona la Sede de Recojo *</label>
+                  <div style={styles.inputIconWrapper}>
+                    <MapPin size={18} color="var(--text-secondary)" style={styles.inputIcon} />
+                    <select
+                      id="selectedSede"
+                      value={selectedSede}
+                      onChange={(e) => setSelectedSede(e.target.value)}
+                      style={styles.selectWithIcon}
+                      className="soft-select"
+                    >
+                      {warehouses.map(w => (
+                        <option key={w.codigo} value={w.codigo}>
+                          {w.nombre} (Cod: {w.codigo}) - {w.direccion}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Celular / WhatsApp */}
               <div style={styles.inputGroup}>
                 <label style={styles.label} htmlFor="phone">WhatsApp / Celular *</label>
@@ -323,22 +435,36 @@ ${formattedItems}
                 </div>
               </div>
 
-              {/* Dirección de Entrega */}
-              <div style={styles.inputGroup}>
-                <label style={styles.label} htmlFor="address">Dirección de Entrega *</label>
-                <div style={styles.inputIconWrapper}>
-                  <MapPin size={18} color="var(--text-secondary)" style={styles.inputIcon} />
-                  <input
-                    type="text"
-                    id="address"
-                    placeholder="Ej. Calle Los Pinos 123, Dpto 402 - Miraflores"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    style={styles.inputWithIcon}
-                  />
+              {/* Dirección de Entrega (solo si no es Recojo) */}
+              {deliveryMethod !== 'recojo' ? (
+                <div style={styles.inputGroup} className="fade-in">
+                  <label style={styles.label} htmlFor="address">
+                    {deliveryMethod === 'delivery' ? 'Dirección de Entrega *' : 'Dirección de Envío y Courier *'}
+                  </label>
+                  <div style={styles.inputIconWrapper}>
+                    <MapPin size={18} color="var(--text-secondary)" style={styles.inputIcon} />
+                    <input
+                      type="text"
+                      id="address"
+                      placeholder={
+                        deliveryMethod === 'delivery'
+                          ? 'Ej. Calle Los Pinos 123, Urb. Santa Victoria - Chiclayo'
+                          : 'Ej. Calle Lima 450 - Shalom Jaén (Indicar Agencia o Domicilio, Departamento, Provincia)'
+                      }
+                      required
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      style={styles.inputWithIcon}
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div style={styles.infoAlert} className="fade-in">
+                  <span style={{ fontSize: '0.78rem', color: 'var(--accent-start)', fontWeight: 600 }}>
+                    🏪 Recogerás tu pedido en la sede seleccionada. No es necesario ingresar una dirección de entrega.
+                  </span>
+                </div>
+              )}
 
               {/* Notas del pedido */}
               <div style={styles.inputGroup}>
@@ -675,5 +801,41 @@ const styles = {
     fontWeight: '500',
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-title)',
+  },
+  methodSelectorGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+    gap: '10px',
+    marginTop: '6px',
+    width: '100%',
+  },
+  methodBtn: {
+    padding: '12px 8px',
+    borderRadius: '10px',
+    fontSize: '0.82rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'all 200ms ease',
+    outline: 'none',
+  },
+  infoAlert: {
+    padding: '12px 14px',
+    borderRadius: '10px',
+    backgroundColor: 'var(--accent-soft)',
+    border: '1px solid rgba(142, 154, 167, 0.08)',
+    marginTop: '6px',
+  },
+  selectWithIcon: {
+    width: '100%',
+    padding: '12px 14px 12px 42px',
+    borderRadius: '12px',
+    border: '1px solid rgba(142, 154, 167, 0.15)',
+    fontSize: '0.88rem',
+    fontFamily: 'inherit',
+    color: 'var(--text-primary)',
+    outline: 'none',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
   },
 };
