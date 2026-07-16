@@ -422,9 +422,9 @@ const styles = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    background: 'linear-gradient(135deg, #FFF1F2 0%, #FFF5F7 60%, #FFFBEB 100%)', // Degradado premium rosa y champán/dorado suave
+    background: '#FFFFFF', // Fondo blanco puro para fluir con la web
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.03)',
-    border: '1px solid rgba(0, 0, 0, 0.02)',
+    border: '1px solid rgba(0, 0, 0, 0.05)', // Borde sutil
   },
   bannerTextContent: {
     flex: 1,
@@ -485,6 +485,6 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(to right, #FFF5F7 10%, rgba(255, 245, 247, 0.6) 50%, transparent 100%)', // Difuminado para integrar la foto con los textos
+    background: 'linear-gradient(to right, #FFFFFF 10%, rgba(255, 255, 255, 0.6) 50%, transparent 100%)', // Difuminado para integrar la foto con los textos
   },
 };
