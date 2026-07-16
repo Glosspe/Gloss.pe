@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Home, Heart, User, ShoppingBag } from 'lucide-react';
+import { Home, User, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation';
 export default function BottomBar() {
   const { 
     cartCount, 
-    favorites, 
     setIsCartOpen,
     setSelectedCategory,
     setSelectedBrand,
@@ -19,9 +18,7 @@ export default function BottomBar() {
   const pathname = usePathname();
 
   const isHomeActive = pathname === '/';
-  const isFavActive = pathname === '/favorites';
   const isProfileActive = pathname === '/profile';
-  const favCount = favorites.length;
 
   const handleHomeClick = () => {
     // Restablecer todos los filtros de búsqueda y categorías para volver a la Home limpia
@@ -59,24 +56,6 @@ export default function BottomBar() {
           </div>
           <span style={styles.label}>Mi Bolsa</span>
         </button>
-
-        {/* Botón Favoritos */}
-        <Link href="/favorites" style={styles.navItem}>
-          <div style={{
-            ...styles.iconWrapper,
-            ...(isFavActive ? styles.activeIcon : {})
-          }}>
-            <Heart size={20} color={isFavActive ? '#FFFFFF' : 'var(--text-secondary)'} />
-            {favCount > 0 && (
-              <span style={styles.badge}>{favCount}</span>
-            )}
-          </div>
-          <span style={{
-            ...styles.label,
-            color: isFavActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-            fontWeight: isFavActive ? '700' : '500'
-          }}>Favoritos</span>
-        </Link>
 
         {/* Botón Perfil */}
         <Link href="/profile" style={styles.navItem}>

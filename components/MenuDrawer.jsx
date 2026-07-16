@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin } from 'lucide-react';
+import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin, Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -21,7 +21,8 @@ export default function MenuDrawer() {
     selectedWarehouse,
     setSelectedWarehouse,
     selectedWarehouseName,
-    setSelectedWarehouseName
+    setSelectedWarehouseName,
+    favorites
   } = useCart();
 
   const [categoriesTree, setCategoriesTree] = useState([]);
@@ -201,6 +202,56 @@ export default function MenuDrawer() {
                   <span>Limpiar Filtros del Catálogo</span>
                 </button>
               )}
+
+              {/* SECCIÓN FAVORITOS (Primer apartado del menú) */}
+              <button 
+                onClick={() => {
+                  router.push('/favorites');
+                  setIsMenuOpen(false);
+                }}
+                style={{
+                  ...styles.sectionCard,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px',
+                  backgroundColor: pathname === '/favorites' ? 'var(--accent-soft)' : '#FFFFFF',
+                  border: '1px solid rgba(0, 0, 0, 0.04)',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  textDecoration: 'none',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.01)',
+                  marginBottom: '14px',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                }}
+                className="menu-favorites-btn"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Heart size={20} color="var(--accent-start)" fill={favorites.length > 0 ? "var(--accent-start)" : "none"} />
+                  <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                    Mis Favoritos
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {favorites.length > 0 ? (
+                    <span style={{
+                      backgroundColor: 'var(--accent-start)',
+                      color: '#FFFFFF',
+                      fontSize: '0.72rem',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                    }}>
+                      {favorites.length}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>0</span>
+                  )}
+                </div>
+              </button>
 
               {/* SECCIÓN CATEGORÍAS */}
               <div style={styles.sectionCard}>
