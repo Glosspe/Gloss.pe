@@ -682,11 +682,13 @@ const styles = {
     maxWidth: '380px',
     aspectRatio: '1',
     borderRadius: '28px',
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF', // Fondo blanco puro para la tarjeta de imagen
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.02)',
+    border: '1px solid rgba(0, 0, 0, 0.03)',
   },
   mainImage: {
     maxWidth: '100%',
