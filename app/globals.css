@@ -737,7 +737,7 @@ a {
   height: 54px; /* Agrandado para celulares */
   min-width: 54px; /* Agrandado para celulares */
   border-radius: 50%;
-  border: 1px solid rgba(255, 46, 147, 0.15);
+  border: none;
   background-color: rgba(255, 46, 147, 0.05);
   cursor: pointer;
   outline: none;
@@ -823,7 +823,6 @@ a {
 .product-favorite-btn:hover {
   transform: scale(1.08);
   background-color: rgba(255, 46, 147, 0.1);
-  border-color: rgba(255, 46, 147, 0.3);
 }
 
 .product-favorite-btn:active {
