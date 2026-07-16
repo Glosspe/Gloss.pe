@@ -33,9 +33,72 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('id') || '';
+    const onlyProduct = searchParams.get('onlyProduct') === 'true';
+    const onlyStock = searchParams.get('onlyStock') === 'true';
 
     if (!productId) {
       return NextResponse.json({ error: 'Falta el id del producto' }, { status: 400 });
+    }
+
+    // Si el cliente solicita únicamente el stock en tiempo real del ERP
+    if (onlyStock) {
+      const product = await prisma.webProductoImagen.findFirst({
+        where: {
+          OR: [
+            { codart: productId.trim() },
+            { codbar: productId.trim() }
+          ]
+        }
+      });
+
+      if (!product) {
+        return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+      }
+
+      const almacenes = await prisma.webAlmacenConfig.findMany({
+        where: { visible: true },
+        orderBy: { codalm: 'asc' }
+      });
+
+      let stocksByWarehouse = almacenes.map(wh => ({
+        codalm: wh.codalm,
+        nomalm: wh.nomalm,
+        stock: 0
+      }));
+
+      try {
+        const pool = await getErpConnection();
+        if (pool && almacenes.length > 0) {
+          const request = pool.request();
+          request.input('codart', sql.VarChar(50), product.codart);
+
+          let queryParts = [];
+          almacenes.forEach(wh => {
+            queryParts.push(`(SELECT ISNULL(SUM(stoc), 0) FROM prd01${wh.codalm} WITH(nolock) WHERE codi = @codart) as stock_${wh.codalm}`);
+          });
+
+          const queryStr = `SELECT ${queryParts.join(', ')}`;
+          const erpResult = await request.query(queryStr);
+
+          if (erpResult.recordset && erpResult.recordset.length > 0) {
+            const erpData = erpResult.recordset[0];
+            stocksByWarehouse = almacenes.map(wh => ({
+              codalm: wh.codalm,
+              nomalm: wh.nomalm,
+              stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
+            }));
+          }
+        }
+      } catch (erpErr) {
+        console.warn('[API Scan Detail] Error de conexión al ERP local (onlyStock):', erpErr.message);
+        stocksByWarehouse = almacenes.map(wh => ({
+          codalm: wh.codalm,
+          nomalm: wh.nomalm,
+          stock: wh.codalm === '01' ? parseFloat(product.stock || 0) : 0
+        }));
+      }
+
+      return NextResponse.json({ stocks: stocksByWarehouse });
     }
 
     // 1. Buscar el producto en la base de datos PostgreSQL
@@ -72,13 +135,52 @@ export async function GET(request) {
       description: product.descripcionEnriquecida || ''
     };
 
-    // 2. Obtener almacenes activos configurados en PostgreSQL
+    // 2. Obtener productos similares (desde PostgreSQL)
+    let similarProductsRaw = [];
+    if (product.categoria) {
+      similarProductsRaw = await prisma.webProductoImagen.findMany({
+        where: {
+          categoria: product.categoria,
+          visible: true,
+          NOT: { codart: product.codart }
+        },
+        take: 5
+      });
+    }
+
+    const similarProducts = similarProductsRaw.map(p => {
+      let imgs = [];
+      try {
+        imgs = JSON.parse(p.imagenes || '[]');
+      } catch (e) {
+        imgs = [];
+      }
+      return {
+        id: p.codart,
+        name: formatProductName(p.nombre || ''),
+        brand: p.marca || 'Importado',
+        price: parseFloat(p.precio || 0),
+        image: imgs.length > 0 ? imgs[0] : PLACEHOLDER_IMAGE,
+        stock: parseFloat(p.stock || 0)
+      };
+    });
+
+    // Si viene onlyProduct=true, retornamos de inmediato sin consultar al ERP
+    if (onlyProduct) {
+      return NextResponse.json({
+        product: productDetail,
+        stocks: null,
+        similar: similarProducts
+      });
+    }
+
+    // 3. Obtener almacenes activos configurados en PostgreSQL
     const almacenes = await prisma.webAlmacenConfig.findMany({
       where: { visible: true },
       orderBy: { codalm: 'asc' }
     });
 
-    // 3. Consultar stock detallado por almacén en el ERP
+    // 4. Consultar stock detallado por almacén en el ERP (Retrocompatible)
     let stocksByWarehouse = almacenes.map(wh => ({
       codalm: wh.codalm,
       nomalm: wh.nomalm,
@@ -110,43 +212,12 @@ export async function GET(request) {
       }
     } catch (erpErr) {
       console.warn('[API Scan Detail] Error de conexión al ERP local, usando stock consolidado:', erpErr.message);
-      // Fallback: Cargar stock consolidado en la sede principal
       stocksByWarehouse = almacenes.map(wh => ({
         codalm: wh.codalm,
         nomalm: wh.nomalm,
         stock: wh.codalm === '01' ? parseFloat(product.stock || 0) : 0
       }));
     }
-
-    // 4. Obtener productos similares
-    let similarProductsRaw = [];
-    if (product.categoria) {
-      similarProductsRaw = await prisma.webProductoImagen.findMany({
-        where: {
-          categoria: product.categoria,
-          visible: true,
-          NOT: { codart: product.codart }
-        },
-        take: 5
-      });
-    }
-
-    const similarProducts = similarProductsRaw.map(p => {
-      let imgs = [];
-      try {
-        imgs = JSON.parse(p.imagenes || '[]');
-      } catch (e) {
-        imgs = [];
-      }
-      return {
-        id: p.codart,
-        name: formatProductName(p.nombre || ''),
-        brand: p.marca || 'Importado',
-        price: parseFloat(p.precio || 0),
-        image: imgs.length > 0 ? imgs[0] : PLACEHOLDER_IMAGE,
-        stock: parseFloat(p.stock || 0)
-      };
-    });
 
     return NextResponse.json({
       product: productDetail,

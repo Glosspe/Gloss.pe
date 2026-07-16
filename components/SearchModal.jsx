@@ -280,32 +280,52 @@ export default function SearchModal() {
     }
   };
 
+  // Carga asíncrona del stock detallado por sede en segundo plano
+  const fetchStockAsync = async (productId) => {
+    try {
+      const res = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(productId)}&onlyStock=true`);
+      if (res.ok) {
+        const stockData = await res.json();
+        setScannedProductData(prev => {
+          if (!prev || prev.product.id !== productId) return prev;
+          return {
+            ...prev,
+            stocks: stockData.stocks
+          };
+        });
+      }
+    } catch (err) {
+      console.warn('[SearchModal] Error cargando stock asíncrono:', err);
+    }
+  };
+
   // Procesar código leído (QR o Código de barras)
   const handleProcessScannedCode = async (code) => {
     setIsSearching(true);
     setScannedProductData(null); // Limpiar datos de escaneos previos
     try {
+      let targetId = code;
+
       // 1. Si es un código QR con formato de URL de nuestra tienda
       if (code.includes('gloss.pe/product/') || code.includes('/product/')) {
         const parts = code.split('/product/');
         if (parts.length > 1) {
-          const productId = parts[1].split(/[#?]/)[0]; // Limpiar hashes o parámetros de query
-          const scanRes = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(productId)}`);
-          if (scanRes.ok) {
-            const scanData = await scanRes.json();
-            setScannedProductData(scanData);
-            setIsSearching(false);
-            return;
-          }
+          targetId = parts[1].split(/[#?]/)[0]; // Limpiar hashes o parámetros de query
         }
       }
 
-      // 2. Consultar el endpoint de detalle y stock del código escaneado
-      const scanRes = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(code)}`);
+      // 2. Consultar únicamente el detalle de producto rápido (sin ERP)
+      const scanRes = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(targetId)}&onlyProduct=true`);
       if (scanRes.ok) {
         const scanData = await scanRes.json();
+        
+        // Asignar datos del producto e identificarlo de inmediato (stock inicial = null, activa esqueleto)
         setScannedProductData(scanData);
-        setScanMessage({ type: 'success', text: '¡Código escaneado con éxito!' });
+        setIsSearching(false);
+        setScanMessage({ type: 'success', text: '¡Producto identificado!' });
+
+        // 3. Consultar stock del ERP de forma asíncrona en segundo plano
+        fetchStockAsync(scanData.product.id);
       } else {
         // Fallback al buscador normal si no es coincidencia directa
         const res = await fetch(`/api/products/search?q=${encodeURIComponent(code)}`);
@@ -602,47 +622,61 @@ export default function SearchModal() {
                   border: '1px solid rgba(0, 0, 0, 0.05)',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.02)'
                 }}>
-                  <h4 style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+                  <h4 style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     Stock Disponible por Sede
+                    {!scannedProductData.stocks && (
+                      <Loader2 size={12} className="animate-spin" color="var(--accent-start)" />
+                    )}
                   </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {scannedProductData.stocks.map(st => {
-                      const qty = st.stock;
-                      let badgeBg = 'rgba(236, 253, 245, 0.9)';
-                      let badgeColor = '#10B981';
-                      let statusText = 'Disponible';
-                      
-                      if (qty <= 0) {
-                        badgeBg = 'rgba(254, 242, 242, 0.9)';
-                        badgeColor = '#EF4444';
-                        statusText = 'Agotado';
-                      } else if (qty <= 5) {
-                        badgeBg = '#FEF3C7';
-                        badgeColor = '#B45309';
-                        statusText = `¡Últimas ${qty} unids!`;
-                      } else {
-                        statusText = `${qty} unidades`;
-                      }
+                  
+                  {!scannedProductData.stocks ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '4px 0' }}>
+                      <div className="admin-skeleton" style={{ height: '24px', width: '100%', borderRadius: '8px' }} />
+                      <div className="admin-skeleton" style={{ height: '24px', width: '100%', borderRadius: '8px' }} />
+                      <span style={{ fontSize: '0.72rem', color: '#94A3B8', textAlign: 'center', display: 'block', marginTop: '4px' }}>
+                        Consultando stock al ERP en tiempo real...
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {scannedProductData.stocks.map(st => {
+                        const qty = st.stock;
+                        let badgeBg = 'rgba(236, 253, 245, 0.9)';
+                        let badgeColor = '#10B981';
+                        let statusText = 'Disponible';
+                        
+                        if (qty <= 0) {
+                          badgeBg = 'rgba(254, 242, 242, 0.9)';
+                          badgeColor = '#EF4444';
+                          statusText = 'Agotado';
+                        } else if (qty <= 5) {
+                          badgeBg = '#FEF3C7';
+                          badgeColor = '#B45309';
+                          statusText = `¡Últimas ${qty} unids!`;
+                        } else {
+                          statusText = `${qty} unidades`;
+                        }
 
-                      return (
-                        <div key={st.codalm} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                            {st.nomalm}
-                          </span>
-                          <span style={{
-                            fontSize: '0.72rem',
-                            fontWeight: '700',
-                            padding: '4px 10px',
-                            borderRadius: '12px',
-                            backgroundColor: badgeBg,
-                            color: badgeColor
-                          }}>
-                            {statusText}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        return (
+                          <div key={st.codalm} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                              {st.nomalm}
+                            </span>
+                            <span style={{
+                              fontSize: '0.72rem',
+                              fontWeight: '700',
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              backgroundColor: badgeBg,
+                              color: badgeColor
+                            }}>
+                              {statusText}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Productos Similares Recomendados */}
