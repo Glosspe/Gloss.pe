@@ -1622,3 +1622,13 @@ a {
 .fav-toast-animate {
   animation: slideDownFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* En pantallas grandes (laptops y PCs de escritorio), expandimos el ancho de los contenedores para alinearse con la rejilla de productos de 1200px */
+@media (min-width: 1024px) {
+  .gloss-header,
+  .home-promo-banner,
+  .home-breadcrumbs,
+  .gloss-section-header {
+    max-width: 1200px !important;
+  }
+}

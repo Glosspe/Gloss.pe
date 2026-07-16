@@ -198,7 +198,7 @@ export default function HomePage() {
       )}
 
       {/* Título de Sección */}
-      <div style={styles.sectionHeader}>
+      <div style={styles.sectionHeader} className="gloss-section-header">
         <h3 style={styles.sectionTitle} className="home-section-title">
           {getSectionTitle()}
         </h3>
