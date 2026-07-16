@@ -328,7 +328,7 @@ const styles = {
     minHeight: '100vh',
     backgroundColor: 'var(--bg-primary)',
     paddingTop: '68px',
-    paddingBottom: '80px',
+    paddingBottom: '20px',
   },
   header: {
     position: 'fixed',
