@@ -101,7 +101,7 @@ export default function Header() {
               className="header-profile-button"
               title="Mi Cuenta"
             >
-              <User size={20} color="#0284C7" strokeWidth={1.5} />
+              <User size={20} color="#0284C7" strokeWidth={1.5} className="header-icon-svg" />
             </Link>
 
             {/* Botón Menú Desplegable */}
