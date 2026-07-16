@@ -254,13 +254,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
-    color: '#15803D', // Verde bosque elegante
+    color: '#16A34A', // Verde suave intermedio
     fontSize: '0.72rem',
     fontWeight: '600',
     fontFamily: 'var(--font-body), sans-serif',
     padding: '4px 8px',
     borderRadius: '8px',
-    backgroundColor: '#DCFCE7', // Verde bebé / pastel suave (green-100)
+    backgroundColor: '#F0FDF4', // Verde pastel ultra suave (green-50)
     transition: 'all 0.2s',
     flexShrink: 0,
   },
