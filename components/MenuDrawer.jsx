@@ -38,6 +38,34 @@ export default function MenuDrawer() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Funciones de control de acordeón dinámico único (abrir uno cierra los demás)
+  const handleToggleCategories = () => {
+    const nextState = !isCategoriesOpen;
+    setIsCategoriesOpen(nextState);
+    if (nextState) {
+      setIsBrandsOpen(false);
+      setIsTagsOpen(false);
+    }
+  };
+
+  const handleToggleBrands = () => {
+    const nextState = !isBrandsOpen;
+    setIsBrandsOpen(nextState);
+    if (nextState) {
+      setIsCategoriesOpen(false);
+      setIsTagsOpen(false);
+    }
+  };
+
+  const handleToggleTags = () => {
+    const nextState = !isTagsOpen;
+    setIsTagsOpen(nextState);
+    if (nextState) {
+      setIsCategoriesOpen(false);
+      setIsBrandsOpen(false);
+    }
+  };
+
   // Pre-cargar datos dinámicos del ERP una sola vez al montar la aplicación
   useEffect(() => {
     async function loadMenuData() {
@@ -272,7 +300,7 @@ export default function MenuDrawer() {
               <div style={styles.sectionCard}>
                 <button 
                   style={styles.sectionHeader}
-                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                  onClick={handleToggleCategories}
                 >
                   <div style={styles.sectionTitleGroup}>
                     <Layers size={16} color="#64748B" strokeWidth={1.3} />
@@ -348,7 +376,7 @@ export default function MenuDrawer() {
                 <div style={styles.sectionCard}>
                   <button 
                     style={styles.sectionHeader}
-                    onClick={() => setIsTagsOpen(!isTagsOpen)}
+                    onClick={handleToggleTags}
                   >
                     <div style={styles.sectionTitleGroup}>
                       <Wand2 size={16} color="#64748B" strokeWidth={1.3} />
@@ -404,7 +432,7 @@ export default function MenuDrawer() {
               <div style={styles.sectionCard}>
                 <button 
                   style={styles.sectionHeader}
-                  onClick={() => setIsBrandsOpen(!isBrandsOpen)}
+                  onClick={handleToggleBrands}
                 >
                   <div style={styles.sectionTitleGroup}>
                     <Award size={16} color="#64748B" strokeWidth={1.3} />
