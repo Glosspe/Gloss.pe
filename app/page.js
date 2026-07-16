@@ -437,12 +437,12 @@ const styles = {
   },
   bannerBadge: {
     fontSize: '0.62rem',
-    fontWeight: '700',
-    color: 'var(--accent-start)',
+    fontWeight: '600', // Más fino
+    color: '#16A34A', // Verde suave (cero rosa)
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '4px',
-    backgroundColor: 'rgba(255, 46, 147, 0.08)',
+    backgroundColor: '#E8FDF0', // Verde bebé muy suave
     padding: '2px 8px',
     borderRadius: '6px',
     width: 'fit-content',
@@ -450,7 +450,7 @@ const styles = {
   },
   bannerTitle: {
     fontSize: '1.05rem',
-    fontWeight: '700',
+    fontWeight: '500', // Título más delgado (de 700 a 500)
     color: '#1E293B',
     margin: '0 0 2px 0',
     fontFamily: 'var(--font-title), sans-serif',
@@ -458,7 +458,7 @@ const styles = {
   },
   bannerSubtitle: {
     fontSize: '0.72rem',
-    fontWeight: '500',
+    fontWeight: '400', // Subtítulo muy fino (de 500 a 400)
     color: '#64748B',
     margin: 0,
     lineHeight: '1.3',
