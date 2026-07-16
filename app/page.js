@@ -13,6 +13,8 @@ export default function HomePage() {
     setSelectedCategory,
     selectedCategoryLabel,
     setSelectedCategoryLabel,
+    parentCategoryLabel,
+    setParentCategoryLabel,
     searchQuery,
     setSearchQuery,
     selectedBrand,
@@ -26,6 +28,7 @@ export default function HomePage() {
     setSelectedBrand('');
     setSearchQuery('');
     setSelectedCategoryLabel('');
+    setParentCategoryLabel('');
   };
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,17 +144,23 @@ export default function HomePage() {
           
           <ChevronRight size={11} color="#94A3B8" style={{ margin: '0 4px', flexShrink: 0 }} />
           
-          <span style={styles.breadcrumbActive}>
-            {searchQuery.trim() !== '' ? (
-              `Búsqueda: "${searchQuery}"`
-            ) : selectedBrand ? (
-              `Marca: ${selectedBrand}`
-            ) : selectedCategoryLabel ? (
-              selectedCategoryLabel
-            ) : (
-              selectedCategory
-            )}
-          </span>
+          {searchQuery.trim() !== '' ? (
+            <span style={styles.breadcrumbActive}>Búsqueda: "{searchQuery}"</span>
+          ) : selectedBrand ? (
+            <span style={styles.breadcrumbActive}>Marca: {selectedBrand}</span>
+          ) : selectedCategoryLabel ? (
+            <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+              {parentCategoryLabel && parentCategoryLabel !== selectedCategoryLabel && (
+                <>
+                  <span style={styles.breadcrumbParent}>{parentCategoryLabel}</span>
+                  <ChevronRight size={11} color="#94A3B8" style={{ margin: '0 4px', flexShrink: 0 }} />
+                </>
+              )}
+              <span style={styles.breadcrumbActive}>{selectedCategoryLabel}</span>
+            </div>
+          ) : (
+            <span style={styles.breadcrumbActive}>{selectedCategory}</span>
+          )}
 
           <button 
             onClick={clearAllFilters} 
@@ -369,5 +378,14 @@ const styles = {
     marginLeft: 'auto',
     transition: 'all 0.2s',
     padding: 0,
+  },
+  breadcrumbParent: {
+    fontSize: '0.78rem',
+    fontWeight: '500',
+    color: '#64748B', // Un gris intermedio para el padre en el camino de la ruta
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: '120px',
   },
 };

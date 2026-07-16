@@ -12,6 +12,7 @@ export function CartProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState('');
+  const [parentCategoryLabel, setParentCategoryLabel] = useState('');
   const [favorites, setFavorites] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
   const [selectedWarehouseName, setSelectedWarehouseName] = useState('Todas las sedes');
@@ -26,12 +27,14 @@ export function CartProvider({ children }) {
     const savedWh = localStorage.getItem('gloss_selected_warehouse');
     const savedWhName = localStorage.getItem('gloss_selected_warehouse_name');
     const savedWhAddress = localStorage.getItem('gloss_selected_warehouse_address');
+    const savedParentCat = localStorage.getItem('gloss_parent_category_label');
     
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
     if (savedWh) setSelectedWarehouse(savedWh);
     if (savedWhName) setSelectedWarehouseName(savedWhName);
     if (savedWhAddress) setSelectedWarehouseAddress(savedWhAddress);
+    if (savedParentCat) setParentCategoryLabel(savedParentCat);
     
     setIsInitialized(true); // Indicar que la restauración inicial está lista
   }, []);
@@ -58,6 +61,13 @@ export function CartProvider({ children }) {
       localStorage.setItem('gloss_selected_warehouse_address', selectedWarehouseAddress);
     }
   }, [selectedWarehouse, selectedWarehouseName, selectedWarehouseAddress, isInitialized]);
+
+  // Guardar categoría padre en localStorage cuando cambie
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('gloss_parent_category_label', parentCategoryLabel);
+    }
+  }, [parentCategoryLabel, isInitialized]);
 
   const addToCart = (product, quantity = 1) => {
     setCart((prevCart) => {
@@ -134,6 +144,8 @@ export function CartProvider({ children }) {
         setSelectedBrand,
         selectedCategoryLabel,
         setSelectedCategoryLabel,
+        parentCategoryLabel,
+        setParentCategoryLabel,
         favorites,
         toggleFavorite,
         addToCart,

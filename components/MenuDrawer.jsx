@@ -18,6 +18,8 @@ export default function MenuDrawer() {
     setSelectedBrand,
     setSearchQuery,
     setSelectedCategoryLabel,
+    parentCategoryLabel,
+    setParentCategoryLabel,
     selectedWarehouse,
     setSelectedWarehouse,
     selectedWarehouseName,
@@ -106,6 +108,7 @@ export default function MenuDrawer() {
     setSelectedBrand('');
     setSearchQuery('');
     setSelectedCategoryLabel('');
+    setParentCategoryLabel('');
     setIsMenuOpen(false);
     
     // Si no estamos en la página de inicio, navegar a ella para ver los productos
@@ -114,9 +117,10 @@ export default function MenuDrawer() {
     }
   };
 
-  const handleSelectSubcategory = (subId, subName) => {
+  const handleSelectSubcategory = (subId, subName, parentName = '') => {
     setSelectedCategory(subId);
     setSelectedCategoryLabel(formatLabel(subName));
+    setParentCategoryLabel(formatLabel(parentName));
     setSelectedBrand(''); // Limpiar marca al elegir categoría
     setSearchQuery(''); // Limpiar buscador
     setIsMenuOpen(false); // Cerrar sidebar
@@ -295,7 +299,7 @@ export default function MenuDrawer() {
                                       color: isSubActive ? 'var(--accent-start)' : 'var(--text-primary)',
                                       fontWeight: isSubActive ? '700' : '500'
                                     }}
-                                    onClick={() => handleSelectSubcategory(sub.id, sub.name)}
+                                    onClick={() => handleSelectSubcategory(sub.id, sub.name, fam.name)}
                                   >
                                     <div style={{
                                       ...styles.bulletDot,
