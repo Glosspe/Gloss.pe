@@ -11,18 +11,21 @@ const getStockBadge = (stock, lowStockThreshold = 5) => {
     return {
       label: 'Agotado',
       color: '#EF4444',
+      bulletColor: '#EF4444',
       bg: 'rgba(254, 242, 242, 0.9)',
     };
   } else if (qty <= lowStockThreshold) {
     return {
       label: `¡Solo ${qty} unids!`,
-      color: '#B45309', // Cobre elegante
-      bg: '#FEF3C7',    // Ámbar suave
+      color: '#D97706',
+      bulletColor: '#D97706',
+      bg: '#FEF3C7',
     };
   } else {
     return {
       label: 'Disponible',
       color: '#10B981',
+      bulletColor: '#10B981',
       bg: 'rgba(236, 253, 245, 0.9)',
     };
   }
@@ -224,13 +227,11 @@ export default function ProductDetailPage({ params }) {
             <h1 style={styles.productName} className="product-detail-name">{product.name}</h1>
 
             <div style={styles.metaRow}>
-              <span style={{
-                ...styles.stockBadge,
-                backgroundColor: stockBadge.bg,
-                color: stockBadge.color,
-              }}>
-                {stockBadge.label}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: '600', color: stockBadge.color }}>
+                <span style={{ fontSize: '9px', color: stockBadge.bulletColor }}>●</span>
+                <span>{stockBadge.label}</span>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: '#CBD5E1' }}>|</span>
               <span style={styles.categoryLabel}>{product.category}</span>
             </div>
 
@@ -278,9 +279,9 @@ export default function ProductDetailPage({ params }) {
               <button 
                 style={{
                   ...styles.favBtn,
-                  background: 'none',
-                  backgroundColor: 'rgba(255, 46, 147, 0.05)',
-                  border: 'none',
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(0, 0, 0, 0.04)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.015)',
                 }}
                 onClick={() => toggleFavorite(product)}
                 className="detail-fav-btn" // Para que herede efectos de hover/active
@@ -625,11 +626,11 @@ const styles = {
     gap: '8px',
   },
   brandLabel: {
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    color: 'var(--text-secondary)',
+    fontSize: '0.72rem',
+    fontWeight: '600',
+    color: '#FF5EA6', // Rosa pastel unificado
     textTransform: 'uppercase',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.12em',
   },
   productName: {
     fontSize: '1.6rem',
@@ -654,9 +655,9 @@ const styles = {
     textTransform: 'uppercase',
   },
   categoryLabel: {
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    color: 'var(--text-secondary)',
+    fontSize: '0.78rem',
+    fontWeight: '500',
+    color: '#64748B', // Gris pizarra elegante
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
   },
@@ -686,18 +687,18 @@ const styles = {
   qtySelector: {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'var(--accent-soft)',
-    borderRadius: '16px',
+    backgroundColor: '#F1F5F9', // Gris claro suave neumórfico
+    borderRadius: '50px', // Totalmente redondeado
     padding: '4px',
     height: '48px',
-    border: '1px solid rgba(255, 46, 147, 0.08)',
+    border: '1px solid rgba(0, 0, 0, 0.03)',
   },
   qtyBtn: {
     border: 'none',
     background: 'none',
     width: '36px',
     height: '36px',
-    borderRadius: '12px',
+    borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -706,7 +707,7 @@ const styles = {
   },
   qtyVal: {
     fontSize: '0.95rem',
-    fontWeight: '700',
+    fontWeight: '600',
     color: 'var(--text-primary)',
     width: '32px',
     textAlign: 'center',
@@ -730,7 +731,7 @@ const styles = {
   favBtn: {
     width: '48px',
     height: '48px',
-    borderRadius: '16px',
+    borderRadius: '50%', // Totalmente circular a juego con el diseño del catálogo
     border: '1px solid',
     display: 'flex',
     alignItems: 'center',
