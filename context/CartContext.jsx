@@ -19,6 +19,8 @@ export function CartProvider({ children }) {
   const [selectedWarehouseAddress, setSelectedWarehouseAddress] = useState('Stock consolidado');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [favNotification, setFavNotification] = useState(null);
+  const favTimerRef = React.useRef(null);
 
   // Cargar carrito, favoritos y sede desde localStorage al iniciar
   useEffect(() => {
@@ -116,13 +118,32 @@ export function CartProvider({ children }) {
   };
 
   const toggleFavorite = (product) => {
+    let action = 'added';
     setFavorites((prevFavorites) => {
       const isFav = prevFavorites.some((item) => item.id === product.id);
       if (isFav) {
+        action = 'removed';
         return prevFavorites.filter((item) => item.id !== product.id);
       }
+      action = 'added';
       return [...prevFavorites, product];
     });
+
+    // Mostrar alerta superior de color oscuro bonito
+    setFavNotification({
+      show: true,
+      message: action === 'added' ? 'Agregado a favoritos' : 'Eliminado de favoritos',
+      productName: product.name,
+      type: action
+    });
+
+    if (favTimerRef.current) {
+      clearTimeout(favTimerRef.current);
+    }
+
+    favTimerRef.current = setTimeout(() => {
+      setFavNotification(null);
+    }, 2500);
   };
 
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -166,6 +187,21 @@ export function CartProvider({ children }) {
       }}
     >
       {children}
+      {favNotification && (
+        <div style={toastStyles.overlay} className="fav-toast-animate">
+          <div style={toastStyles.card}>
+            {favNotification.type === 'added' ? (
+              <span style={toastStyles.heartIcon}>💖</span>
+            ) : (
+              <span style={toastStyles.heartIcon}>💔</span>
+            )}
+            <div style={toastStyles.textContainer}>
+              <span style={toastStyles.title}>{favNotification.message}</span>
+              <span style={toastStyles.subtitle}>{favNotification.productName}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </CartContext.Provider>
   );
 }
@@ -177,3 +213,55 @@ export function useCart() {
   }
   return context;
 }
+
+const toastStyles = {
+  overlay: {
+    position: 'fixed',
+    top: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 99999,
+    width: 'calc(100% - 40px)',
+    maxWidth: '340px',
+    pointerEvents: 'none', // Permite clics a través del overlay por seguridad
+  },
+  card: {
+    backgroundColor: '#1E293B', // Gris oscuro elegante
+    color: '#FFFFFF',
+    borderRadius: '16px',
+    padding: '12px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+  },
+  heartIcon: {
+    fontSize: '1.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    animation: 'heartBeat 0.3s ease',
+  },
+  textContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    flex: 1,
+  },
+  title: {
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#FFFFFF',
+    fontFamily: 'var(--font-body), sans-serif',
+  },
+  subtitle: {
+    fontSize: '0.75rem',
+    color: '#94A3B8',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    marginTop: '2px',
+    fontFamily: 'var(--font-body), sans-serif',
+  },
+};
