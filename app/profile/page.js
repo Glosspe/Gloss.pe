@@ -255,7 +255,7 @@ export default function ProfilePage() {
             {orders.length === 0 ? (
               <div style={styles.emptyContainer}>
                 <div style={styles.bagWrapper} className="soft-card">
-                  <ShoppingBag size={40} color="var(--text-secondary)" />
+                  <ShoppingCart size={40} color="var(--text-secondary)" />
                 </div>
                 <h3 style={styles.emptyTitle}>Aún no tienes pedidos</h3>
                 <p style={styles.emptySubtitle}>
