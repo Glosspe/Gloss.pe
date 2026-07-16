@@ -957,10 +957,15 @@ a {
 .header-icon-button {
   width: 32px !important;
   height: 32px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-cart-button {
-  display: none !important; /* Ocultar la bolsa del Header en versión móvil */
+  display: flex !important; /* Mostrar siempre la bolsa en móvil y PC */
+  align-items: center;
+  justify-content: center;
 }
 
 .header-icon-svg {
