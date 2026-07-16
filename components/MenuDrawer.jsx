@@ -184,7 +184,7 @@ export default function MenuDrawer() {
             <h3 style={styles.logoText}>Menú</h3>
           </div>
           <button style={styles.closeButton} onClick={() => setIsMenuOpen(false)}>
-            <X size={20} color="var(--text-primary)" />
+            <X size={18} color="var(--text-primary)" strokeWidth={1.3} />
           </button>
         </div>
 
@@ -202,7 +202,7 @@ export default function MenuDrawer() {
               {/* Botón para Restablecer filtros */}
               {hasActiveFilters && (
                 <button style={styles.clearButton} onClick={handleClearFilters}>
-                  <RotateCcw size={16} />
+                  <RotateCcw size={15} strokeWidth={1.3} />
                   <span>Limpiar Filtros del Catálogo</span>
                 </button>
               )}
@@ -218,9 +218,11 @@ export default function MenuDrawer() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '16px',
-                  backgroundColor: pathname === '/favorites' ? 'var(--accent-soft)' : '#FFFFFF',
-                  border: '1px solid rgba(0, 0, 0, 0.04)',
+                  padding: '14px 16px',
+                  backgroundColor: pathname === '/favorites' ? 'rgba(255, 94, 166, 0.04)' : '#FFFFFF',
+                  borderColor: pathname === '/favorites' ? '#FF5EA6' : 'rgba(0, 0, 0, 0.04)',
+                  borderStyle: 'solid',
+                  borderWidth: '1px',
                   cursor: 'pointer',
                   width: '100%',
                   textAlign: 'left',
@@ -233,26 +235,35 @@ export default function MenuDrawer() {
                 }}
                 className="menu-favorites-btn"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Heart size={20} color="#64748B" strokeWidth={1.5} fill={favorites.length > 0 ? "#94A3B8" : "none"} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Heart 
+                    size={18} 
+                    color={pathname === '/favorites' ? '#FF5EA6' : '#64748B'} 
+                    strokeWidth={1.3} 
+                    fill={pathname === '/favorites' ? '#FF5EA6' : (favorites.length > 0 ? "rgba(255, 94, 166, 0.15)" : "none")} 
+                  />
+                  <span style={{ 
+                    fontSize: '0.88rem', 
+                    fontWeight: pathname === '/favorites' ? '700' : '600', 
+                    color: pathname === '/favorites' ? '#FF5EA6' : 'var(--text-primary)' 
+                  }}>
                     Mis Favoritos
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {favorites.length > 0 ? (
                     <span style={{
-                      backgroundColor: '#64748B',
+                      backgroundColor: pathname === '/favorites' ? '#FF5EA6' : '#64748B',
                       color: '#FFFFFF',
-                      fontSize: '0.72rem',
+                      fontSize: '0.7rem',
                       fontWeight: '700',
                       padding: '2px 8px',
-                      borderRadius: '12px',
+                      borderRadius: '10px',
                     }}>
                       {favorites.length}
                     </span>
                   ) : (
-                    <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>0</span>
+                    <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>0</span>
                   )}
                 </div>
               </button>
@@ -264,10 +275,10 @@ export default function MenuDrawer() {
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <Layers size={18} color="#64748B" strokeWidth={1.5} />
+                    <Layers size={16} color="#64748B" strokeWidth={1.3} />
                     <span style={styles.sectionTitle}>Categorías</span>
                   </div>
-                  {isCategoriesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  {isCategoriesOpen ? <ChevronUp size={15} strokeWidth={1.3} /> : <ChevronDown size={15} strokeWidth={1.3} />}
                 </button>
 
                 {isCategoriesOpen && (
@@ -279,12 +290,20 @@ export default function MenuDrawer() {
                           <button 
                             style={{
                               ...styles.familyHeader,
-                              backgroundColor: isExpanded ? 'var(--accent-soft)' : 'transparent'
+                              backgroundColor: isExpanded ? 'rgba(255, 94, 166, 0.02)' : 'transparent'
                             }}
                             onClick={() => toggleFamily(fam.id)}
                           >
-                            <span style={styles.familyName}>{formatLabel(fam.name)}</span>
-                            {isExpanded ? <ChevronUp size={16} color="var(--accent-start)" /> : <ChevronDown size={16} />}
+                            <span style={{
+                              ...styles.familyName,
+                              color: isExpanded ? '#FF5EA6' : 'var(--text-primary)',
+                              fontWeight: isExpanded ? '700' : '600'
+                            }}>{formatLabel(fam.name)}</span>
+                            {isExpanded ? (
+                              <ChevronUp size={14} color="#FF5EA6" strokeWidth={1.3} />
+                            ) : (
+                              <ChevronDown size={14} color="#64748B" strokeWidth={1.3} />
+                            )}
                           </button>
 
                           {isExpanded && (
@@ -296,15 +315,20 @@ export default function MenuDrawer() {
                                     key={sub.id}
                                     style={{
                                       ...styles.subcategoryBtn,
-                                      color: isSubActive ? 'var(--accent-start)' : 'var(--text-primary)',
-                                      fontWeight: isSubActive ? '700' : '500'
+                                      color: isSubActive ? '#FF5EA6' : 'var(--text-primary)',
+                                      fontWeight: isSubActive ? '600' : '500',
+                                      backgroundColor: isSubActive ? 'rgba(255, 94, 166, 0.04)' : 'transparent',
+                                      padding: '8px 10px',
+                                      borderRadius: '10px'
                                     }}
                                     onClick={() => handleSelectSubcategory(sub.id, sub.name, fam.name)}
                                   >
                                     <div style={{
                                       ...styles.bulletDot,
-                                      backgroundColor: isSubActive ? 'var(--accent-start)' : 'transparent',
-                                      borderColor: isSubActive ? 'var(--accent-start)' : '#D1D5DB'
+                                      backgroundColor: isSubActive ? '#FF5EA6' : 'transparent',
+                                      borderColor: isSubActive ? '#FF5EA6' : '#D1D5DB',
+                                      width: '6px',
+                                      height: '6px'
                                     }} />
                                     <span>{formatLabel(sub.name)}</span>
                                   </button>
@@ -327,10 +351,10 @@ export default function MenuDrawer() {
                     onClick={() => setIsTagsOpen(!isTagsOpen)}
                   >
                     <div style={styles.sectionTitleGroup}>
-                      <Wand2 size={18} color="#64748B" strokeWidth={1.5} />
+                      <Wand2 size={16} color="#64748B" strokeWidth={1.3} />
                       <span style={styles.sectionTitle}>Preocupación / Necesidad</span>
                     </div>
-                    {isTagsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    {isTagsOpen ? <ChevronUp size={15} strokeWidth={1.3} /> : <ChevronDown size={15} strokeWidth={1.3} />}
                   </button>
 
                   {isTagsOpen && (
@@ -342,9 +366,10 @@ export default function MenuDrawer() {
                             key={tagItem.id}
                             style={{
                               ...styles.subcategoryBtn,
-                              color: isTagActive ? 'var(--accent-start)' : 'var(--text-primary)',
-                              fontWeight: isTagActive ? '700' : '500',
-                              padding: '10px 8px',
+                              color: isTagActive ? '#FF5EA6' : 'var(--text-primary)',
+                              fontWeight: isTagActive ? '600' : '500',
+                              backgroundColor: isTagActive ? 'rgba(255, 94, 166, 0.04)' : 'transparent',
+                              padding: '8px 10px',
                               textAlign: 'left',
                               display: 'flex',
                               alignItems: 'center',
@@ -354,14 +379,17 @@ export default function MenuDrawer() {
                               width: '100%',
                               cursor: 'pointer',
                               fontFamily: 'var(--font-body)',
-                              fontSize: '0.88rem'
+                              fontSize: '0.82rem',
+                              borderRadius: '10px'
                             }}
                             onClick={() => handleSelectTag(tagItem.etiqueta)}
                           >
                             <div style={{
                               ...styles.bulletDot,
-                              backgroundColor: isTagActive ? 'var(--accent-start)' : 'transparent',
-                              borderColor: isTagActive ? 'var(--accent-start)' : '#D1D5DB'
+                              backgroundColor: isTagActive ? '#FF5EA6' : 'transparent',
+                              borderColor: isTagActive ? '#FF5EA6' : '#D1D5DB',
+                              width: '6px',
+                              height: '6px'
                             }} />
                             <span>{tagItem.etiqueta}</span>
                           </button>
@@ -379,10 +407,10 @@ export default function MenuDrawer() {
                   onClick={() => setIsBrandsOpen(!isBrandsOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <Award size={18} color="#64748B" strokeWidth={1.5} />
+                    <Award size={16} color="#64748B" strokeWidth={1.3} />
                     <span style={styles.sectionTitle}>Marcas</span>
                   </div>
-                  {isBrandsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  {isBrandsOpen ? <ChevronUp size={15} strokeWidth={1.3} /> : <ChevronDown size={15} strokeWidth={1.3} />}
                 </button>
 
                 {isBrandsOpen && (
@@ -394,10 +422,10 @@ export default function MenuDrawer() {
                           key={brand.name}
                           style={{
                             ...styles.brandBtn,
-                            borderColor: isBrandActive ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
-                            backgroundColor: isBrandActive ? 'var(--accent-soft)' : '#FAF9F8',
-                            color: isBrandActive ? 'var(--accent-start)' : 'var(--text-primary)',
-                            fontWeight: isBrandActive ? '700' : '500'
+                            borderColor: isBrandActive ? '#FF5EA6' : 'rgba(142, 154, 167, 0.08)',
+                            backgroundColor: isBrandActive ? 'rgba(255, 94, 166, 0.04)' : '#F8FAFC',
+                            color: isBrandActive ? '#FF5EA6' : 'var(--text-primary)',
+                            fontWeight: isBrandActive ? '600' : '500'
                           }}
                           onClick={() => handleSelectBrand(brand.name)}
                         >
@@ -416,10 +444,10 @@ export default function MenuDrawer() {
                   onClick={() => setIsWarehousesOpen(!isWarehousesOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <MapPin size={18} color="#64748B" strokeWidth={1.5} />
+                    <MapPin size={16} color="#64748B" strokeWidth={1.3} />
                     <span style={styles.sectionTitle}>Nuestras Sedes</span>
                   </div>
-                  {isWarehousesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  {isWarehousesOpen ? <ChevronUp size={15} strokeWidth={1.3} /> : <ChevronDown size={15} strokeWidth={1.3} />}
                 </button>
 
                 {isWarehousesOpen && (
@@ -428,10 +456,10 @@ export default function MenuDrawer() {
                     <button
                       style={{
                         ...styles.warehouseBtn,
-                        borderColor: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
-                        backgroundColor: selectedWarehouse === 'all' ? 'var(--accent-soft)' : '#FAF9F8',
-                        color: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'var(--text-primary)',
-                        fontWeight: '500',
+                        borderColor: selectedWarehouse === 'all' ? '#FF5EA6' : 'rgba(142, 154, 167, 0.08)',
+                        backgroundColor: selectedWarehouse === 'all' ? 'rgba(255, 94, 166, 0.04)' : '#F8FAFC',
+                        color: selectedWarehouse === 'all' ? '#FF5EA6' : 'var(--text-primary)',
+                        fontWeight: '600',
                         marginBottom: '12px',
                         width: '100%',
                         justifyContent: 'center',
@@ -443,7 +471,7 @@ export default function MenuDrawer() {
                         setIsMenuOpen(false);
                       }}
                     >
-                      <MapPin size={14} />
+                      <MapPin size={14} strokeWidth={1.3} />
                       <span>Todas las Sedes (Consolidado)</span>
                     </button>
 
@@ -469,8 +497,8 @@ export default function MenuDrawer() {
                             }}
                             style={{
                               ...styles.regionSelectBtn,
-                              color: isRegionActive ? 'var(--accent-start)' : 'var(--text-primary)',
-                              fontWeight: isRegionActive ? '700' : '600'
+                              color: isRegionActive ? '#FF5EA6' : 'var(--text-primary)',
+                              fontWeight: isRegionActive ? '600' : '500'
                             }}
                           >
                             <span style={styles.regionTitleText}>{region}</span>
@@ -491,9 +519,9 @@ export default function MenuDrawer() {
                                   }}
                                   style={{
                                     ...styles.warehouseItemCard,
-                                    borderColor: isWarehouseActive ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.08)',
-                                    backgroundColor: isWarehouseActive ? 'var(--accent-soft)' : '#FFFFFF',
-                                    color: isWarehouseActive ? 'var(--accent-start)' : 'var(--text-primary)'
+                                    borderColor: isWarehouseActive ? '#FF5EA6' : 'rgba(142, 154, 167, 0.08)',
+                                    backgroundColor: isWarehouseActive ? 'rgba(255, 94, 166, 0.04)' : '#F8FAFC',
+                                    color: isWarehouseActive ? '#FF5EA6' : 'var(--text-primary)'
                                   }}
                                 >
                                   <span style={{
@@ -530,7 +558,7 @@ export default function MenuDrawer() {
             onClick={() => setIsMenuOpen(false)}
             style={styles.whatsappBtn}
           >
-            <Phone size={16} />
+            <Phone size={15} strokeWidth={1.3} />
             <span>Contacto WhatsApp</span>
           </a>
           <span style={styles.footerText}>© 2026 Tienda Gloss.</span>
