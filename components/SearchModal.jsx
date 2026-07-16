@@ -352,8 +352,7 @@ export default function SearchModal() {
       <div className="search-fullscreen-container">
         
         {/* Cabecera del Buscador */}
-        <div className="search-fullscreen-header">
-          <span className="search-header-title">Buscador Inteligente</span>
+        <div className="search-fullscreen-header" style={{ borderBottom: 'none', paddingBottom: '0', marginBottom: '16px', justifyContent: 'flex-end' }}>
           <button 
             className="search-close-btn" 
             onClick={() => {
@@ -361,8 +360,21 @@ export default function SearchModal() {
               setIsSearchOpen(false);
             }}
             title="Cerrar buscador"
+            style={{
+              backgroundColor: '#F1F5F9',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#64748B',
+              transition: 'all 0.2s',
+            }}
           >
-            <X size={22} />
+            <X size={20} />
           </button>
         </div>
 
@@ -372,25 +384,81 @@ export default function SearchModal() {
           {/* Controles de Entrada */}
           <div className="search-controls-wrapper">
             
-            {/* Input de Texto Manual */}
-            {!(isScannerActive || isScannerLoading) && (
-              <div className="search-input-wrapper">
-                <Search className="search-input-icon" size={20} />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Buscar cosméticos, marcas, colecciones..."
-                  value={localQuery}
-                  onChange={(e) => setLocalQuery(e.target.value)}
-                  className="search-large-input"
-                />
+            {/* Input de Texto Manual (Siempre visible) */}
+            <div className="search-input-wrapper">
+              <Search className="search-input-icon" size={20} />
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Buscar cosméticos, marcas, colecciones..."
+                value={localQuery}
+                onChange={(e) => {
+                  setLocalQuery(e.target.value);
+                  if (isScannerActive || isScannerLoading) {
+                    stopScanner();
+                  }
+                }}
+                className="search-large-input"
+                style={{ paddingRight: localQuery ? '88px' : '54px' }}
+              />
+              
+              <div style={{
+                position: 'absolute',
+                right: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
                 {localQuery && (
-                  <button className="search-clear-input-btn" onClick={() => setLocalQuery('')}>
-                    <X size={16} />
+                  <button 
+                    className="search-clear-input-btn-new" 
+                    onClick={() => {
+                      setLocalQuery('');
+                      if (inputRef.current) inputRef.current.focus();
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#9CA3AF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '4px',
+                      borderRadius: '50%',
+                      transition: 'color 0.2s',
+                    }}
+                    title="Limpiar texto"
+                  >
+                    <X size={18} />
                   </button>
                 )}
+                
+                <button 
+                  className={`search-input-scanner-btn ${(isScannerActive || isScannerLoading) ? 'active' : ''}`}
+                  onClick={handleToggleScanner}
+                  style={{
+                    background: (isScannerActive || isScannerLoading) ? 'rgba(255, 46, 147, 0.1)' : 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: (isScannerActive || isScannerLoading) ? '#FF2E93' : '#9CA3AF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '6px',
+                    borderRadius: '50%',
+                    transition: 'all 0.2s ease',
+                  }}
+                  title={(isScannerActive || isScannerLoading) ? 'Apagar escáner' : 'Escanear código de barras'}
+                >
+                  {isScannerLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <ScanBarcode size={20} />
+                  )}
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Mensajes de escaneo / Errores de escáner */}
             {scanMessage && (
@@ -436,19 +504,6 @@ export default function SearchModal() {
                 </button>
               </div>
             )}
-
-            {/* Botón Escáner / Cámara Toggle */}
-            <button 
-              className={`search-scanner-toggle-btn ${(isScannerActive || isScannerLoading) ? 'active' : ''}`}
-              onClick={handleToggleScanner}
-            >
-              {isScannerLoading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <ScanBarcode size={18} />
-              )}
-              <span>{(isScannerActive || isScannerLoading) ? 'Volver al buscador manual' : 'Escanear código de barras / QR'}</span>
-            </button>
           </div>
 
           <div className="search-results-area">
