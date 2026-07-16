@@ -726,30 +726,7 @@ export default function SearchModal() {
                   </div>
                 )}
 
-                {/* Acciones del Escaneo */}
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                  <button 
-                    className="soft-button" 
-                    style={{ flex: 1, height: '44px', borderRadius: '16px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC', color: '#475569', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
-                    onClick={() => {
-                      setScannedProductData(null);
-                      setLocalQuery('');
-                      setResults([]);
-                    }}
-                  >
-                    Volver a buscar
-                  </button>
-                  <button 
-                    className="soft-button" 
-                    style={{ flex: 1, height: '44px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF2E93, #D81B60)', color: '#FFFFFF', border: 'none', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
-                    onClick={async () => {
-                      setScannedProductData(null);
-                      await startScanner();
-                    }}
-                  >
-                    Escanear otro producto
-                  </button>
-                </div>
+
               </div>
             )}
 
