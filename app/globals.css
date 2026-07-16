@@ -804,6 +804,7 @@ a {
   .product-card-name {
     font-size: 0.98rem !important;
     min-height: 2.3em !important;
+    font-weight: 400 !important;
   }
   .product-card-desc {
     font-size: 0.72rem !important;
@@ -1598,4 +1599,9 @@ a {
   .home-promo-banner {
     height: 160px !important;
   }
+}
+
+/* Forzar que el nombre del producto en las tarjetas siempre sea regular/fino */
+.product-card-name {
+  font-weight: 400 !important;
 }

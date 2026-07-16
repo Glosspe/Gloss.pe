@@ -302,7 +302,7 @@ const styles = {
   productName: {
     fontFamily: 'var(--font-body), sans-serif',
     fontSize: '1.15rem',
-    fontWeight: '500',
+    fontWeight: '400', // Más delgado/fino a petición del usuario
     color: '#4B5563', // Aclarado a gris intermedio elegante
     lineHeight: '1.25',
     display: '-webkit-box',
