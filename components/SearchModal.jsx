@@ -634,7 +634,7 @@ export default function SearchModal() {
                       <div className="admin-skeleton" style={{ height: '24px', width: '100%', borderRadius: '8px' }} />
                       <div className="admin-skeleton" style={{ height: '24px', width: '100%', borderRadius: '8px' }} />
                       <span style={{ fontSize: '0.72rem', color: '#94A3B8', textAlign: 'center', display: 'block', marginTop: '4px' }}>
-                        Consultando stock al ERP en tiempo real...
+                        Verificando disponibilidad...
                       </span>
                     </div>
                   ) : (

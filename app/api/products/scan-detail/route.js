@@ -83,34 +83,46 @@ export async function GET(request) {
       }));
 
       try {
-        const pool = await getErpConnection();
-        if (pool && almacenes.length > 0) {
-          const request = pool.request();
-          request.timeout = 3500; // Limitar la consulta a un máximo de 3.5 segundos para evitar timeouts largos
-          request.input('codart', sql.VarChar(50), product.codart);
+        const erpPromise = (async () => {
+          const pool = await getErpConnection();
+          if (pool && almacenes.length > 0) {
+            const request = pool.request();
+            request.timeout = 2500; // Timeout de ejecución SQL de 2.5 segundos
+            request.input('codart', sql.VarChar(50), product.codart);
 
-          let queryParts = [];
-          almacenes.forEach(wh => {
-            queryParts.push(`(SELECT ISNULL(SUM(stoc), 0) FROM prd01${wh.codalm} WITH(nolock) WHERE codi = @codart) as stock_${wh.codalm}`);
-          });
+            let queryParts = [];
+            almacenes.forEach(wh => {
+              queryParts.push(`(SELECT ISNULL(SUM(stoc), 0) FROM prd01${wh.codalm} WITH(nolock) WHERE codi = @codart) as stock_${wh.codalm}`);
+            });
 
-          const queryStr = `SELECT ${queryParts.join(', ')}`;
-          const erpResult = await request.query(queryStr);
+            const queryStr = `SELECT ${queryParts.join(', ')}`;
+            const erpResult = await request.query(queryStr);
 
-          if (erpResult.recordset && erpResult.recordset.length > 0) {
-            const erpData = erpResult.recordset[0];
-            stocksByWarehouse = almacenes.map(wh => ({
-              codalm: wh.codalm,
-              nomalm: wh.nomalm,
-              stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
-            }));
-
-            // Guardar en la caché por 3 minutos (180 segundos) para búsquedas inmediatas subsecuentes
-            await cache.set(realCacheKey, stocksByWarehouse, 180);
+            if (erpResult.recordset && erpResult.recordset.length > 0) {
+              const erpData = erpResult.recordset[0];
+              return almacenes.map(wh => ({
+                codalm: wh.codalm,
+                nomalm: wh.nomalm,
+                stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
+              }));
+            }
           }
+          return null;
+        })();
+
+        // Promesa que se rechaza si se superan los 2.5 segundos de espera (incluyendo tiempo de conexión/VPN)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('ERP Connection/VPN Timeout')), 2500)
+        );
+
+        const result = await Promise.race([erpPromise, timeoutPromise]);
+        if (result) {
+          stocksByWarehouse = result;
+          // Guardar en la caché por 3 minutos (180 segundos)
+          await cache.set(realCacheKey, stocksByWarehouse, 180);
         }
       } catch (erpErr) {
-        console.warn('[API Scan Detail] Error de conexión al ERP local (onlyStock):', erpErr.message);
+        console.warn('[API Scan Detail] Fallback rápido a stock PostgreSQL (onlyStock):', erpErr.message);
         // Fallback: usar el stock consolidado de PostgreSQL
         stocksByWarehouse = almacenes.map(wh => ({
           codalm: wh.codalm,
