@@ -254,13 +254,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
-    color: '#0284C7', // Azul para combinar con el fondo celeste
+    color: '#15803D', // Verde menta oscuro
     fontSize: '0.72rem',
     fontWeight: '600',
     fontFamily: 'var(--font-body), sans-serif',
     padding: '4px 8px',
     borderRadius: '8px',
-    backgroundColor: '#E0F2FE', // Azul clarito bb / celeste suave
+    backgroundColor: '#DCFCE7', // Verde clarito bb / menta suave
     transition: 'all 0.2s',
     flexShrink: 0,
   },
