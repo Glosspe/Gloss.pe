@@ -188,6 +188,8 @@ export default function ProductDetailPage({ params }) {
     `Hola Gloss, estoy interesada en el producto: ${product.name}${productCodeText}.`
   )}`;
 
+  const cartCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+
   return (
     <div style={styles.pageWrapper}>
       {/* Cabecera Fija Simplificada */}
@@ -199,8 +201,16 @@ export default function ProductDetailPage({ params }) {
           <button style={styles.searchIconBtn} onClick={() => setIsSearchOpen(true)} title="Buscar o Escanear">
             <Search size={22} color="#475569" strokeWidth={1.3} />
           </button>
-          <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)} title="Ver Carrito">
-            <ShoppingCart size={22} color="#475569" strokeWidth={1.3} />
+          <button 
+            style={styles.cartButtonHighlight} 
+            onClick={() => setIsCartOpen(true)} 
+            title="Ver Carrito"
+            className="header-cart-btn-highlight"
+          >
+            <ShoppingCart size={18} color="#0284C7" strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <span style={styles.cartCountText}>{cartCount}</span>
+            )}
           </button>
         </div>
       </header>
@@ -554,6 +564,29 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     padding: 0,
+  },
+  cartButtonHighlight: {
+    height: '36px',
+    padding: '0 12px',
+    borderRadius: '10px',
+    backgroundColor: '#E0F2FE', // Celeste bebé muy suave
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    cursor: 'pointer',
+    transition: 'transform 0.2s ease, background-color 0.2s ease',
+    textDecoration: 'none',
+    border: 'none',
+    outline: 'none',
+    alignSelf: 'center',
+    minWidth: '44px',
+  },
+  cartCountText: {
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#0284C7',
+    fontFamily: 'var(--font-body), sans-serif',
   },
   centerContainer: {
     display: 'flex',
