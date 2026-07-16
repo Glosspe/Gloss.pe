@@ -1168,9 +1168,9 @@ a {
 }
 
 .search-large-input:focus {
-  border-color: #FF5CA6;
+  border-color: rgba(0, 0, 0, 0.15);
   background-color: #FFFFFF;
-  box-shadow: 0 0 0 4px rgba(255, 92, 166, 0.12);
+  box-shadow: none;
 }
 
 .search-clear-input-btn {

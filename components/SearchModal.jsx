@@ -386,7 +386,7 @@ export default function SearchModal() {
                 }}
                 title="Volver"
                 style={{
-                  backgroundColor: '#F1F5F9',
+                  background: 'none',
                   width: '44px',
                   height: '44px',
                   borderRadius: '50%',
