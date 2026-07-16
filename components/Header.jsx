@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, Menu, MapPin, ChevronDown } from 'lucide-react';
+import { Search, ShoppingBag, Menu, MapPin, ChevronDown, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SedesModal from './SedesModal';
 import Link from 'next/link';
@@ -94,6 +94,16 @@ export default function Header() {
               )}
             </button>
             
+            {/* Botón Mi Cuenta (Celeste Bebé) */}
+            <Link 
+              href="/profile" 
+              style={styles.profileButton}
+              className="header-profile-button"
+              title="Mi Cuenta"
+            >
+              <User size={20} color="#0284C7" />
+            </Link>
+
             {/* Botón Menú Desplegable */}
             <button 
               style={styles.iconButton} 
@@ -253,5 +263,20 @@ const styles = {
     backgroundColor: 'var(--accent-soft)',
     transition: 'all 0.2s',
     flexShrink: 0,
+  },
+  profileButton: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    backgroundColor: '#E0F2FE', // Celeste bebé muy suave (sky-100)
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'transform 0.2s ease, background-color 0.2s ease',
+    textDecoration: 'none',
+    border: 'none',
+    outline: 'none',
+    alignSelf: 'center',
   },
 };
