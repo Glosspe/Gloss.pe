@@ -1690,6 +1690,7 @@ a {
   max-height: 90% !important;
   object-fit: contain !important;
   border-radius: 12px !important;
+  mix-blend-mode: multiply; /* Fusión premium que elimina el fondo grisáceo de la foto del producto */
 }
 
 /* Información del producto (Textos más suaves, tipografía de menor escala) */

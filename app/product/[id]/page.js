@@ -654,6 +654,7 @@ const styles = {
     maxHeight: '100%',
     objectFit: 'contain',
     borderRadius: '20px',
+    mixBlendMode: 'multiply',
   },
   infoColumn: {
     display: 'flex',
