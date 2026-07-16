@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShoppingBag, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Search, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
@@ -33,7 +33,7 @@ export default function ProductDetailPage({ params }) {
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
 
-  const { cart, addToCart, toggleFavorite, favorites, setIsCartOpen, selectedWarehouse } = useCart();
+  const { cart, addToCart, toggleFavorite, favorites, setIsCartOpen, setIsSearchOpen, selectedWarehouse } = useCart();
 
   const [product, setProduct] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
@@ -191,9 +191,14 @@ export default function ProductDetailPage({ params }) {
         <Link href="/" style={styles.backBtn} title="Volver al catálogo">
           <ArrowLeft size={22} color="#334155" />
         </Link>
-        <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)}>
-          <ShoppingBag size={22} color="#334155" />
-        </button>
+        <div style={styles.rightActions}>
+          <button style={styles.searchIconBtn} onClick={() => setIsSearchOpen(true)} title="Buscar o Escanear">
+            <Search size={22} color="#334155" />
+          </button>
+          <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)} title="Ver Carrito">
+            <ShoppingBag size={22} color="#334155" />
+          </button>
+        </div>
       </header>
 
       {/* Contenedor de Ficha de Producto */}
@@ -513,15 +518,32 @@ const styles = {
     letterSpacing: '0.2em',
     textTransform: 'uppercase',
   },
+  rightActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  searchIconBtn: {
+    width: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+  },
   cartIconBtn: {
     width: '40px',
     height: '40px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     background: 'none',
     border: 'none',
     cursor: 'pointer',
+    padding: 0,
   },
   centerContainer: {
     display: 'flex',
