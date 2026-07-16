@@ -4,11 +4,29 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import { useCart } from '@/context/CartContext';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, ChevronRight, Home, X } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/lib/mocks';
 
 export default function HomePage() {
-  const { selectedCategory, searchQuery, selectedBrand, selectedCategoryLabel, selectedWarehouse, isInitialized } = useCart();
+  const { 
+    selectedCategory, 
+    setSelectedCategory,
+    selectedCategoryLabel,
+    setSelectedCategoryLabel,
+    searchQuery,
+    setSearchQuery,
+    selectedBrand,
+    setSelectedBrand,
+    selectedWarehouse, 
+    isInitialized 
+  } = useCart();
+
+  const clearAllFilters = () => {
+    setSelectedCategory('Trending');
+    setSelectedBrand('');
+    setSearchQuery('');
+    setSelectedCategoryLabel('');
+  };
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -110,6 +128,38 @@ export default function HomePage() {
           <span style={styles.offlineText}>
             Sincronización en curso con el almacén. Mostrando nuestro catálogo de respaldo.
           </span>
+        </div>
+      )}
+
+      {/* Barra de Ruta / Breadcrumbs (Filtro Activo) */}
+      {(selectedCategory !== 'Trending' || selectedBrand || searchQuery.trim() !== '') && (
+        <div style={styles.breadcrumbsContainer} className="home-breadcrumbs">
+          <button onClick={clearAllFilters} style={styles.breadcrumbLink} title="Regresar al Inicio">
+            <Home size={13} style={{ marginRight: '4px' }} />
+            <span>Inicio</span>
+          </button>
+          
+          <ChevronRight size={11} color="#94A3B8" style={{ margin: '0 4px', flexShrink: 0 }} />
+          
+          <span style={styles.breadcrumbActive}>
+            {searchQuery.trim() !== '' ? (
+              `Búsqueda: "${searchQuery}"`
+            ) : selectedBrand ? (
+              `Marca: ${selectedBrand}`
+            ) : selectedCategoryLabel ? (
+              selectedCategoryLabel
+            ) : (
+              selectedCategory
+            )}
+          </span>
+
+          <button 
+            onClick={clearAllFilters} 
+            style={styles.breadcrumbClearBtn} 
+            title="Quitar filtro y ver destacados"
+          >
+            <X size={10} color="#64748B" />
+          </button>
         </div>
       )}
 
@@ -271,5 +321,53 @@ const styles = {
     lineHeight: '1.6',
     color: '#6B7280',
     margin: 0,
+  },
+  breadcrumbsContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '800px',
+    margin: '0 auto',
+    padding: '16px 20px 0 20px',
+    fontFamily: 'var(--font-body), sans-serif',
+    position: 'relative',
+  },
+  breadcrumbLink: {
+    background: 'none',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    color: 'var(--accent-start)',
+    fontSize: '0.78rem',
+    fontWeight: '600',
+    fontFamily: 'var(--font-body), sans-serif',
+    padding: 0,
+    transition: 'color 0.2s',
+  },
+  breadcrumbActive: {
+    fontSize: '0.78rem',
+    fontWeight: '500',
+    color: '#475569',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: '220px',
+  },
+  breadcrumbClearBtn: {
+    background: 'none',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#94A3B8',
+    backgroundColor: '#F1F5F9',
+    width: '18px',
+    height: '18px',
+    borderRadius: '50%',
+    marginLeft: 'auto',
+    transition: 'all 0.2s',
+    padding: 0,
   },
 };
