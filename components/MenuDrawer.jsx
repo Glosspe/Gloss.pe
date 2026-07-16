@@ -574,7 +574,8 @@ const styles = {
     top: 0,
     left: 0,
     width: '100vw',
-    height: '100vh',
+    height: '100dvh', // Usar alto dinámico para evitar desbordes en navegadores móviles
+    maxHeight: '100dvh',
     backgroundColor: 'rgba(28, 42, 56, 0.4)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
@@ -587,10 +588,12 @@ const styles = {
     backgroundColor: '#FFFFFF',
     width: '100%',
     maxWidth: '310px',
-    height: '100vh',
+    height: '100dvh', // Usar alto dinámico para evitar desbordes en navegadores móviles
+    maxHeight: '100dvh',
     boxShadow: '-10px 0 40px rgba(165, 177, 194, 0.15)',
     display: 'flex',
     flexDirection: 'column',
+    overflow: 'hidden', // Asegurar que no haya scroll general
     transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
   },
   header: {
