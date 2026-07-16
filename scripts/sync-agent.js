@@ -91,6 +91,7 @@ async function runSync() {
         RTRIM(p01.codi) as id,
         RTRIM(p01.descr) as name,
         RTRIM(p01.marc) as brand,
+        RTRIM(p01.codf) as barcode,
         p01.pvns as price,
         RTRIM(s.nomsub) as category,
         ${stockExpression} as stock,

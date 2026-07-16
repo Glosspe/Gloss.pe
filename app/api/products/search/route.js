@@ -235,6 +235,7 @@ export async function GET(request) {
             { nombre: { contains: word, mode: 'insensitive' } },
             { marca: { contains: word, mode: 'insensitive' } },
             { codart: { contains: word, mode: 'insensitive' } },
+            { codbar: { contains: word, mode: 'insensitive' } },
             { descripcionEnriquecida: { contains: word, mode: 'insensitive' } }
           ]
         }));
@@ -245,7 +246,7 @@ export async function GET(request) {
 
     // Consultar PostgreSQL — excluir campos pesados en queries masivos para reducir uso de RAM
     const selectFields = topLimit > 200 ? {
-      codart: true, nombre: true, marca: true, precio: true, stock: true,
+      codart: true, codbar: true, nombre: true, marca: true, precio: true, stock: true,
       categoria: true, imagenes: true, visible: true, destacado: true,
       hasEquivalents: true
     } : undefined; // undefined = seleccionar todo
@@ -296,6 +297,8 @@ export async function GET(request) {
       return {
         id: p.codart,
         userCode: p.codart,
+        barcode: p.codbar || null,
+        codbar: p.codbar || null,
         name: formatProductName(p.nombre || ''),
         brand: p.marca || 'Importado',
         unit: 'UND',

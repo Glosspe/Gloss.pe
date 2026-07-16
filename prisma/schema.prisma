@@ -22,6 +22,7 @@ model WebUsuarioAdmin {
 model WebProductoImagen {
   id                    String   @id @default(uuid())
   codart                String   @unique // Código del artículo en Navasoft ERP (prd0101.codi)
+  codbar                String?  // Código de barras EAN-13 / UPC del ERP (prd0101.codf)
   imagenes              String   @db.Text // JSON string — puede contener data URIs Base64 o URLs
   descripcionEnriquecida String?  @db.Text // Descripción enriquecida para el e-commerce
   destacado             Boolean  @default(false)
