@@ -438,11 +438,11 @@ const styles = {
   bannerBadge: {
     fontSize: '0.62rem',
     fontWeight: '600', // Más fino
-    color: '#475569', // Gris pizarra elegante y neutro
+    color: '#FFFFFF', // Texto blanco
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '4px',
-    backgroundColor: '#F1F5F9', // Gris claro suave
+    backgroundColor: '#1E293B', // Fondo oscuro (gris carbón elegante)
     padding: '2px 8px',
     borderRadius: '6px',
     width: 'fit-content',
