@@ -737,11 +737,11 @@ a {
   height: 54px; /* Agrandado para celulares */
   min-width: 54px; /* Agrandado para celulares */
   border-radius: 50%;
-  border: none; /* Sin contorno */
-  background-color: #FFE6EC; /* Fondo rosa ultra suave */
+  border: 1px solid rgba(255, 46, 147, 0.15);
+  background-color: rgba(255, 46, 147, 0.05);
   cursor: pointer;
   outline: none;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .product-favorite-btn svg {
@@ -821,22 +821,37 @@ a {
 
 .product-favorite-btn:hover {
   transform: scale(1.08);
-  background-color: #FFD1DC; /* Relleno rosa un poco más marcado en hover */
+  background-color: rgba(255, 46, 147, 0.1);
+  border-color: rgba(255, 46, 147, 0.3);
 }
 
 .product-favorite-btn:active {
   transform: scale(0.92);
 }
 
-/* Cuando el favorito está activo — fondo rosado pastel con corazón blanco */
+/* Cuando el favorito está activo — fondo degradado oficial fucsia con corazón blanco */
 .product-favorite-btn.active {
-  background-color: #FF74A3;
-  border: none;
+  background: linear-gradient(135deg, #FF2E93, #D81B60) !important;
+  border-color: transparent !important;
 }
 
 .product-favorite-btn.active:hover {
-  background-color: #FF5088;
-  border: none;
+  background: linear-gradient(135deg, #FF5088, #D81B60) !important;
+  border-color: transparent !important;
+}
+
+.detail-fav-btn {
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.detail-fav-btn:hover {
+  transform: scale(1.06);
+  background-color: rgba(255, 46, 147, 0.08) !important;
+  border-color: rgba(255, 46, 147, 0.3) !important;
+}
+
+.detail-fav-btn:active {
+  transform: scale(0.95);
 }
 
 /* Select neumórfico premium */

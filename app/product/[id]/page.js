@@ -277,14 +277,18 @@ export default function ProductDetailPage({ params }) {
               <button 
                 style={{
                   ...styles.favBtn,
-                  backgroundColor: isFavorite ? '#FF74A3' : '#FFE6EC',
-                  border: 'none', // Quitar línea de contorno
+                  background: isFavorite ? 'linear-gradient(135deg, #FF2E93, #D81B60)' : 'none',
+                  backgroundColor: isFavorite ? 'transparent' : 'rgba(255, 46, 147, 0.05)',
+                  borderColor: isFavorite ? 'transparent' : 'rgba(255, 46, 147, 0.15)',
+                  borderStyle: 'solid',
+                  borderWidth: '1px',
                 }}
                 onClick={() => toggleFavorite(product)}
+                className="detail-fav-btn" // Para que herede efectos de hover/active
               >
                 <Heart 
                   size={20} 
-                  color={isFavorite ? '#FFFFFF' : '#FF74A3'} 
+                  color={isFavorite ? '#FFFFFF' : '#FF2E93'} 
                   fill={isFavorite ? '#FFFFFF' : 'none'} 
                 />
               </button>
