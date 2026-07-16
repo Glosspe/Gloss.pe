@@ -134,6 +134,21 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Banner Promocional Adaptativo (Cosmética y Cuidado Facial) */}
+      <div style={styles.bannerContainer} className="home-promo-banner">
+        <picture style={{ width: '100%', display: 'block' }}>
+          {/* Imagen para móviles (< 640px) */}
+          <source media="(max-width: 640px)" srcSet="/cosmetics_banner_mobile.png" />
+          {/* Imagen para PC y pantallas grandes */}
+          <img 
+            src="/cosmetics_banner_desktop.png" 
+            alt="Cosméticos y Cuidado Facial Gloss" 
+            style={styles.bannerImage}
+            className="banner-image-element"
+          />
+        </picture>
+      </div>
+
       {/* Barra de Ruta / Breadcrumbs (Filtro Activo) */}
       {(selectedCategory !== 'Trending' || selectedBrand || searchQuery.trim() !== '') && (
         <div style={styles.breadcrumbsContainer} className="home-breadcrumbs">
@@ -387,5 +402,21 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     maxWidth: '120px',
+  },
+  bannerContainer: {
+    width: 'calc(100% - 40px)',
+    maxWidth: '800px',
+    margin: '10px auto 16px auto',
+    borderRadius: '24px',
+    overflow: 'hidden',
+    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.04)',
+    border: '1px solid rgba(0, 0, 0, 0.03)',
+  },
+  bannerImage: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '380px',
+    objectFit: 'cover',
+    display: 'block',
   },
 };
