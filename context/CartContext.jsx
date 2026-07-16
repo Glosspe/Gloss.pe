@@ -15,6 +15,7 @@ export function CartProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
   const [selectedWarehouseName, setSelectedWarehouseName] = useState('Todas las sedes');
+  const [selectedWarehouseAddress, setSelectedWarehouseAddress] = useState('Stock consolidado');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -24,11 +25,13 @@ export function CartProvider({ children }) {
     const savedFavorites = localStorage.getItem('gloss_favorites');
     const savedWh = localStorage.getItem('gloss_selected_warehouse');
     const savedWhName = localStorage.getItem('gloss_selected_warehouse_name');
+    const savedWhAddress = localStorage.getItem('gloss_selected_warehouse_address');
     
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
     if (savedWh) setSelectedWarehouse(savedWh);
     if (savedWhName) setSelectedWarehouseName(savedWhName);
+    if (savedWhAddress) setSelectedWarehouseAddress(savedWhAddress);
     
     setIsInitialized(true); // Indicar que la restauración inicial está lista
   }, []);
@@ -52,8 +55,9 @@ export function CartProvider({ children }) {
     if (isInitialized) {
       localStorage.setItem('gloss_selected_warehouse', selectedWarehouse);
       localStorage.setItem('gloss_selected_warehouse_name', selectedWarehouseName);
+      localStorage.setItem('gloss_selected_warehouse_address', selectedWarehouseAddress);
     }
-  }, [selectedWarehouse, selectedWarehouseName, isInitialized]);
+  }, [selectedWarehouse, selectedWarehouseName, selectedWarehouseAddress, isInitialized]);
 
   const addToCart = (product, quantity = 1) => {
     setCart((prevCart) => {
@@ -142,6 +146,8 @@ export function CartProvider({ children }) {
         setSelectedWarehouse,
         selectedWarehouseName,
         setSelectedWarehouseName,
+        selectedWarehouseAddress,
+        setSelectedWarehouseAddress,
         isSearchOpen,
         setIsSearchOpen,
         isInitialized,

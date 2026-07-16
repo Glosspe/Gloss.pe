@@ -9,7 +9,8 @@ export default function SedesModal({ isOpen, onClose }) {
     selectedWarehouse, 
     setSelectedWarehouse, 
     selectedWarehouseName, 
-    setSelectedWarehouseName 
+    setSelectedWarehouseName,
+    setSelectedWarehouseAddress
   } = useCart();
 
   const [warehouses, setWarehouses] = useState([]);
@@ -58,9 +59,10 @@ export default function SedesModal({ isOpen, onClose }) {
       .join(' ');
   };
 
-  const handleSelect = (code, label) => {
+  const handleSelect = (code, label, address = '') => {
     setSelectedWarehouse(code);
     setSelectedWarehouseName(label);
+    setSelectedWarehouseAddress(address);
     onClose();
   };
 
@@ -99,7 +101,7 @@ export default function SedesModal({ isOpen, onClose }) {
                   backgroundColor: selectedWarehouse === 'all' ? 'var(--accent-soft)' : '#FAF9F8',
                   color: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'var(--text-primary)',
                 }}
-                onClick={() => handleSelect('all', 'Todas las sedes')}
+                onClick={() => handleSelect('all', 'Todas las sedes', 'Stock consolidado')}
               >
                 <div style={styles.globalBtnLeft}>
                   <Globe size={18} style={styles.optionIcon} />
@@ -121,7 +123,7 @@ export default function SedesModal({ isOpen, onClose }) {
                         ...styles.regionSelectLink,
                         color: selectedWarehouse === region ? 'var(--accent-start)' : 'var(--text-secondary)',
                       }}
-                      onClick={() => handleSelect(region, `Región: ${formatLabel(region)}`)}
+                      onClick={() => handleSelect(region, `Región: ${formatLabel(region)}`, 'Visualizando región')}
                     >
                       {selectedWarehouse === region ? '✓ Región Activa' : 'Ver todo en la región'}
                     </button>
@@ -138,7 +140,7 @@ export default function SedesModal({ isOpen, onClose }) {
                             borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
                             backgroundColor: isSelected ? 'var(--accent-soft)' : '#FFFFFF',
                           }}
-                          onClick={() => handleSelect(w.codalm, formatLabel(w.nomalm))}
+                          onClick={() => handleSelect(w.codalm, formatLabel(w.nomalm), formatLabel(w.direccion || ''))}
                         >
                           <div style={styles.cardHeader}>
                             <span style={{

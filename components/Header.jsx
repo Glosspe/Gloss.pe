@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, Menu, MapPin } from 'lucide-react';
+import { Search, ShoppingBag, Menu, MapPin, ChevronDown } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SedesModal from './SedesModal';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ export default function Header() {
     setIsCartOpen, 
     setIsMenuOpen, 
     selectedWarehouseName, 
+    selectedWarehouseAddress,
     setIsSearchOpen,
     setSelectedCategory,
     setSelectedBrand,
@@ -61,20 +62,12 @@ export default function Header() {
   return (
     <>
       <header style={headerStyle} className="gloss-header">
-        {/* Fila Superior Unificada: Logo, Sede, Buscar, Carrito, Menú */}
+        {/* Fila Superior Unificada: Logo, Buscar, Carrito, Menú */}
         <div style={styles.topRow}>
           <div style={styles.logoContainer}>
             <Link href="/" onClick={handleHomeClick} style={{ textDecoration: 'none' }}>
               <h2 style={styles.logoText} className="header-logo">GLOSS</h2>
             </Link>
-            <button 
-              onClick={() => setIsSedesModalOpen(true)} 
-              className="header-sede-btn"
-              title="Seleccionar Sede"
-            >
-              <MapPin size={11} color="var(--accent-start)" />
-              <span style={styles.sedeText}>{selectedWarehouseName}</span>
-            </button>
           </div>
           
           <div style={styles.actions}>
@@ -111,6 +104,30 @@ export default function Header() {
               <Menu size={24} color="#334155" className="header-icon-svg" />
             </button>
           </div>
+        </div>
+
+        {/* Fila Inferior: Selector de Sede y Dirección (Sub-header) */}
+        <div style={styles.addressBar} className="header-address-bar">
+          <div style={styles.addressBarLeft}>
+            <MapPin size={15} color="#94A3B8" style={{ marginRight: '6px', flexShrink: 0 }} />
+            <span style={styles.addressText} className="header-address-text">
+              <strong style={{ fontWeight: '600', color: '#1F2937' }}>{selectedWarehouseName}</strong>
+              {selectedWarehouseAddress && (
+                <span style={{ color: '#94A3B8', marginLeft: '6px', fontWeight: '400' }}>
+                  • {selectedWarehouseAddress}
+                </span>
+              )}
+            </span>
+          </div>
+          <button 
+            onClick={() => setIsSedesModalOpen(true)} 
+            style={styles.addressBarBtn}
+            className="header-address-btn"
+            title="Cambiar Dirección o Sede"
+          >
+            <span>Ver direcciones</span>
+            <ChevronDown size={13} style={{ marginLeft: '4px', flexShrink: 0 }} />
+          </button>
         </div>
       </header>
       <SedesModal isOpen={isSedesModalOpen} onClose={() => setIsSedesModalOpen(false)} />
@@ -194,5 +211,47 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     border: '2px solid var(--bg-primary)',
+  },
+  addressBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    padding: '8px 0 2px 0',
+    marginTop: '6px',
+    borderTop: '1px solid rgba(142, 154, 167, 0.08)',
+  },
+  addressBarLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    flex: 1,
+    paddingRight: '12px',
+  },
+  addressText: {
+    fontSize: '0.75rem',
+    fontFamily: 'var(--font-body), sans-serif',
+    color: '#1F2937',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  addressBarBtn: {
+    background: 'none',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    color: 'var(--accent-start)',
+    fontSize: '0.72rem',
+    fontWeight: '600',
+    fontFamily: 'var(--font-body), sans-serif',
+    padding: '4px 8px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--accent-soft)',
+    transition: 'all 0.2s',
+    flexShrink: 0,
   },
 };
