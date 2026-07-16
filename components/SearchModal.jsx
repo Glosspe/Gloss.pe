@@ -39,6 +39,7 @@ export default function SearchModal() {
   } = useCart();
   const [localQuery, setLocalQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [relatedResults, setRelatedResults] = useState([]); // Productos relacionados sugeridos
   const [isSearching, setIsSearching] = useState(false);
   const [isScannerActive, setIsScannerActive] = useState(false);
   const [isScannerLoading, setIsScannerLoading] = useState(false);
@@ -125,6 +126,7 @@ export default function SearchModal() {
     // Limpiar los filtros del cliente cuando cambia la consulta
     setSelectedBrandFilter('');
     setSelectedCategoryFilter('');
+    setRelatedResults([]); // Resetear relacionados previos
 
     if (!localQuery.trim()) {
       setResults([]);
@@ -142,8 +144,21 @@ export default function SearchModal() {
         const res = await fetch(`/api/products/search?q=${encodeURIComponent(localQuery)}`);
         if (res.ok) {
           const data = await res.json();
-          // La API de búsqueda retorna un array plano de productos
-          setResults(Array.isArray(data) ? data : (data.products || []));
+          const finalResults = Array.isArray(data) ? data : (data.products || []);
+          setResults(finalResults);
+
+          // Si la búsqueda no tiene resultados directos, obtener relacionados
+          if (finalResults.length === 0) {
+            try {
+              const resRel = await fetch(`/api/products/related?query=${encodeURIComponent(localQuery)}&limit=6`);
+              if (resRel.ok) {
+                const dataRel = await resRel.json();
+                setRelatedResults(dataRel);
+              }
+            } catch (errRel) {
+              console.error('[SearchModal] Error fetching related suggestions:', errRel);
+            }
+          }
         }
       } catch (err) {
         console.error('Error buscando productos:', err);
@@ -886,10 +901,47 @@ export default function SearchModal() {
 
             {/* 3. Búsqueda vacía manual */}
             {!isSearching && !scannedProductData && localQuery && results.length === 0 && (
-              <div className="search-empty-results">
-                <Sparkles size={36} color="#CBD5E1" />
-                <p>No encontramos ningún producto para "{localQuery}"</p>
-                <span>Intenta buscando por otra palabra clave o marca</span>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div className="search-empty-results" style={{ marginBottom: '8px' }}>
+                  <Sparkles size={36} color="#CBD5E1" />
+                  <p>No encontramos ningún producto para "{localQuery}"</p>
+                  <span>Intenta buscando por otra palabra clave o marca</span>
+                </div>
+
+                {relatedResults.length > 0 && (
+                  <div style={{ padding: '0 8px' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
+                      Productos relacionados recomendados
+                    </div>
+                    <div className="search-results-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {relatedResults.map((product) => (
+                        <div 
+                          key={product.id} 
+                          className="search-result-item-card"
+                          onClick={() => handleSelectProduct(product.id)}
+                        >
+                          <div className="result-img-wrapper">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                              src={product.image || 'https://via.placeholder.com/80?text=Gloss'} 
+                              alt={product.name} 
+                            />
+                          </div>
+                          <div className="result-details">
+                            <span className="result-brand">{product.brand || 'Gloss Beauty'}</span>
+                            <span className="result-name">{product.name}</span>
+                            {product.codart && (
+                              <span className="result-code">Cod: {product.codart}</span>
+                            )}
+                          </div>
+                          <div className="result-price-details">
+                            <span className="result-price-value">S/ {parseFloat(product.price || 0).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

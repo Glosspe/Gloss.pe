@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ShoppingCart, Search, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
+import ProductCard from '@/components/ProductCard';
 
 const getStockBadge = (stock, lowStockThreshold = 5) => {
   const qty = parseFloat(stock || 0);
@@ -41,6 +42,7 @@ export default function ProductDetailPage({ params }) {
   const [product, setProduct] = useState(null);
   const [equivalents, setEquivalents] = useState([]);
   const [crossSells, setCrossSells] = useState([]); // Venta cruzada dinámica
+  const [relatedProducts, setRelatedProducts] = useState([]); // Productos relacionados reales
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingEqui, setIsLoadingEqui] = useState(false);
   const [isLoadingCross, setIsLoadingCross] = useState(false); // Cargador venta cruzada
@@ -117,6 +119,25 @@ export default function ProductDetailPage({ params }) {
       fetchEquivalents();
     }
   }, [product, id, selectedWarehouse]);
+
+  // Fetch de productos relacionados reales
+  useEffect(() => {
+    async function fetchRelatedProducts() {
+      try {
+        const res = await fetch(`/api/products/related?id=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRelatedProducts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching related products:', err);
+      }
+    }
+
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product, id]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -486,6 +507,24 @@ export default function ProductDetailPage({ params }) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Sección de Productos Relacionados */}
+        {relatedProducts.length > 0 && (
+          <div style={styles.relatedSection}>
+            <div style={styles.relatedHeader}>
+              <h2 style={styles.relatedTitle}>Productos Relacionados</h2>
+              <p style={styles.relatedSubtitle}>
+                Descubre otros productos recomendados especialmente para ti:
+              </p>
+            </div>
+            
+            <div className="product-grid" style={{ padding: '8px 0' }}>
+              {relatedProducts.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
             </div>
           </div>
         )}
@@ -1128,5 +1167,32 @@ const styles = {
     backgroundColor: 'rgba(0,0,0,0.05)',
     color: 'var(--text-secondary)',
     cursor: 'not-allowed',
-  }
+  },
+  relatedSection: {
+    marginTop: '36px',
+    borderTop: '1px solid rgba(142, 154, 167, 0.08)',
+    paddingTop: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  relatedHeader: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  relatedTitle: {
+    fontFamily: 'var(--font-title)',
+    fontSize: '1.25rem',
+    fontWeight: '500',
+    color: 'var(--text-primary)',
+    margin: 0,
+    letterSpacing: '-0.01em',
+  },
+  relatedSubtitle: {
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.85rem',
+    color: 'var(--text-secondary)',
+    margin: 0,
+  },
 };
