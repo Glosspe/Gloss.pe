@@ -29,7 +29,14 @@ const playScanBeep = () => {
 
 export default function SearchModal() {
   const router = useRouter();
-  const { isSearchOpen, setIsSearchOpen, addToCart } = useCart();
+  const { 
+    isSearchOpen, 
+    setIsSearchOpen, 
+    addToCart, 
+    setSelectedBrand, 
+    setSelectedCategory, 
+    setSelectedCategoryLabel 
+  } = useCart();
   const [localQuery, setLocalQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -77,10 +84,29 @@ export default function SearchModal() {
 
   const handleShortcutClick = (shortcut) => {
     if (shortcut.tipo === 'QUERY') {
+      // Si es una consulta directa de texto (ej. "Tinte", "Ampolla")
       setLocalQuery(shortcut.texto);
       if (inputRef.current) inputRef.current.focus();
     } else {
-      router.push('/' + shortcut.enlace);
+      // Intentar extraer parámetros de búsqueda de 'enlace' para aplicarlos directamente al contexto
+      const enlace = shortcut.enlace || '';
+      const brandMatch = enlace.match(/[?&]brand=([^&]+)/i);
+      const categoryMatch = enlace.match(/[?&]category=([^&]+)/i);
+
+      if (brandMatch) {
+        const brandName = decodeURIComponent(brandMatch[1]);
+        setSelectedBrand(brandName);
+        setSelectedCategory('Todos'); // Resetear categoría para mostrar todos los productos de esa marca
+        setSelectedCategoryLabel('');
+      } else if (categoryMatch) {
+        const categoryId = decodeURIComponent(categoryMatch[1]);
+        setSelectedCategory(categoryId);
+        setSelectedCategoryLabel(shortcut.texto); // Asignar etiqueta legible (ej. "Cabello")
+        setSelectedBrand(''); // Resetear marca
+      }
+
+      // Redirigir a inicio (catálogo) y cerrar el buscador
+      router.push('/');
       setIsSearchOpen(false);
     }
   };
