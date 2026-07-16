@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Home, User, ShoppingBag } from 'lucide-react';
+import { User, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,43 +9,15 @@ import { usePathname } from 'next/navigation';
 export default function BottomBar() {
   const { 
     cartCount, 
-    setIsCartOpen,
-    setSelectedCategory,
-    setSelectedBrand,
-    setSearchQuery,
-    setSelectedCategoryLabel
+    setIsCartOpen
   } = useCart();
   const pathname = usePathname();
 
-  const isHomeActive = pathname === '/';
   const isProfileActive = pathname === '/profile';
-
-  const handleHomeClick = () => {
-    // Restablecer todos los filtros de búsqueda y categorías para volver a la Home limpia
-    setSelectedCategory('Trending');
-    setSelectedBrand('');
-    setSearchQuery('');
-    setSelectedCategoryLabel('');
-  };
 
   return (
     <div style={styles.container} className="mobile-only-bar">
       <nav style={styles.navBar}>
-        {/* Botón Home */}
-        <Link href="/" onClick={handleHomeClick} style={styles.navItem}>
-          <div style={{
-            ...styles.iconWrapper,
-            ...(isHomeActive ? styles.activeIcon : {})
-          }}>
-            <Home size={20} color={isHomeActive ? '#FFFFFF' : 'var(--text-secondary)'} />
-          </div>
-          <span style={{
-            ...styles.label,
-            color: isHomeActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-            fontWeight: isHomeActive ? '700' : '500'
-          }}>Inicio</span>
-        </Link>
-
         {/* Botón Bolsa (Carrito) */}
         <button onClick={() => setIsCartOpen(true)} style={styles.navItemBtn}>
           <div style={styles.iconWrapper}>
