@@ -145,6 +145,7 @@ export async function GET(request) {
     const productData = {
       id: product.codart,
       userCode: product.codart,
+      codbar: product.codbar || null,
       name: formatProductName(product.nombre || ''),
       brand: product.marca || 'Importado',
       unit: 'UND',

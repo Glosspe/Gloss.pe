@@ -311,10 +311,12 @@ export default function ProductDetailPage({ params }) {
               </p>
 
               <div style={styles.specsTable}>
-                <div style={styles.specRow}>
-                  <span style={styles.specKey}>Código de producto</span>
-                  <span style={styles.specValue}>{product.id}</span>
-                </div>
+                {product.codbar && (
+                  <div style={styles.specRow}>
+                    <span style={styles.specKey}>Código de barras</span>
+                    <span style={styles.specValue}>{product.codbar}</span>
+                  </div>
+                )}
                 <div style={styles.specRow}>
                   <span style={styles.specKey}>Unidad</span>
                   <span style={styles.specValue}>{product.unit}</span>
