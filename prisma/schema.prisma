@@ -37,6 +37,11 @@ model WebProductoImagen {
   sincronizadoEn        DateTime? // Última fecha de sincronización por lote
   fechaActualizacion    DateTime @updatedAt
 
+  @@index([visible])
+  @@index([destacado])
+  @@index([marca])
+  @@index([categoria])
+  @@index([codbar])
   @@map("web_producto_imagenes")
 }
 

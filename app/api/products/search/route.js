@@ -86,14 +86,14 @@ export async function GET(request) {
     }
 
     // Calcular el TTL dinámico para maximizar el aprovechamiento de Redis
-    let cacheTtl = 15; // 15 segundos por defecto para búsquedas de texto dinámicas (q)
+    let cacheTtl = 90; // 90 segundos para búsquedas de texto dinámicas (q)
     if (query.trim() === '') {
       if (category === 'Trending') {
         cacheTtl = 180; // 3 minutos para productos destacados de la Home
       } else if (category && category !== 'Todos') {
-        cacheTtl = 60; // 1 minuto para categorías fijas
+        cacheTtl = 120; // 2 minutos para categorías fijas
       } else {
-        cacheTtl = 45; // 45 segundos para el catálogo completo sin búsquedas
+        cacheTtl = 60; // 60 segundos para el catálogo completo sin búsquedas
       }
     }
 
@@ -106,11 +106,17 @@ export async function GET(request) {
 
     let lowStockThreshold = 5;
     try {
-      const thresholdConfig = await prisma.webGlobalConfig.findUnique({
-        where: { clave: 'LOW_STOCK_THRESHOLD' }
-      });
-      if (thresholdConfig && thresholdConfig.valor) {
-        lowStockThreshold = parseInt(thresholdConfig.valor || '5');
+      const cachedThreshold = await cache.get('low-stock-threshold');
+      if (cachedThreshold !== null) {
+        lowStockThreshold = cachedThreshold;
+      } else {
+        const thresholdConfig = await prisma.webGlobalConfig.findUnique({
+          where: { clave: 'LOW_STOCK_THRESHOLD' }
+        });
+        if (thresholdConfig && thresholdConfig.valor) {
+          lowStockThreshold = parseInt(thresholdConfig.valor || '5');
+        }
+        await cache.set('low-stock-threshold', lowStockThreshold, 180);
       }
     } catch (e) {
       console.warn('[API Products Search] Error cargando LOW_STOCK_THRESHOLD:', e.message);
@@ -119,10 +125,16 @@ export async function GET(request) {
     // Obtener categorías deshabilitadas
     let disabledCategories = [];
     try {
-      const catConfigs = await prisma.webCategoriaConfig.findMany({
-        where: { visible: false }
-      });
-      disabledCategories = catConfigs.map(c => c.categoria);
+      const cachedDisabled = await cache.get('disabled-categories');
+      if (cachedDisabled !== null) {
+        disabledCategories = cachedDisabled;
+      } else {
+        const catConfigs = await prisma.webCategoriaConfig.findMany({
+          where: { visible: false }
+        });
+        disabledCategories = catConfigs.map(c => c.categoria);
+        await cache.set('disabled-categories', disabledCategories, 120);
+      }
     } catch (pgErr) {
       console.warn('[API Products Search] Error cargando categorías deshabilitadas:', pgErr.message);
     }
@@ -130,23 +142,31 @@ export async function GET(request) {
     // Obtener etiquetas asociadas a los productos
     let productTagsMap = {};
     try {
-      const dbTags = await prisma.webProductTag.findMany({
-        where: { visible: true }
-      });
-      dbTags.forEach(t => {
-        let prods = [];
-        try {
-          prods = JSON.parse(t.productos || '[]');
-        } catch (errJson) {
-          prods = [];
-        }
-        prods.forEach(prodId => {
-          if (!productTagsMap[prodId]) {
-            productTagsMap[prodId] = [];
-          }
-          productTagsMap[prodId].push(t.etiqueta);
+      const cachedTags = await cache.get('product-tags-map');
+      if (cachedTags !== null) {
+        productTagsMap = cachedTags;
+      } else {
+        const dbTags = await prisma.webProductTag.findMany({
+          where: { visible: true }
         });
-      });
+        dbTags.forEach(t => {
+          let prods = [];
+          try {
+            prods = JSON.parse(t.productos || '[]');
+          } catch (errJson) {
+            prods = [];
+          }
+          prods.forEach(prodId => {
+            if (!productTagsMap[prodId]) {
+              productTagsMap[prodId] = [];
+            }
+            if (!productTagsMap[prodId].includes(t.etiqueta)) {
+              productTagsMap[prodId].push(t.etiqueta);
+            }
+          });
+        });
+        await cache.set('product-tags-map', productTagsMap, 120);
+      }
     } catch (e) {
       console.warn('[API Products Search] Error cargando etiquetas:', e.message);
     }
@@ -235,8 +255,7 @@ export async function GET(request) {
             { nombre: { contains: word, mode: 'insensitive' } },
             { marca: { contains: word, mode: 'insensitive' } },
             { codart: { contains: word, mode: 'insensitive' } },
-            { codbar: { contains: word, mode: 'insensitive' } },
-            { descripcionEnriquecida: { contains: word, mode: 'insensitive' } }
+            { codbar: { contains: word, mode: 'insensitive' } }
           ]
         }));
       }
