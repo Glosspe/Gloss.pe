@@ -279,9 +279,8 @@ export default function ProductDetailPage({ params }) {
               <button 
                 style={{
                   ...styles.favBtn,
-                  background: '#FFFFFF',
-                  border: '1px solid rgba(0, 0, 0, 0.04)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.015)',
+                  backgroundColor: 'rgba(255, 46, 147, 0.05)', // Rosa translúcido del catálogo
+                  border: 'none',
                 }}
                 onClick={() => toggleFavorite(product)}
                 className="detail-fav-btn" // Para que herede efectos de hover/active
@@ -734,7 +733,7 @@ const styles = {
     width: '48px',
     height: '48px',
     borderRadius: '50%', // Totalmente circular a juego con el diseño del catálogo
-    border: '1px solid',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
