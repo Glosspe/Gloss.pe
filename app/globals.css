@@ -96,9 +96,9 @@ html, body {
   box-shadow: 0 0 0 4px rgba(255, 46, 147, 0.15);
 }
 
-/* Botón neumórfico con color frambuesa vibrante de KOEC */
+/* Botón neumórfico con degradado que combina con el logo de la web */
 .soft-button {
-  background: #DE3B54; /* Frambuesa vibrante */
+  background: linear-gradient(135deg, #FF2E93, #D81B60);
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
@@ -107,24 +107,24 @@ html, body {
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: var(--button-shadow);
+  box-shadow: 0 4px 14px rgba(255, 46, 147, 0.2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 
 .soft-button:hover {
-  background: #C72E47; /* Frambuesa más oscuro */
+  filter: brightness(1.08); /* Brillo sutil */
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(222, 59, 84, 0.2);
+  box-shadow: 0 10px 24px rgba(255, 46, 147, 0.35);
 }
 
 .soft-button:active {
-  background: #C72E47;
+  filter: brightness(0.95);
   transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(222, 59, 84, 0.1);
+  box-shadow: 0 4px 10px rgba(255, 46, 147, 0.15);
 }
 
 .soft-button:disabled {
@@ -680,13 +680,13 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Frambuesa bebé premium de KOEC) */
+/* Botón Agregar al Carrito (Degradado que combina con el logo de la web) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-color: #DE3B54; /* Frambuesa vibrante */
+  background: linear-gradient(135deg, #FF2E93, #D81B60);
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -699,13 +699,13 @@ a {
   height: 54px; /* Agrandado para celulares */
   white-space: nowrap;
   letter-spacing: 0.01em;
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .product-add-to-cart-btn:hover {
-  background-color: #C72E47; /* Frambuesa un poco más oscuro al hover */
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(222, 59, 84, 0.35);
+  box-shadow: 0 6px 16px rgba(255, 46, 147, 0.35);
 }
 
 .product-add-to-cart-btn:active {
