@@ -183,8 +183,9 @@ export default function ProductDetailPage({ params }) {
 
   // Mensaje para WhatsApp utilizando el número corporativo configurado de forma dinámica
   const targetWhatsapp = product.whatsappNumber || '51900000000';
+  const productCodeText = product.codbar ? ` (Código de barras: ${product.codbar})` : '';
   const whatsappUrl = `https://wa.me/${targetWhatsapp}?text=${encodeURIComponent(
-    `Hola Gloss, estoy interesada en el producto: ${product.name} (Código: ${product.id}).`
+    `Hola Gloss, estoy interesada en el producto: ${product.name}${productCodeText}.`
   )}`;
 
   return (
