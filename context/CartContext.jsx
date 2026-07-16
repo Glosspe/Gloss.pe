@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
 
 const CartContext = createContext();
 
@@ -118,18 +119,19 @@ export function CartProvider({ children }) {
   };
 
   const toggleFavorite = (product) => {
-    let action = 'added';
+    // Calculamos el estado actual de favoritos de forma síncrona
+    const isCurrentlyFav = favorites.some((item) => item.id === product.id);
+    const action = isCurrentlyFav ? 'removed' : 'added';
+
+    // Actualizamos el estado de favoritos
     setFavorites((prevFavorites) => {
-      const isFav = prevFavorites.some((item) => item.id === product.id);
-      if (isFav) {
-        action = 'removed';
+      if (isCurrentlyFav) {
         return prevFavorites.filter((item) => item.id !== product.id);
       }
-      action = 'added';
       return [...prevFavorites, product];
     });
 
-    // Mostrar alerta superior de color oscuro bonito
+    // Mostrar alerta superior de color oscuro bonito (100% precisa en tiempo real)
     setFavNotification({
       show: true,
       message: action === 'added' ? 'Agregado a favoritos' : 'Eliminado de favoritos',
@@ -191,9 +193,21 @@ export function CartProvider({ children }) {
         <div style={toastStyles.overlay} className="fav-toast-animate">
           <div style={toastStyles.card}>
             {favNotification.type === 'added' ? (
-              <span style={toastStyles.heartIcon}>💖</span>
+              <Heart 
+                size={20} 
+                color="#FF5EA6" 
+                fill="#FF5EA6" 
+                strokeWidth={1.5} 
+                style={toastStyles.heartIconSvg} 
+              />
             ) : (
-              <span style={toastStyles.heartIcon}>💔</span>
+              <Heart 
+                size={20} 
+                color="#94A3B8" 
+                fill="none" 
+                strokeWidth={1.5} 
+                style={toastStyles.heartIconSvg} 
+              />
             )}
             <div style={toastStyles.textContainer}>
               <span style={toastStyles.title}>{favNotification.message}</span>
@@ -236,12 +250,12 @@ const toastStyles = {
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.08)',
   },
-  heartIcon: {
-    fontSize: '1.25rem',
+  heartIconSvg: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     animation: 'heartBeat 0.3s ease',
+    flexShrink: 0,
   },
   textContainer: {
     display: 'flex',
