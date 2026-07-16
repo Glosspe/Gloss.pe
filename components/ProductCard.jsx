@@ -146,19 +146,7 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
-      {/* ═══ ZONA DE INFORMACIÓN CLICKABLE (Solo descripción si existe) ═══ */}
-      {product.description && (
-        <Link 
-          href={`/product/${product.id}`} 
-          style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}
-        >
-          <div style={styles.infoZone}>
-            <p style={styles.descriptionLabel} className="product-card-desc">
-              {product.description}
-            </p>
-          </div>
-        </Link>
-      )}
+
 
       {/* ═══ FILA INFERIOR: BOTONES DE ACCIÓN ═══ */}
       <div style={styles.bottomRowJustButtons}>
