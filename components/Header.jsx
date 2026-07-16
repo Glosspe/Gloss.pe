@@ -69,7 +69,7 @@ export default function Header() {
             </Link>
             <button 
               onClick={() => setIsSedesModalOpen(true)} 
-              style={styles.sedeSelectorBtn}
+              className="header-sede-btn"
               title="Seleccionar Sede"
             >
               <MapPin size={11} color="var(--accent-start)" />
@@ -145,22 +145,7 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
   },
-  sedeSelectorBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    backgroundColor: '#FAF9F8',
-    border: '1px solid rgba(142, 154, 167, 0.1)',
-    borderRadius: '12px',
-    padding: '4px 8px',
-    cursor: 'pointer',
-    fontFamily: 'var(--font-body)',
-    fontSize: '0.72rem',
-    fontWeight: '500',
-    color: 'var(--text-secondary)',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  },
+
   sedeText: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',

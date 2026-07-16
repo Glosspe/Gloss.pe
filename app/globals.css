@@ -907,6 +907,37 @@ a {
   letter-spacing: 0.18em !important;
 }
 
+/* Botón Seleccionar Sede en Cabecera */
+.header-sede-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(255, 46, 147, 0.05) !important;
+  border: 1px solid rgba(255, 46, 147, 0.15) !important;
+  border-radius: 20px !important;
+  padding: 5px 12px !important;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: var(--accent-start) !important;
+  transition: all 0.2s ease;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(255, 46, 147, 0.03);
+}
+
+.header-sede-btn:hover {
+  background-color: rgba(255, 46, 147, 0.1) !important;
+  border-color: rgba(255, 46, 147, 0.3) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255, 46, 147, 0.07);
+}
+
+.header-sede-btn:active {
+  transform: translateY(0);
+  background-color: rgba(255, 46, 147, 0.12) !important;
+}
+
 .header-icon-button {
   width: 32px !important;
   height: 32px !important;
