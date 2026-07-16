@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getErpConnection } from '@/lib/db';
 import prisma from '@/lib/prisma';
 import sql from 'mssql';
+import cache from '@/lib/cache';
 
 // Helper para formatear nombres de productos
 function formatProductName(name) {
@@ -42,6 +43,14 @@ export async function GET(request) {
 
     // Si el cliente solicita únicamente el stock en tiempo real del ERP
     if (onlyStock) {
+      // 1. Verificar si el stock de este producto ya está en caché (por código original ingresado)
+      const cacheKey = `scan-stocks-${productId.trim()}`;
+      const cachedStocks = await cache.get(cacheKey);
+      if (cachedStocks) {
+        return NextResponse.json({ stocks: cachedStocks });
+      }
+
+      // Buscar el producto en la base de datos PostgreSQL
       const product = await prisma.webProductoImagen.findFirst({
         where: {
           OR: [
@@ -53,6 +62,13 @@ export async function GET(request) {
 
       if (!product) {
         return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+      }
+
+      // Volver a verificar con su codart real (por si se buscó por código de barra inicialmente)
+      const realCacheKey = `scan-stocks-${product.codart}`;
+      const realCachedStocks = await cache.get(realCacheKey);
+      if (realCachedStocks) {
+        return NextResponse.json({ stocks: realCachedStocks });
       }
 
       const almacenes = await prisma.webAlmacenConfig.findMany({
@@ -70,6 +86,7 @@ export async function GET(request) {
         const pool = await getErpConnection();
         if (pool && almacenes.length > 0) {
           const request = pool.request();
+          request.timeout = 3500; // Limitar la consulta a un máximo de 3.5 segundos para evitar timeouts largos
           request.input('codart', sql.VarChar(50), product.codart);
 
           let queryParts = [];
@@ -87,10 +104,14 @@ export async function GET(request) {
               nomalm: wh.nomalm,
               stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
             }));
+
+            // Guardar en la caché por 3 minutos (180 segundos) para búsquedas inmediatas subsecuentes
+            await cache.set(realCacheKey, stocksByWarehouse, 180);
           }
         }
       } catch (erpErr) {
         console.warn('[API Scan Detail] Error de conexión al ERP local (onlyStock):', erpErr.message);
+        // Fallback: usar el stock consolidado de PostgreSQL
         stocksByWarehouse = almacenes.map(wh => ({
           codalm: wh.codalm,
           nomalm: wh.nomalm,
@@ -181,42 +202,54 @@ export async function GET(request) {
     });
 
     // 4. Consultar stock detallado por almacén en el ERP (Retrocompatible)
-    let stocksByWarehouse = almacenes.map(wh => ({
-      codalm: wh.codalm,
-      nomalm: wh.nomalm,
-      stock: 0
-    }));
-
-    try {
-      const pool = await getErpConnection();
-      if (pool && almacenes.length > 0) {
-        const request = pool.request();
-        request.input('codart', sql.VarChar(50), product.codart);
-
-        let queryParts = [];
-        almacenes.forEach(wh => {
-          queryParts.push(`(SELECT ISNULL(SUM(stoc), 0) FROM prd01${wh.codalm} WITH(nolock) WHERE codi = @codart) as stock_${wh.codalm}`);
-        });
-
-        const queryStr = `SELECT ${queryParts.join(', ')}`;
-        const erpResult = await request.query(queryStr);
-
-        if (erpResult.recordset && erpResult.recordset.length > 0) {
-          const erpData = erpResult.recordset[0];
-          stocksByWarehouse = almacenes.map(wh => ({
-            codalm: wh.codalm,
-            nomalm: wh.nomalm,
-            stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
-          }));
-        }
-      }
-    } catch (erpErr) {
-      console.warn('[API Scan Detail] Error de conexión al ERP local, usando stock consolidado:', erpErr.message);
+    const realCacheKey = `scan-stocks-${product.codart}`;
+    const cachedStocks = await cache.get(realCacheKey);
+    
+    let stocksByWarehouse = [];
+    if (cachedStocks) {
+      stocksByWarehouse = cachedStocks;
+    } else {
       stocksByWarehouse = almacenes.map(wh => ({
         codalm: wh.codalm,
         nomalm: wh.nomalm,
-        stock: wh.codalm === '01' ? parseFloat(product.stock || 0) : 0
+        stock: 0
       }));
+
+      try {
+        const pool = await getErpConnection();
+        if (pool && almacenes.length > 0) {
+          const request = pool.request();
+          request.timeout = 3500; // Limitar a 3.5 segundos
+          request.input('codart', sql.VarChar(50), product.codart);
+
+          let queryParts = [];
+          almacenes.forEach(wh => {
+            queryParts.push(`(SELECT ISNULL(SUM(stoc), 0) FROM prd01${wh.codalm} WITH(nolock) WHERE codi = @codart) as stock_${wh.codalm}`);
+          });
+
+          const queryStr = `SELECT ${queryParts.join(', ')}`;
+          const erpResult = await request.query(queryStr);
+
+          if (erpResult.recordset && erpResult.recordset.length > 0) {
+            const erpData = erpResult.recordset[0];
+            stocksByWarehouse = almacenes.map(wh => ({
+              codalm: wh.codalm,
+              nomalm: wh.nomalm,
+              stock: parseFloat(erpData[`stock_${wh.codalm}`] || 0)
+            }));
+
+            // Guardar en la caché
+            await cache.set(realCacheKey, stocksByWarehouse, 180);
+          }
+        }
+      } catch (erpErr) {
+        console.warn('[API Scan Detail] Error de conexión al ERP local, usando stock consolidado:', erpErr.message);
+        stocksByWarehouse = almacenes.map(wh => ({
+          codalm: wh.codalm,
+          nomalm: wh.nomalm,
+          stock: wh.codalm === '01' ? parseFloat(product.stock || 0) : 0
+        }));
+      }
     }
 
     return NextResponse.json({
