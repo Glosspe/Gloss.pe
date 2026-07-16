@@ -240,7 +240,7 @@ export default function MenuDrawer() {
                     size={18} 
                     color={pathname === '/favorites' ? '#FF5EA6' : '#64748B'} 
                     strokeWidth={1.3} 
-                    fill={pathname === '/favorites' ? '#FF5EA6' : (favorites.length > 0 ? "rgba(255, 94, 166, 0.15)" : "none")} 
+                    fill={pathname === '/favorites' ? '#FF5EA6' : 'none'} 
                   />
                   <span style={{ 
                     fontSize: '0.88rem', 
