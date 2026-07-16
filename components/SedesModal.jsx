@@ -72,7 +72,7 @@ export default function SedesModal({ isOpen, onClose }) {
         {/* Encabezado */}
         <div style={styles.header}>
           <div style={styles.headerTitleGroup}>
-            <MapPin size={20} color="var(--accent-start)" />
+            <MapPin size={20} color="#16A34A" />
             <h3 style={styles.title}>Selecciona tu Sede</h3>
           </div>
           <button style={styles.closeBtn} onClick={onClose} aria-label="Cerrar modal">
@@ -97,9 +97,9 @@ export default function SedesModal({ isOpen, onClose }) {
               <button
                 style={{
                   ...styles.globalBtn,
-                  borderColor: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.12)',
-                  backgroundColor: selectedWarehouse === 'all' ? 'var(--accent-soft)' : '#FAF9F8',
-                  color: selectedWarehouse === 'all' ? 'var(--accent-start)' : 'var(--text-primary)',
+                  borderColor: selectedWarehouse === 'all' ? '#16A34A' : 'rgba(142, 154, 167, 0.12)',
+                  backgroundColor: selectedWarehouse === 'all' ? '#F0FDF4' : '#FAF9F8',
+                  color: selectedWarehouse === 'all' ? '#16A34A' : 'var(--text-primary)',
                 }}
                 onClick={() => handleSelect('all', 'Todas las sedes', 'Stock consolidado')}
               >
@@ -110,7 +110,7 @@ export default function SedesModal({ isOpen, onClose }) {
                     <span style={styles.btnSub}>Muestra el inventario total unificado</span>
                   </div>
                 </div>
-                {selectedWarehouse === 'all' && <Check size={18} color="var(--accent-start)" />}
+                {selectedWarehouse === 'all' && <Check size={18} color="#16A34A" />}
               </button>
 
               {/* Listado agrupado por regiones */}
@@ -121,7 +121,7 @@ export default function SedesModal({ isOpen, onClose }) {
                     <button
                       style={{
                         ...styles.regionSelectLink,
-                        color: selectedWarehouse === region ? 'var(--accent-start)' : 'var(--text-secondary)',
+                        color: selectedWarehouse === region ? '#16A34A' : 'var(--text-secondary)',
                       }}
                       onClick={() => handleSelect(region, `Región: ${formatLabel(region)}`, 'Visualizando región')}
                     >
@@ -137,20 +137,20 @@ export default function SedesModal({ isOpen, onClose }) {
                           key={w.codalm}
                           style={{
                             ...styles.warehouseCard,
-                            borderColor: isSelected ? 'var(--accent-start)' : 'rgba(142, 154, 167, 0.1)',
-                            backgroundColor: isSelected ? 'var(--accent-soft)' : '#FFFFFF',
+                            borderColor: isSelected ? '#16A34A' : 'rgba(142, 154, 167, 0.1)',
+                            backgroundColor: isSelected ? '#F0FDF4' : '#FFFFFF',
                           }}
                           onClick={() => handleSelect(w.codalm, formatLabel(w.nomalm), formatLabel(w.direccion || ''))}
                         >
                           <div style={styles.cardHeader}>
                             <span style={{
                               ...styles.cardName,
-                              color: isSelected ? 'var(--accent-start)' : 'var(--text-primary)',
+                              color: isSelected ? '#16A34A' : 'var(--text-primary)',
                               fontWeight: isSelected ? '600' : '500',
                             }}>
                               {formatLabel(w.nomalm)}
                             </span>
-                            {isSelected && <Check size={16} color="var(--accent-start)" />}
+                            {isSelected && <Check size={16} color="#16A34A" />}
                           </div>
                           {w.direccion && (
                             <span style={styles.cardAddress}>
@@ -254,7 +254,7 @@ const styles = {
     width: '28px',
     height: '28px',
     border: '3px solid rgba(142, 154, 167, 0.1)',
-    borderTopColor: 'var(--accent-start)',
+    borderTopColor: '#16A34A',
     borderRadius: '50%',
   },
   loaderText: {
