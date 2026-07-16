@@ -47,6 +47,7 @@ export default function SearchModal() {
   const inputRef = useRef(null);
   const html5QrCodeRef = useRef(null);
   const searchDebounceRef = useRef(null);
+  const isSearchOpenRef = useRef(isSearchOpen);
 
   // Resaltado de coincidencia del término de búsqueda
   const highlightText = (text, query) => {
@@ -131,11 +132,21 @@ export default function SearchModal() {
     };
   }, [localQuery]);
 
-  // Limpiar y detener escáner al desmontar o cerrar
+  // Sincronizar el Ref y detener escáner incondicionalmente al cerrar o desmontar
   useEffect(() => {
-    if (!isSearchOpen && isScannerActive) {
+    isSearchOpenRef.current = isSearchOpen;
+    if (!isSearchOpen) {
       stopScanner();
     }
+    return () => {
+      // Al desmontar, apagar físicamente el stream para liberar la cámara
+      if (html5QrCodeRef.current) {
+        const scanner = html5QrCodeRef.current;
+        if (scanner.isScanning) {
+          scanner.stop().catch(err => console.error('Error deteniendo cámara al desmontar:', err));
+        }
+      }
+    };
   }, [isSearchOpen]);
 
   // Encender/apagar cámara escáner
@@ -195,6 +206,18 @@ export default function SearchModal() {
           // Callback silencioso por frame
         }
       );
+
+      // COMPROBACIÓN CRÍTICA: Si el usuario cerró el modal mientras la cámara estaba inicializándose, detenerla de inmediato.
+      if (!isSearchOpenRef.current) {
+        console.log('[Scanner Race Condition] El modal se cerró durante la carga. Liberando cámara...');
+        if (html5QrCode.isScanning) {
+          await html5QrCode.stop().catch(() => {});
+        }
+        html5QrCodeRef.current = null;
+        setIsScannerActive(false);
+        setIsScannerLoading(false);
+        return;
+      }
 
       setIsScannerActive(true);
     } catch (err) {
