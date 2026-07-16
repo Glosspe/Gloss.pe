@@ -3,7 +3,7 @@
 import React from 'react';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/ProductCard';
-import { ArrowLeft, ShoppingBag, Menu, Heart } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Menu, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FavoritesPage() {
@@ -28,10 +28,14 @@ export default function FavoritesPage() {
           
           <div style={styles.actions}>
             {/* Carrito */}
-            <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-              <ShoppingBag size={22} color="#475569" strokeWidth={1.5} />
+            <button 
+              style={styles.cartButtonHighlight} 
+              onClick={() => setIsCartOpen(true)}
+              title="Ver Carrito"
+            >
+              <ShoppingCart size={18} color="#0284C7" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span style={styles.badge}>{cartCount}</span>
+                <span style={styles.cartCountText}>{cartCount}</span>
               )}
             </button>
             
@@ -143,6 +147,29 @@ const styles = {
     transition: 'transform 0.2s ease',
     outline: 'none',
     padding: 0,
+  },
+  cartButtonHighlight: {
+    height: '36px',
+    padding: '0 12px',
+    borderRadius: '10px',
+    backgroundColor: '#E0F2FE', // Celeste bebé muy suave
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    cursor: 'pointer',
+    transition: 'transform 0.2s ease, background-color 0.2s ease',
+    textDecoration: 'none',
+    border: 'none',
+    outline: 'none',
+    alignSelf: 'center',
+    minWidth: '44px',
+  },
+  cartCountText: {
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#0284C7',
+    fontFamily: 'var(--font-body), sans-serif',
   },
   badge: {
     position: 'absolute',
