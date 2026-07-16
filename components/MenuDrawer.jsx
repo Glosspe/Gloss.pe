@@ -779,7 +779,7 @@ const styles = {
     justifyContent: 'center',
     gap: '8px',
     padding: '12px 20px',
-    backgroundColor: 'var(--accent-gradient)',
+    backgroundColor: '#25D366', // Verde oficial de WhatsApp plano
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '16px',
@@ -787,8 +787,9 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
     fontFamily: 'var(--font-body)',
-    boxShadow: 'var(--button-shadow)',
+    boxShadow: '0 4px 14px rgba(37, 211, 102, 0.25)', // Sombra verde suave a juego
     transition: 'transform 0.2s ease',
+    textDecoration: 'none', // Evita subrayado de enlace
   },
   footerText: {
     fontSize: '0.65rem',
