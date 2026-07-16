@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Search, ScanBarcode, Zap, ZapOff, Loader2, Sparkles } from 'lucide-react';
+import { X, Search, ScanBarcode, Zap, ZapOff, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -351,56 +351,55 @@ export default function SearchModal() {
     <div className="search-fullscreen-overlay">
       <div className="search-fullscreen-container">
         
-        {/* Cabecera del Buscador */}
-        <div className="search-fullscreen-header" style={{ borderBottom: 'none', paddingBottom: '0', marginBottom: '16px', justifyContent: 'flex-end' }}>
-          <button 
-            className="search-close-btn" 
-            onClick={() => {
-              stopScanner();
-              setIsSearchOpen(false);
-            }}
-            title="Cerrar buscador"
-            style={{
-              backgroundColor: '#F1F5F9',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#64748B',
-              transition: 'all 0.2s',
-            }}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
         {/* Cuerpo del Buscador */}
-        <div className="search-fullscreen-body">
+        <div className="search-fullscreen-body" style={{ paddingTop: '8px' }}>
           
           {/* Controles de Entrada */}
-          <div className="search-controls-wrapper">
+          <div className="search-controls-wrapper" style={{ gap: '12px' }}>
             
-            {/* Input de Texto Manual (Siempre visible) */}
-            <div className="search-input-wrapper">
-              <Search className="search-input-icon" size={20} />
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Buscar cosméticos, marcas, colecciones..."
-                value={localQuery}
-                onChange={(e) => {
-                  setLocalQuery(e.target.value);
-                  if (isScannerActive || isScannerLoading) {
-                    stopScanner();
-                  }
+            {/* Fila superior unificada: Botón de Regresar + Barra de búsqueda */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+              <button 
+                onClick={() => {
+                  stopScanner();
+                  setIsSearchOpen(false);
                 }}
-                className="search-large-input"
-                style={{ paddingRight: localQuery ? '88px' : '54px' }}
-              />
+                title="Volver"
+                style={{
+                  backgroundColor: '#F1F5F9',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748B',
+                  transition: 'all 0.2s',
+                  flexShrink: 0
+                }}
+              >
+                <ArrowLeft size={22} />
+              </button>
+              
+              {/* Input de Texto Manual (Siempre visible) */}
+              <div className="search-input-wrapper" style={{ flex: 1 }}>
+                <Search className="search-input-icon" size={20} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Buscar cosméticos, marcas, colecciones..."
+                  value={localQuery}
+                  onChange={(e) => {
+                    setLocalQuery(e.target.value);
+                    if (isScannerActive || isScannerLoading) {
+                      stopScanner();
+                    }
+                  }}
+                  className="search-large-input"
+                  style={{ paddingRight: localQuery ? '88px' : '54px' }}
+                />
               
               <div style={{
                 position: 'absolute',
@@ -459,8 +458,9 @@ export default function SearchModal() {
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* Mensajes de escaneo / Errores de escáner */}
+          {/* Mensajes de escaneo / Errores de escáner */}
             {scanMessage && (
               <div className={`scan-message-banner ${scanMessage.type}`}>
                 <span>{scanMessage.text}</span>
