@@ -294,10 +294,13 @@ export default function ProductDetailPage({ params }) {
               </button>
             </div>
 
-            {/* Consultar por WhatsApp */}
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="whatsapp-btn">
-              <Phone size={16} /> Consultar por WhatsApp
-            </a>
+            {/* Consultar por WhatsApp (Estilo enlace premium) */}
+            <div style={styles.whatsappConsultation}>
+              <Phone size={13} color="#16A34A" strokeWidth={1.3} />
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={styles.whatsappConsultationLink}>
+                ¿Tienes dudas? Escríbenos por WhatsApp
+              </a>
+            </div>
 
             {/* Ficha técnica y Descripción */}
             <div style={styles.descriptionBox}>
@@ -331,9 +334,9 @@ export default function ProductDetailPage({ params }) {
             </div>
 
             {/* Grid de Productos del Kit */}
-            <div style={styles.kitGrid}>
+            <div style={styles.kitGrid} className="product-detail-kit-grid">
               {/* Tarjeta del Producto Principal */}
-              <div style={styles.kitItemCard}>
+              <div style={styles.kitItemCard} className="product-detail-kit-item-card">
                 <div style={styles.kitItemImageContainer}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={product.image} alt={product.name} style={styles.kitItemImage} />
@@ -356,7 +359,7 @@ export default function ProductDetailPage({ params }) {
                   <React.Fragment key={item.id}>
                     <div style={styles.kitPlusSymbol}>+</div>
                     
-                    <div style={styles.kitItemCard}>
+                    <div style={styles.kitItemCard} className="product-detail-kit-item-card">
                       <div style={styles.kitItemImageContainer}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.image} alt={item.name} style={styles.kitItemImage} />
@@ -432,11 +435,11 @@ export default function ProductDetailPage({ params }) {
               </p>
             </div>
             
-            <div style={styles.crossSellGrid}>
+            <div style={styles.crossSellGrid} className="product-detail-cross-sell-grid">
               {crossSells.map((item) => {
                 const isAdded = addedItems[item.id];
                 return (
-                  <div key={item.id} style={styles.crossSellCard}>
+                  <div key={item.id} style={styles.crossSellCard} className="product-detail-cross-sell-card">
                     <Link href={`/product/${item.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <div style={styles.crossSellImgWrapper}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -455,7 +458,7 @@ export default function ProductDetailPage({ params }) {
                           onClick={() => handleAddEquivalentToCart(item)}
                           style={{
                             ...styles.crossSellAddBtn,
-                            backgroundColor: isAdded ? '#22C55E' : 'var(--accent-start)',
+                            backgroundColor: isAdded ? '#22C55E' : '#FF5EA6',
                           }}
                           className="soft-button"
                         >
@@ -736,6 +739,21 @@ const styles = {
     transition: 'all 0.2s',
   },
 
+  whatsappConsultation: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    margin: '12px 0 4px 0',
+    padding: '4px 0',
+  },
+  whatsappConsultationLink: {
+    fontSize: '0.82rem',
+    fontWeight: '600',
+    color: '#16A34A',
+    textDecoration: 'none',
+    borderBottom: '1px dashed rgba(22, 163, 74, 0.4)',
+    transition: 'opacity 0.2s',
+  },
   descriptionBox: {
     borderTop: '1px solid rgba(142, 154, 167, 0.08)',
     paddingTop: '16px',
@@ -753,22 +771,21 @@ const styles = {
   descriptionText: {
     fontSize: '0.88rem',
     color: 'var(--text-secondary)',
-    lineHeight: '1.45',
+    lineHeight: '1.55',
   },
   specsTable: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
     marginTop: '12px',
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    padding: '12px 16px',
-    borderRadius: '18px',
-    border: '1px solid rgba(0, 0, 0, 0.04)',
+    borderTop: '1px solid rgba(0, 0, 0, 0.03)',
   },
   specRow: {
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center',
     fontSize: '0.8rem',
+    padding: '8px 0',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.03)',
   },
   specKey: {
     color: 'var(--text-secondary)',

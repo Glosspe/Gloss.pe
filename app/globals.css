@@ -1724,13 +1724,83 @@ a {
   color: var(--text-primary) !important;
 }
 
-/* Consultar por WhatsApp */
-.product-detail-info-column .whatsapp-btn {
-  margin-top: 12px !important;
-  padding: 10px 16px !important;
-  font-size: 0.85rem !important;
-  border-radius: 14px !important;
-  width: auto !important;
-  display: inline-flex !important;
-  align-self: flex-start !important;
+/* Kits de Rutina responsivos */
+.product-detail-kit-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+@media (min-width: 768px) {
+  .product-detail-kit-grid {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+}
+
+.product-detail-kit-item-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  border-radius: 16px !important;
+  padding: 10px !important;
+  background-color: #FFFFFF !important;
+  transition: transform 0.2s ease !important;
+}
+
+.product-detail-kit-item-card:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Venta Cruzada horizontal en celulares y grilla en PC */
+.product-detail-cross-sell-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  gap: 14px !important;
+  padding: 8px 4px 16px 4px !important;
+  scroll-snap-type: x mandatory !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Ocultar barra de scroll tosca pero permitir scroll */
+.product-detail-cross-sell-grid::-webkit-scrollbar {
+  height: 4px !important;
+}
+.product-detail-cross-sell-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 10px !important;
+}
+
+.product-detail-cross-sell-card {
+  flex: 0 0 180px !important; /* Ancho fijo para scroll en móvil */
+  scroll-snap-align: start !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  border-radius: 16px !important;
+  background-color: #FFFFFF !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  transition: transform 0.2s ease !important;
+}
+
+.product-detail-cross-sell-card:hover {
+  transform: translateY(-2px) !important;
+}
+
+@media (min-width: 768px) {
+  .product-detail-cross-sell-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    overflow-x: visible !important;
+    scroll-snap-type: none !important;
+    padding: 0 !important;
+  }
+  
+  .product-detail-cross-sell-card {
+    flex: unset !important;
+  }
 }
