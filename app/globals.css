@@ -98,7 +98,7 @@ html, body {
 
 /* Botón neumórfico con degradado que combina con el logo de la web */
 .soft-button {
-  background: linear-gradient(135deg, #FF2E93, #D81B60);
+  background: linear-gradient(135deg, #FFA3B7 0%, #FF8EAD 100%); /* Rosa bebé premium */
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
@@ -107,7 +107,7 @@ html, body {
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(255, 46, 147, 0.2);
+  box-shadow: 0 4px 14px rgba(255, 142, 173, 0.2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -118,13 +118,13 @@ html, body {
 .soft-button:hover {
   filter: brightness(1.08); /* Brillo sutil */
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(255, 46, 147, 0.35);
+  box-shadow: 0 10px 24px rgba(255, 142, 173, 0.35);
 }
 
 .soft-button:active {
   filter: brightness(0.95);
   transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(255, 46, 147, 0.15);
+  box-shadow: 0 4px 10px rgba(255, 142, 173, 0.15);
 }
 
 .soft-button:disabled {
@@ -680,13 +680,13 @@ a {
   width: auto;
 }
 
-/* Botón Agregar al Carrito (Degradado que combina con el logo de la web) */
+/* Botón Agregar al Carrito (Rosa Bebé Premium) */
 .product-add-to-cart-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  background: linear-gradient(135deg, #FF2E93, #D81B60);
+  background: linear-gradient(135deg, #FFA3B7 0%, #FF8EAD 100%); /* Rosa bebé premium */
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
@@ -705,7 +705,7 @@ a {
 .product-add-to-cart-btn:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 46, 147, 0.35);
+  box-shadow: 0 6px 16px rgba(255, 142, 173, 0.35);
 }
 
 .product-add-to-cart-btn:active {
