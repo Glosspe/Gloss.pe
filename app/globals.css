@@ -1588,3 +1588,14 @@ a {
 .search-shortcut-pill:active {
   transform: translateY(0);
 }
+
+/* ═══ Estilos responsivos del Banner Híbrido ═══ */
+.home-promo-banner {
+  height: 120px; /* Móvil por defecto */
+}
+
+@media (min-width: 640px) {
+  .home-promo-banner {
+    height: 160px !important;
+  }
+}

@@ -134,19 +134,29 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Banner Promocional Adaptativo (Cosmética y Cuidado Facial) */}
+      {/* Banner Promocional Híbrido (Cosmética y Cuidado Facial) */}
       <div style={styles.bannerContainer} className="home-promo-banner">
-        <picture style={{ width: '100%', display: 'block' }}>
-          {/* Imagen para móviles (< 640px) */}
-          <source media="(max-width: 640px)" srcSet="/cosmetics_banner_mobile.png" />
-          {/* Imagen para PC y pantallas grandes */}
-          <img 
-            src="/cosmetics_banner_desktop.png" 
-            alt="Cosméticos y Cuidado Facial Gloss" 
-            style={styles.bannerImage}
-            className="banner-image-element"
-          />
-        </picture>
+        {/* Lado Izquierdo: Textos */}
+        <div style={styles.bannerTextContent}>
+          <span style={styles.bannerBadge}>Cosmética & Cuidado</span>
+          <h2 style={styles.bannerTitle}>Tu rutina de brillo diario</h2>
+          <p style={styles.bannerSubtitle}>Encuentra las mejores marcas y fórmulas para tu piel</p>
+        </div>
+
+        {/* Lado Derecho: Imagen decorativa fusionada */}
+        <div style={styles.bannerImageWrapper}>
+          <picture style={{ width: '100%', height: '100%', display: 'block' }}>
+            {/* Imagen optimizada para móviles */}
+            <source media="(max-width: 640px)" srcSet="/cosmetics_banner_mobile.png" />
+            {/* Imagen para PC y pantallas grandes */}
+            <img 
+              src="/cosmetics_banner_desktop.png" 
+              alt="Cosméticos y Cuidado Facial" 
+              style={styles.bannerImage}
+            />
+          </picture>
+          <div style={styles.bannerOverlayGrad} />
+        </div>
       </div>
 
       {/* Barra de Ruta / Breadcrumbs (Filtro Activo) */}
@@ -407,16 +417,74 @@ const styles = {
     width: 'calc(100% - 40px)',
     maxWidth: '800px',
     margin: '10px auto 16px auto',
-    borderRadius: '24px',
+    borderRadius: '20px',
     overflow: 'hidden',
-    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.04)',
-    border: '1px solid rgba(0, 0, 0, 0.03)',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #FFF1F2 0%, #FFF5F7 60%, #F0FDF4 100%)', // Degradado premium rosa y verde bebé
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.03)',
+    border: '1px solid rgba(0, 0, 0, 0.02)',
+  },
+  bannerTextContent: {
+    flex: 1,
+    padding: '16px 20px',
+    zIndex: 2,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    maxWidth: '65%', // Evita que los textos pisen la imagen de la derecha
+  },
+  bannerBadge: {
+    fontSize: '0.62rem',
+    fontWeight: '700',
+    color: 'var(--accent-start)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    marginBottom: '4px',
+    backgroundColor: 'rgba(255, 46, 147, 0.08)',
+    padding: '2px 8px',
+    borderRadius: '6px',
+    width: 'fit-content',
+    fontFamily: 'var(--font-body), sans-serif',
+  },
+  bannerTitle: {
+    fontSize: '1.05rem',
+    fontWeight: '700',
+    color: '#1E293B',
+    margin: '0 0 2px 0',
+    fontFamily: 'var(--font-title), sans-serif',
+    lineHeight: '1.2',
+  },
+  bannerSubtitle: {
+    fontSize: '0.72rem',
+    fontWeight: '500',
+    color: '#64748B',
+    margin: 0,
+    lineHeight: '1.3',
+    fontFamily: 'var(--font-body), sans-serif',
+  },
+  bannerImageWrapper: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: '45%',
+    height: '100%',
+    zIndex: 1,
   },
   bannerImage: {
     width: '100%',
-    height: 'auto',
-    maxHeight: '380px',
+    height: '100%',
     objectFit: 'cover',
+    objectPosition: 'center right',
     display: 'block',
+  },
+  bannerOverlayGrad: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(to right, #FFF5F7 10%, rgba(255, 245, 247, 0.6) 50%, transparent 100%)', // Difuminado para integrar la foto con los textos
   },
 };
