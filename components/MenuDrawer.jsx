@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin, Heart } from 'lucide-react';
+import { X, Phone, ChevronDown, ChevronUp, Tag, Grid, RotateCcw, Loader2, MapPin, Heart, Layers, Wand2, Award } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -234,7 +234,7 @@ export default function MenuDrawer() {
                 className="menu-favorites-btn"
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Heart size={20} color="var(--accent-start)" fill={favorites.length > 0 ? "var(--accent-start)" : "none"} />
+                  <Heart size={20} color="#64748B" strokeWidth={1.5} fill={favorites.length > 0 ? "#94A3B8" : "none"} />
                   <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                     Mis Favoritos
                   </span>
@@ -242,7 +242,7 @@ export default function MenuDrawer() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {favorites.length > 0 ? (
                     <span style={{
-                      backgroundColor: 'var(--accent-start)',
+                      backgroundColor: '#64748B',
                       color: '#FFFFFF',
                       fontSize: '0.72rem',
                       fontWeight: '700',
@@ -264,7 +264,7 @@ export default function MenuDrawer() {
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <Grid size={18} color="var(--accent-start)" />
+                    <Layers size={18} color="#64748B" strokeWidth={1.5} />
                     <span style={styles.sectionTitle}>Categorías</span>
                   </div>
                   {isCategoriesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -327,7 +327,7 @@ export default function MenuDrawer() {
                     onClick={() => setIsTagsOpen(!isTagsOpen)}
                   >
                     <div style={styles.sectionTitleGroup}>
-                      <Tag size={18} color="var(--accent-start)" />
+                      <Wand2 size={18} color="#64748B" strokeWidth={1.5} />
                       <span style={styles.sectionTitle}>Preocupación / Necesidad</span>
                     </div>
                     {isTagsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -379,7 +379,7 @@ export default function MenuDrawer() {
                   onClick={() => setIsBrandsOpen(!isBrandsOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <Tag size={18} color="var(--accent-start)" />
+                    <Award size={18} color="#64748B" strokeWidth={1.5} />
                     <span style={styles.sectionTitle}>Marcas</span>
                   </div>
                   {isBrandsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -416,7 +416,7 @@ export default function MenuDrawer() {
                   onClick={() => setIsWarehousesOpen(!isWarehousesOpen)}
                 >
                   <div style={styles.sectionTitleGroup}>
-                    <MapPin size={18} color="var(--accent-start)" />
+                    <MapPin size={18} color="#64748B" strokeWidth={1.5} />
                     <span style={styles.sectionTitle}>Nuestras Sedes</span>
                   </div>
                   {isWarehousesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
