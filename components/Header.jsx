@@ -265,9 +265,9 @@ const styles = {
     flexShrink: 0,
   },
   profileButton: {
-    width: '36px',
+    width: '44px',
     height: '36px',
-    borderRadius: '50%',
+    borderRadius: '10px',
     backgroundColor: '#E0F2FE', // Celeste bebé muy suave (sky-100)
     display: 'flex',
     alignItems: 'center',
