@@ -154,71 +154,36 @@ export default function SearchModal() {
     setIsFlashOn(false);
 
     try {
-      // 1. Validar primero si el navegador tiene soporte básico para APIs de media
+      // 1. Validar soporte básico de APIs de cámara
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Su navegador no soporta el acceso a la cámara.');
       }
 
-      // 2. FORZAR LA SOLICITUD DE PERMISOS NATIVA AL USUARIO
-      // Esto gatilla el popup estándar "gloss.pe quiere acceder a tu cámara" en iOS y Android.
-      let stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        // Detener inmediatamente el stream temporal para liberar el dispositivo y apagar el lente
-        stream.getTracks().forEach(track => track.stop());
-      } catch (permissionErr) {
-        console.error('El usuario denegó los permisos de cámara:', permissionErr);
-        throw new Error('PERMISO_DENEGADO');
-      }
-
-      // Pequeño timeout para asegurar que el elemento DOM para renderizar la cámara ya esté montado
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      // Pequeño timeout para asegurar que el elemento DOM ya esté montado
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const html5QrCode = new Html5Qrcode('scanner-viewport');
       html5QrCodeRef.current = html5QrCode;
 
-      // 3. Una vez que ya tenemos permisos otorgados por getUserMedia,
-      // podemos listar con getCameras() de forma 100% segura para identificar la cámara trasera
-      let cameraSelection = { facingMode: 'environment' };
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          // Elegir la trasera buscando palabras clave en su etiqueta
-          const backCamera = devices.find(d => 
-            d.label.toLowerCase().includes('back') || 
-            d.label.toLowerCase().includes('rear') || 
-            d.label.toLowerCase().includes('trasera')
-          );
-          if (backCamera) {
-            cameraSelection = backCamera.id;
-          } else if (devices.length > 1) {
-            cameraSelection = devices[devices.length - 1].id;
-          } else {
-            cameraSelection = devices[0].id;
-          }
-        }
-      } catch (camListErr) {
-        console.warn('No se pudo enumerar las cámaras con getCameras(), usando facingMode por defecto:', camListErr);
-      }
-
       const config = {
-        fps: 15,
+        fps: 20, // Mayor tasa de frames para escaneo instantáneo
         qrbox: (width, height) => {
-          const boxWidth = Math.min(width * 0.8, 300);
-          const boxHeight = Math.min(height * 0.4, 160);
+          // Cuadro rectangular optimizado para códigos de barra horizontales
+          const boxWidth = Math.min(width * 0.85, 320);
+          const boxHeight = Math.min(height * 0.35, 140);
           return { width: boxWidth, height: boxHeight };
-        },
-        aspectRatio: 1.0,
+        }
       };
 
+      // 2. Iniciar la cámara trasera directamente en un solo paso
       await html5QrCode.start(
-        cameraSelection,
+        { facingMode: 'environment' },
         config,
         async (decodedText, decodedResult) => {
           // Escaneo exitoso!
           playScanBeep();
           
-          // Detener el escáner inmediatamente para evitar procesamientos duplicados
+          // Detener el escáner de inmediato
           await stopScanner();
 
           setScanMessage({ type: 'success', text: `Código detectado: ${decodedText}. Buscando...` });
@@ -227,7 +192,7 @@ export default function SearchModal() {
           await handleProcessScannedCode(decodedText);
         },
         (errorMessage) => {
-          // Callback de error por cada frame analizado
+          // Callback silencioso por frame
         }
       );
 
@@ -238,10 +203,8 @@ export default function SearchModal() {
       // Validar si el sitio se está sirviendo por HTTP inseguro
       if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         setScannerError('El acceso a la cámara requiere una conexión segura HTTPS. Por favor, ingresa usando la URL HTTPS.');
-      } else if (err.message === 'PERMISO_DENEGADO') {
-        setScannerError('Permiso de cámara denegado. Por favor, ve a la configuración de tu navegador y concede permisos de cámara para este sitio web.');
       } else {
-        setScannerError('No pudimos acceder a tu cámara. Por favor, asegúrate de conceder permisos de cámara en tu navegador e intenta de nuevo.');
+        setScannerError('Permiso denegado o cámara no disponible. Por favor, concede permisos en tu navegador e intenta de nuevo.');
       }
       setIsScannerActive(false);
     } finally {
