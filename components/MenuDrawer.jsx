@@ -32,7 +32,7 @@ export default function MenuDrawer() {
   const [warehouses, setWarehouses] = useState([]);
   const [tags, setTags] = useState([]); // Etiquetas de preocupación
   const [activeFamily, setActiveFamily] = useState(null); // ID de familia desplegada
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
   const [isTagsOpen, setIsTagsOpen] = useState(false); // Acordeón de etiquetas
   const [isWarehousesOpen, setIsWarehousesOpen] = useState(false);
@@ -587,7 +587,7 @@ const styles = {
     backgroundColor: '#FFFFFF',
     width: '100%',
     maxWidth: '310px',
-    height: '100%',
+    height: '100vh',
     boxShadow: '-10px 0 40px rgba(165, 177, 194, 0.15)',
     display: 'flex',
     flexDirection: 'column',
@@ -771,6 +771,8 @@ const styles = {
     gap: '10px',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+    flexShrink: 0,
+    width: '100%',
   },
   whatsappBtn: {
     width: '100%',
