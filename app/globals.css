@@ -98,7 +98,7 @@ html, body {
 
 /* Botón neumórfico con degradado que combina con el logo de la web */
 .soft-button {
-  background: linear-gradient(135deg, #FF6B9B 0%, #FF4F81 100%); /* Rosado cosmética chic */
+  background-color: #FF4F81; /* Rosado cosmética chic plano (sin degradados) */
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
@@ -686,7 +686,7 @@ a {
   align-items: center;
   justify-content: center;
   flex: 1;
-  background: linear-gradient(135deg, #FF6B9B 0%, #FF4F81 100%); /* Rosado cosmética chic */
+  background-color: #FF4F81;
   color: #FFFFFF;
   font-family: var(--font-body), sans-serif;
   font-size: 1.05rem; /* Agrandado para celulares */
