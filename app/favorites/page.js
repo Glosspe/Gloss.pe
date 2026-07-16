@@ -83,7 +83,7 @@ const styles = {
     minHeight: '100vh',
     backgroundColor: 'var(--bg-primary)',
     paddingTop: '68px', // Compensa el Header fijo
-    paddingBottom: '80px', // Espacio para el BottomBar móvil
+    paddingBottom: '20px',
   },
   header: {
     position: 'fixed',
