@@ -630,7 +630,7 @@ const styles = {
   brandLabel: {
     fontSize: '0.72rem',
     fontWeight: '600',
-    color: '#FF5EA6', // Rosa pastel unificado
+    color: '#8E9AA7', // Gris azulado suave sofisticado
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
   },
