@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, Menu, MapPin, ChevronDown, User } from 'lucide-react';
+import { Search, ShoppingCart, Menu, MapPin, ChevronDown, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SedesModal from './SedesModal';
 import Link from 'next/link';
@@ -81,27 +81,27 @@ export default function Header() {
               <Search size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
             </button>
 
-            {/* Botón Bolsa (Carrito) */}
+            {/* Botón Carrito (Con fondo Celeste Bebé) */}
             <button 
-              style={styles.iconButton} 
+              style={styles.cartButtonHighlight} 
               className="header-cart-button" 
               onClick={() => setIsCartOpen(true)}
               title="Ver Carrito"
             >
-              <ShoppingBag size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
+              <ShoppingCart size={20} color="#0284C7" strokeWidth={1.5} className="header-icon-svg" />
               {cartCount > 0 && (
-                <span style={styles.badge} className="header-cart-badge">{cartCount}</span>
+                <span style={styles.cartCountText} className="header-cart-count-text">{cartCount}</span>
               )}
             </button>
             
-            {/* Botón Mi Cuenta (Celeste Bebé) */}
+            {/* Botón Mi Cuenta (Plano) */}
             <Link 
               href="/profile" 
-              style={styles.profileButton}
+              style={styles.iconButton}
               className="header-profile-button"
               title="Mi Cuenta"
             >
-              <User size={20} color="#0284C7" strokeWidth={1.5} className="header-icon-svg" />
+              <User size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
             </Link>
 
             {/* Botón Menú Desplegable */}
@@ -264,19 +264,27 @@ const styles = {
     transition: 'all 0.2s',
     flexShrink: 0,
   },
-  profileButton: {
-    width: '44px',
+  cartButtonHighlight: {
     height: '36px',
+    padding: '0 12px',
     borderRadius: '10px',
-    backgroundColor: '#E0F2FE', // Celeste bebé muy suave (sky-100)
+    backgroundColor: '#E0F2FE', // Celeste bebé muy suave
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '6px',
     cursor: 'pointer',
     transition: 'transform 0.2s ease, background-color 0.2s ease',
     textDecoration: 'none',
     border: 'none',
     outline: 'none',
     alignSelf: 'center',
+    minWidth: '44px',
+  },
+  cartCountText: {
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#0284C7',
+    fontFamily: 'var(--font-body), sans-serif',
   },
 };
