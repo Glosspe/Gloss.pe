@@ -254,13 +254,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
-    color: '#15803D', // Verde menta oscuro
+    color: '#16A34A', // Verde salvia suave y claro
     fontSize: '0.72rem',
     fontWeight: '600',
     fontFamily: 'var(--font-body), sans-serif',
     padding: '4px 8px',
     borderRadius: '8px',
-    backgroundColor: '#DCFCE7', // Verde clarito bb / menta suave
+    backgroundColor: '#F0FDF4', // Verde menta blanquecino ultra clarito
     transition: 'all 0.2s',
     flexShrink: 0,
   },
