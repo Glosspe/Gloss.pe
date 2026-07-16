@@ -286,8 +286,8 @@ export default function ProductDetailPage({ params }) {
               >
                 <Heart 
                   size={20} 
-                  color={isFavorite ? '#FF4F81' : '#FF5EA6'} 
-                  fill={isFavorite ? '#FF4F81' : 'none'} 
+                  color="#FF5EA6" 
+                  fill={isFavorite ? '#FF5EA6' : 'none'} 
                   strokeWidth={1.5}
                 />
               </button>
