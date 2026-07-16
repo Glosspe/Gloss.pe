@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShoppingBag, Search, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Search, Plus, Minus, Heart, Phone, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
@@ -189,38 +189,39 @@ export default function ProductDetailPage({ params }) {
       {/* Cabecera Fija Simplificada */}
       <header style={styles.header}>
         <Link href="/" style={styles.backBtn} title="Volver al catálogo">
-          <ArrowLeft size={22} color="#475569" strokeWidth={1.5} />
+          <ArrowLeft size={22} color="#475569" strokeWidth={1.3} />
         </Link>
         <div style={styles.rightActions}>
           <button style={styles.searchIconBtn} onClick={() => setIsSearchOpen(true)} title="Buscar o Escanear">
-            <Search size={22} color="#475569" strokeWidth={1.5} />
+            <Search size={22} color="#475569" strokeWidth={1.3} />
           </button>
           <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)} title="Ver Carrito">
-            <ShoppingBag size={22} color="#475569" strokeWidth={1.5} />
+            <ShoppingCart size={22} color="#475569" strokeWidth={1.3} />
           </button>
         </div>
       </header>
 
       {/* Contenedor de Ficha de Producto */}
-      <div style={styles.detailContainer}>
+      <div style={styles.detailContainer} className="product-detail-container">
         {/* Sección Superior: Imagen + Datos Principales */}
-        <div style={styles.mainGrid}>
+        <div style={styles.mainGrid} className="product-detail-main-grid">
           {/* Columna Izquierda: Imagen */}
-          <div style={styles.imageColumn}>
-            <div style={styles.imageCard}>
+          <div style={styles.imageColumn} className="product-detail-image-column">
+            <div style={styles.imageCard} className="product-detail-image-card">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={product.image || 'https://via.placeholder.com/400?text=Gloss'} 
                 alt={product.name} 
                 style={styles.mainImage} 
+                className="product-detail-main-image"
               />
             </div>
           </div>
 
           {/* Columna Derecha: Información y Compra */}
-          <div style={styles.infoColumn}>
+          <div style={styles.infoColumn} className="product-detail-info-column">
             <span style={styles.brandLabel}>{product.brand}</span>
-            <h1 style={styles.productName}>{product.name}</h1>
+            <h1 style={styles.productName} className="product-detail-name">{product.name}</h1>
 
             <div style={styles.metaRow}>
               <span style={{
@@ -234,7 +235,7 @@ export default function ProductDetailPage({ params }) {
             </div>
 
             {/* Bloque de Precio */}
-            <div style={styles.priceContainer}>
+            <div style={styles.priceContainer} className="product-detail-price-container">
               <span style={styles.currency}>S/</span>
               <span style={styles.priceValue}>{product.price.toFixed(2)}</span>
             </div>
@@ -248,14 +249,14 @@ export default function ProductDetailPage({ params }) {
                       style={styles.qtyBtn} 
                       onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                     >
-                      <Minus size={16} color="var(--text-primary)" />
+                      <Minus size={14} color="var(--text-primary)" strokeWidth={1.3} />
                     </button>
                     <span style={styles.qtyVal}>{quantity}</span>
                     <button 
                       style={styles.qtyBtn} 
                       onClick={() => setQuantity(prev => Math.min(product.stock, prev + 1))}
                     >
-                      <Plus size={16} color="var(--text-primary)" />
+                      <Plus size={14} color="var(--text-primary)" strokeWidth={1.3} />
                     </button>
                   </div>
 
@@ -288,7 +289,7 @@ export default function ProductDetailPage({ params }) {
                   size={20} 
                   color="#FF5EA6" 
                   fill={isFavorite ? '#FF5EA6' : 'none'} 
-                  strokeWidth={1.5}
+                  strokeWidth={1.3}
                 />
               </button>
             </div>
