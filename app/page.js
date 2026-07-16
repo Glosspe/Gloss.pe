@@ -422,7 +422,7 @@ const styles = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    background: 'linear-gradient(135deg, #FFF1F2 0%, #FFF5F7 60%, #F0FDF4 100%)', // Degradado premium rosa y verde bebé
+    background: 'linear-gradient(135deg, #FFF1F2 0%, #FFF5F7 60%, #FFFBEB 100%)', // Degradado premium rosa y champán/dorado suave
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.03)',
     border: '1px solid rgba(0, 0, 0, 0.02)',
   },
@@ -438,11 +438,11 @@ const styles = {
   bannerBadge: {
     fontSize: '0.62rem',
     fontWeight: '600', // Más fino
-    color: '#16A34A', // Verde suave (cero rosa)
+    color: '#475569', // Gris pizarra elegante y neutro
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '4px',
-    backgroundColor: '#E8FDF0', // Verde bebé muy suave
+    backgroundColor: '#F1F5F9', // Gris claro suave
     padding: '2px 8px',
     borderRadius: '6px',
     width: 'fit-content',

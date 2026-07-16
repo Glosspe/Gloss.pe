@@ -254,13 +254,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
-    color: '#16A34A', // Verde suave intermedio
+    color: '#475569', // Gris pizarra elegante
     fontSize: '0.72rem',
     fontWeight: '600',
     fontFamily: 'var(--font-body), sans-serif',
     padding: '4px 8px',
     borderRadius: '8px',
-    backgroundColor: '#F0FDF4', // Verde pastel ultra suave (green-50)
+    backgroundColor: '#F1F5F9', // Gris claro suave y neutro
     transition: 'all 0.2s',
     flexShrink: 0,
   },
