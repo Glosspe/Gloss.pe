@@ -189,14 +189,14 @@ export default function ProductDetailPage({ params }) {
       {/* Cabecera Fija Simplificada */}
       <header style={styles.header}>
         <Link href="/" style={styles.backBtn} title="Volver al catálogo">
-          <ArrowLeft size={22} color="#334155" />
+          <ArrowLeft size={22} color="#475569" strokeWidth={1.5} />
         </Link>
         <div style={styles.rightActions}>
           <button style={styles.searchIconBtn} onClick={() => setIsSearchOpen(true)} title="Buscar o Escanear">
-            <Search size={22} color="#334155" />
+            <Search size={22} color="#475569" strokeWidth={1.5} />
           </button>
           <button style={styles.cartIconBtn} onClick={() => setIsCartOpen(true)} title="Ver Carrito">
-            <ShoppingBag size={22} color="#334155" />
+            <ShoppingBag size={22} color="#475569" strokeWidth={1.5} />
           </button>
         </div>
       </header>

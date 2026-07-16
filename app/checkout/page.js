@@ -265,7 +265,7 @@ ${formattedItems}
       <div style={styles.container}>
         <div style={styles.topNav}>
           <Link href="/" style={styles.backLink}>
-            <ArrowLeft size={20} color="var(--text-primary)" />
+            <ArrowLeft size={20} color="#475569" strokeWidth={1.5} />
             <span style={styles.backText}>Volver al Catálogo</span>
           </Link>
           <h2 style={styles.logo}>Tienda Gloss</h2>
@@ -295,7 +295,7 @@ ${formattedItems}
       {/* Barra superior de navegación */}
       <div style={styles.topNav}>
         <Link href="/" style={styles.backLink}>
-          <ArrowLeft size={20} color="var(--text-primary)" />
+          <ArrowLeft size={20} color="#475569" strokeWidth={1.5} />
           <span style={styles.backText}>Seguir comprando</span>
         </Link>
         <h2 style={styles.logo}>Tienda Gloss</h2>

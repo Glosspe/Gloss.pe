@@ -23,11 +23,11 @@ export default function Cart() {
         {/* Encabezado del Carrito */}
         <div style={styles.header}>
           <div style={styles.titleContainer}>
-            <ShoppingBag size={20} color="var(--text-primary)" />
+            <ShoppingBag size={20} color="#475569" strokeWidth={1.5} />
             <h3 style={styles.title}>Bolsa de Compras</h3>
           </div>
           <button style={styles.closeButton} onClick={() => setIsCartOpen(false)}>
-            <X size={20} color="var(--text-primary)" />
+            <X size={20} color="#475569" strokeWidth={1.5} />
           </button>
         </div>
 
@@ -35,7 +35,7 @@ export default function Cart() {
         <div style={styles.itemsList}>
           {cart.length === 0 ? (
             <div style={styles.emptyCart}>
-              <ShoppingBag size={48} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
+              <ShoppingBag size={48} color="#94A3B8" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
               <p style={styles.emptyText}>Tu bolsa de compras está vacía.</p>
               <button style={styles.exploreButton} onClick={() => setIsCartOpen(false)}>
                 Ver Productos

@@ -20,7 +20,7 @@ export default function FavoritesPage() {
       <header style={styles.header}>
         <div style={styles.headerContent}>
           <Link href="/" style={styles.backButton}>
-            <ArrowLeft size={22} color="var(--text-primary)" />
+            <ArrowLeft size={22} color="#475569" strokeWidth={1.5} />
             <span style={styles.backText}>Inicio</span>
           </Link>
           
@@ -29,7 +29,7 @@ export default function FavoritesPage() {
           <div style={styles.actions}>
             {/* Carrito */}
             <button style={styles.iconButton} onClick={() => setIsCartOpen(true)}>
-              <ShoppingBag size={22} color="#334155" />
+              <ShoppingBag size={22} color="#475569" strokeWidth={1.5} />
               {cartCount > 0 && (
                 <span style={styles.badge}>{cartCount}</span>
               )}
@@ -37,7 +37,7 @@ export default function FavoritesPage() {
             
             {/* Menú */}
             <button style={styles.iconButton} onClick={() => setIsMenuOpen(true)}>
-              <Menu size={22} color="#334155" />
+              <Menu size={22} color="#475569" strokeWidth={1.5} />
             </button>
           </div>
         </div>

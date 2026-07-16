@@ -400,12 +400,12 @@ export default function SearchModal() {
                   flexShrink: 0
                 }}
               >
-                <ArrowLeft size={22} />
+                <ArrowLeft size={22} strokeWidth={1.5} />
               </button>
               
               {/* Input de Texto Manual (Siempre visible) */}
               <div className="search-input-wrapper" style={{ flex: 1 }}>
-                <Search className="search-input-icon" size={20} />
+                <Search className="search-input-icon" size={20} strokeWidth={1.5} />
                 <input
                   ref={inputRef}
                   type="text"
