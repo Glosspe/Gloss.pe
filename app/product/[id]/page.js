@@ -636,7 +636,7 @@ const styles = {
   },
   productName: {
     fontSize: '1.6rem',
-    fontWeight: '500',
+    fontWeight: '400', // Más delgado y de alta costura a petición del usuario
     color: 'var(--text-primary)',
     lineHeight: '1.25',
   },
