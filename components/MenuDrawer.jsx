@@ -35,7 +35,7 @@ export default function MenuDrawer() {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
   const [isTagsOpen, setIsTagsOpen] = useState(false); // Acordeón de etiquetas
-  const [isWarehousesOpen, setIsWarehousesOpen] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Pre-cargar datos dinámicos del ERP una sola vez al montar la aplicación
@@ -437,114 +437,7 @@ export default function MenuDrawer() {
                 )}
               </div>
 
-              {/* SECCIÓN SEDES */}
-              <div style={styles.sectionCard}>
-                <button 
-                  style={styles.sectionHeader}
-                  onClick={() => setIsWarehousesOpen(!isWarehousesOpen)}
-                >
-                  <div style={styles.sectionTitleGroup}>
-                    <MapPin size={16} color="#64748B" strokeWidth={1.3} />
-                    <span style={styles.sectionTitle}>Nuestras Sedes</span>
-                  </div>
-                  {isWarehousesOpen ? <ChevronUp size={15} strokeWidth={1.3} /> : <ChevronDown size={15} strokeWidth={1.3} />}
-                </button>
 
-                {isWarehousesOpen && (
-                  <div style={styles.warehousesList}>
-                    {/* Opción para Ver Todas */}
-                    <button
-                      style={{
-                        ...styles.warehouseBtn,
-                        borderColor: selectedWarehouse === 'all' ? '#FF5EA6' : 'rgba(142, 154, 167, 0.08)',
-                        backgroundColor: selectedWarehouse === 'all' ? 'rgba(255, 94, 166, 0.04)' : '#F8FAFC',
-                        color: selectedWarehouse === 'all' ? '#FF5EA6' : 'var(--text-primary)',
-                        fontWeight: '600',
-                        marginBottom: '12px',
-                        width: '100%',
-                        justifyContent: 'center',
-                        border: '1px solid',
-                      }}
-                      onClick={() => {
-                        setSelectedWarehouse('all');
-                        setSelectedWarehouseName('Todas las Sedes');
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <MapPin size={14} strokeWidth={1.3} />
-                      <span>Todas las Sedes (Consolidado)</span>
-                    </button>
-
-                    {/* Agrupar por Región */}
-                    {['Chiclayo', 'Jaén'].map(region => {
-                      const WAREHOUSE_REGIONS = {
-                        'Chiclayo': ['01', '02', '04', '06'],
-                        'Jaén': ['05']
-                      };
-                      const regionWHs = warehouses.filter(w => WAREHOUSE_REGIONS[region].includes(w.codalm));
-                      if (regionWHs.length === 0) return null;
-
-                      const isRegionActive = selectedWarehouse === region;
-
-                      return (
-                        <div key={region} style={styles.regionGroup}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedWarehouse(region);
-                              setSelectedWarehouseName(region);
-                              setIsMenuOpen(false);
-                            }}
-                            style={{
-                              ...styles.regionSelectBtn,
-                              color: isRegionActive ? '#FF5EA6' : 'var(--text-primary)',
-                              fontWeight: isRegionActive ? '600' : '500'
-                            }}
-                          >
-                            <span style={styles.regionTitleText}>{region}</span>
-                            <span style={styles.regionSelectText}>Seleccionar Región</span>
-                          </button>
-
-                          <div style={styles.regionWarehousesGrid}>
-                            {regionWHs.map(w => {
-                              const isWarehouseActive = selectedWarehouse === w.codalm;
-                              return (
-                                <button
-                                  key={w.codalm}
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedWarehouse(w.codalm);
-                                    setSelectedWarehouseName(w.descripcion);
-                                    setIsMenuOpen(false);
-                                  }}
-                                  style={{
-                                    ...styles.warehouseItemCard,
-                                    borderColor: isWarehouseActive ? '#FF5EA6' : 'rgba(142, 154, 167, 0.08)',
-                                    backgroundColor: isWarehouseActive ? 'rgba(255, 94, 166, 0.04)' : '#F8FAFC',
-                                    color: isWarehouseActive ? '#FF5EA6' : 'var(--text-primary)'
-                                  }}
-                                >
-                                  <span style={{
-                                    ...styles.warehouseItemName,
-                                    fontWeight: isWarehouseActive ? '700' : '600'
-                                  }}>
-                                    {formatLabel(w.descripcion)}
-                                  </span>
-                                  {w.direccion && (
-                                    <span style={styles.warehouseItemAddress}>
-                                      {formatLabel(w.direccion)}
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
