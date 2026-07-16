@@ -169,8 +169,8 @@ export default function ProductCard({ product }) {
           >
             <Heart
               size={24}
-              color={isFavorite ? '#FFFFFF' : '#FF5EA6'}
-              fill={isFavorite ? '#FFFFFF' : 'none'}
+              color={isFavorite ? '#FF4F81' : '#FF5EA6'}
+              fill={isFavorite ? '#FF4F81' : 'none'}
               strokeWidth={1.5}
             />
           </button>

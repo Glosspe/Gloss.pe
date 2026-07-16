@@ -829,16 +829,7 @@ a {
   transform: scale(0.92);
 }
 
-/* Cuando el favorito está activo — fondo degradado oficial fucsia con corazón blanco */
-.product-favorite-btn.active {
-  background: linear-gradient(135deg, #FF2E93, #D81B60) !important;
-  border-color: transparent !important;
-}
-
-.product-favorite-btn.active:hover {
-  background: linear-gradient(135deg, #FF5088, #D81B60) !important;
-  border-color: transparent !important;
-}
+/* Cuando el favorito está activo, el fondo circular se mantiene tal cual y solo se colorea el icono de forma interna */
 
 .detail-fav-btn {
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
