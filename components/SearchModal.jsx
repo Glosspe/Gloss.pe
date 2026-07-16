@@ -29,7 +29,7 @@ const playScanBeep = () => {
 
 export default function SearchModal() {
   const router = useRouter();
-  const { isSearchOpen, setIsSearchOpen } = useCart();
+  const { isSearchOpen, setIsSearchOpen, addToCart } = useCart();
   const [localQuery, setLocalQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -38,6 +38,7 @@ export default function SearchModal() {
   const [scannerError, setScannerError] = useState(null);
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [scanMessage, setScanMessage] = useState(null);
+  const [scannedProductData, setScannedProductData] = useState(null); // Detalle del producto escaneado, stock por sede y similares
   const [shortcuts, setShortcuts] = useState([]); // Atajos de búsqueda en caliente
 
   // Filtros dinámicos interactivos del lado del cliente
@@ -137,6 +138,7 @@ export default function SearchModal() {
     isSearchOpenRef.current = isSearchOpen;
     if (!isSearchOpen) {
       stopScanner();
+      setScannedProductData(null);
     }
     return () => {
       // Al desmontar, apagar físicamente el stream para liberar la cámara
@@ -281,65 +283,56 @@ export default function SearchModal() {
   // Procesar código leído (QR o Código de barras)
   const handleProcessScannedCode = async (code) => {
     setIsSearching(true);
+    setScannedProductData(null); // Limpiar datos de escaneos previos
     try {
       // 1. Si es un código QR con formato de URL de nuestra tienda
       if (code.includes('gloss.pe/product/') || code.includes('/product/')) {
         const parts = code.split('/product/');
         if (parts.length > 1) {
           const productId = parts[1].split(/[#?]/)[0]; // Limpiar hashes o parámetros de query
-          router.push(`/product/${productId}`);
-          setIsSearchOpen(false);
-          return;
+          const scanRes = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(productId)}`);
+          if (scanRes.ok) {
+            const scanData = await scanRes.json();
+            setScannedProductData(scanData);
+            setIsSearching(false);
+            return;
+          }
         }
       }
 
-      // 2. Buscar en el catálogo
-      const res = await fetch(`/api/products/search?q=${encodeURIComponent(code)}`);
-      if (res.ok) {
-        const data = await res.json();
-        // La API de búsqueda retorna un array plano de productos
-        const foundProducts = Array.isArray(data) ? data : (data.products || []);
-
-        // Buscar coincidencia exacta por el código de barras (codart/código de barras)
-        const exactMatch = foundProducts.find(
-          (p) => 
-            String(p.id).toLowerCase() === code.toLowerCase() ||
-            String(p.codart).toLowerCase() === code.toLowerCase() ||
-            (p.barcode && String(p.barcode).toLowerCase() === code.toLowerCase())
-        );
-
-        if (exactMatch) {
-          // Si encontramos el producto exacto, redirigimos de inmediato
-          router.push(`/product/${exactMatch.id}`);
-          setIsSearchOpen(false);
-        } else if (foundProducts.length === 1) {
-          // Si solo hay un resultado aproximado, redirigimos directamente también
-          router.push(`/product/${foundProducts[0].id}`);
-          setIsSearchOpen(false);
-        } else if (foundProducts.length > 1) {
-          // Si hay múltiples referencias asociadas al código, las mostramos en la lista
-          setResults(foundProducts);
-          setLocalQuery(code); // Rellenar input con el código escaneado
-          setScanMessage({ type: 'info', text: `Encontradas ${foundProducts.length} referencias para el código escaneado.` });
-        } else {
-          // Si no encontramos nada
-          setScanMessage({ type: 'error', text: 'El producto escaneado no está registrado en el catálogo. Reanudando escáner...' });
-          
-          // Esperamos 3.5 segundos para que el usuario lea el mensaje y reiniciamos el escáner de forma cómoda
-          setTimeout(async () => {
-            setScanMessage(null);
-            await startScanner();
-          }, 3500);
-        }
+      // 2. Consultar el endpoint de detalle y stock del código escaneado
+      const scanRes = await fetch(`/api/products/scan-detail?id=${encodeURIComponent(code)}`);
+      if (scanRes.ok) {
+        const scanData = await scanRes.json();
+        setScannedProductData(scanData);
+        setScanMessage({ type: 'success', text: '¡Código escaneado con éxito!' });
       } else {
-        throw new Error('Respuesta no satisfactoria de la API');
+        // Fallback al buscador normal si no es coincidencia directa
+        const res = await fetch(`/api/products/search?q=${encodeURIComponent(code)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const foundProducts = Array.isArray(data) ? data : (data.products || []);
+          if (foundProducts.length > 0) {
+            setResults(foundProducts);
+            setLocalQuery(code); // Rellenar input con el código escaneado
+            setScanMessage({ type: 'info', text: `Encontradas ${foundProducts.length} referencias para el código escaneado.` });
+          } else {
+            throw new Error('Producto no encontrado');
+          }
+        } else {
+          throw new Error('Error al buscar');
+        }
       }
     } catch (err) {
       console.error('Error procesando código:', err);
-      setScanMessage({ type: 'error', text: 'Error de conexión al consultar el código. Reanudando escáner...' });
+      setScanMessage({ type: 'error', text: 'El producto escaneado no está registrado en el catálogo. Reanudando escáner...' });
+      
+      // Esperamos 3.5 segundos para que el usuario lea el mensaje y reiniciamos el escáner de forma cómoda
       setTimeout(async () => {
         setScanMessage(null);
-        await startScanner();
+        if (isSearchOpenRef.current && !isScannerActive) {
+          await startScanner();
+        }
       }, 3500);
     } finally {
       setIsSearching(false);
@@ -458,7 +451,6 @@ export default function SearchModal() {
             </button>
           </div>
 
-          {/* Área de Resultados / Sugerencias */}
           <div className="search-results-area">
             {isSearching && (
               <div className="search-results-list" style={{ width: '100%', gap: '12px' }}>
@@ -478,7 +470,202 @@ export default function SearchModal() {
               </div>
             )}
 
-            {!isSearching && results.length > 0 && (() => {
+            {/* 1. Vista de Detalle de Producto Escaneado (Stocks por sede + similares) */}
+            {!isSearching && scannedProductData && (
+              <div className="scanned-product-details-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', padding: '4px' }}>
+                
+                {/* Ficha del Producto Encontrado */}
+                <div className="scanned-main-card" style={{
+                  display: 'flex',
+                  gap: '16px',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '24px',
+                  padding: '16px',
+                  border: '1px solid rgba(0, 0, 0, 0.05)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.02)',
+                  position: 'relative'
+                }}>
+                  <div style={{ width: '90px', height: '90px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF9F8', borderRadius: '16px', padding: '6px' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={scannedProductData.product.image} 
+                      alt={scannedProductData.product.name} 
+                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {scannedProductData.product.brand}
+                      </span>
+                      <h3 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)', margin: '2px 0 6px 0', lineHeight: '1.3' }}>
+                        {scannedProductData.product.name}
+                      </h3>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                      <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--accent-start)' }}>
+                        S/ {scannedProductData.product.price.toFixed(2)}
+                      </span>
+                      <button
+                        className="orange-bb-button"
+                        style={{
+                          height: '36px',
+                          padding: '0 16px',
+                          fontSize: '0.8rem',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #FF2E93, #D81B60)',
+                          border: 'none',
+                          color: '#FFFFFF',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => {
+                          addToCart({
+                            id: scannedProductData.product.id,
+                            name: scannedProductData.product.name,
+                            brand: scannedProductData.product.brand,
+                            price: scannedProductData.product.price,
+                            image: scannedProductData.product.image,
+                            stock: scannedProductData.product.stock
+                          });
+                          playScanBeep();
+                          setScanMessage({ type: 'success', text: '¡Producto añadido al carrito!' });
+                          setTimeout(() => setScanMessage(null), 2000);
+                        }}
+                      >
+                        Añadir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stock por Sede */}
+                <div className="scanned-stocks-section" style={{
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '24px',
+                  padding: '18px',
+                  border: '1px solid rgba(0, 0, 0, 0.05)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.02)'
+                }}>
+                  <h4 style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+                    Stock Disponible por Sede
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {scannedProductData.stocks.map(st => {
+                      const qty = st.stock;
+                      let badgeBg = 'rgba(236, 253, 245, 0.9)';
+                      let badgeColor = '#10B981';
+                      let statusText = 'Disponible';
+                      
+                      if (qty <= 0) {
+                        badgeBg = 'rgba(254, 242, 242, 0.9)';
+                        badgeColor = '#EF4444';
+                        statusText = 'Agotado';
+                      } else if (qty <= 5) {
+                        badgeBg = '#FEF3C7';
+                        badgeColor = '#B45309';
+                        statusText = `¡Últimas ${qty} unids!`;
+                      } else {
+                        statusText = `${qty} unidades`;
+                      }
+
+                      return (
+                        <div key={st.codalm} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                            {st.nomalm}
+                          </span>
+                          <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: '700',
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            backgroundColor: badgeBg,
+                            color: badgeColor
+                          }}>
+                            {statusText}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Productos Similares Recomendados */}
+                {scannedProductData.similar && scannedProductData.similar.length > 0 && (
+                  <div className="scanned-similar-section">
+                    <h4 style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px', paddingLeft: '4px' }}>
+                      Productos Similares Recomendados
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {scannedProductData.similar.map(sim => (
+                        <div key={sim.id} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          backgroundColor: '#FFFFFF',
+                          borderRadius: '16px',
+                          padding: '10px 12px',
+                          border: '1px solid rgba(0, 0, 0, 0.03)',
+                          cursor: 'pointer',
+                        }}
+                          onClick={() => {
+                            setIsSearching(true);
+                            fetch(`/api/products/scan-detail?id=${sim.id}`)
+                              .then(r => r.json())
+                              .then(d => {
+                                setScannedProductData(d);
+                                setIsSearching(false);
+                              })
+                              .catch(e => {
+                                console.error(e);
+                                setIsSearching(false);
+                              });
+                          }}
+                        >
+                          <div style={{ width: '48px', height: '48px', backgroundColor: '#FAF9F8', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={sim.image} alt={sim.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.62rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{sim.brand}</span>
+                            <span style={{ fontSize: '0.78rem', fontWeight: '500', color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '180px' }}>{sim.name}</span>
+                          </div>
+                          <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--accent-start)', marginRight: '6px' }}>S/ {sim.price.toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Acciones del Escaneo */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                  <button 
+                    className="soft-button" 
+                    style={{ flex: 1, height: '44px', borderRadius: '16px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC', color: '#475569', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
+                    onClick={() => {
+                      setScannedProductData(null);
+                      setLocalQuery('');
+                      setResults([]);
+                    }}
+                  >
+                    Volver a buscar
+                  </button>
+                  <button 
+                    className="soft-button" 
+                    style={{ flex: 1, height: '44px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF2E93, #D81B60)', color: '#FFFFFF', border: 'none', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
+                    onClick={async () => {
+                      setScannedProductData(null);
+                      await startScanner();
+                    }}
+                  >
+                    Escanear otro producto
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Vista de Resultados de Búsqueda Manual */}
+            {!isSearching && !scannedProductData && results.length > 0 && (() => {
               const availableBrands = Array.from(new Set(results.map(p => p.brand).filter(Boolean)));
               const availableCategories = Array.from(new Set(results.map(p => p.category).filter(Boolean)));
               const displayedResults = results.filter(p => {
@@ -605,7 +792,8 @@ export default function SearchModal() {
               );
             })()}
 
-            {!isSearching && localQuery && results.length === 0 && (
+            {/* 3. Búsqueda vacía manual */}
+            {!isSearching && !scannedProductData && localQuery && results.length === 0 && (
               <div className="search-empty-results">
                 <Sparkles size={36} color="#CBD5E1" />
                 <p>No encontramos ningún producto para "{localQuery}"</p>
@@ -613,7 +801,8 @@ export default function SearchModal() {
               </div>
             )}
 
-            {!isSearching && !localQuery && !isScannerActive && (
+            {/* 4. Sugeridos / Placeholder inicial */}
+            {!isSearching && !scannedProductData && !localQuery && !isScannerActive && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
                 {shortcuts.length > 0 && (
                   <div className="search-shortcuts-container" style={{ padding: '0 8px' }}>
