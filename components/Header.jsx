@@ -78,17 +78,17 @@ export default function Header() {
               onClick={() => setIsSearchOpen(true)}
               title="Buscar o Escanear"
             >
-              <Search size={24} color="#334155" className="header-icon-svg" />
+              <Search size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
             </button>
 
             {/* Botón Bolsa (Carrito) */}
             <button 
               style={styles.iconButton} 
-              className="header-icon-button header-cart-button" 
+              className="header-cart-button" 
               onClick={() => setIsCartOpen(true)}
               title="Ver Carrito"
             >
-              <ShoppingBag size={24} color="#334155" className="header-icon-svg" />
+              <ShoppingBag size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
               {cartCount > 0 && (
                 <span style={styles.badge} className="header-cart-badge">{cartCount}</span>
               )}
@@ -101,7 +101,7 @@ export default function Header() {
               className="header-profile-button"
               title="Mi Cuenta"
             >
-              <User size={20} color="#0284C7" />
+              <User size={20} color="#0284C7" strokeWidth={1.5} />
             </Link>
 
             {/* Botón Menú Desplegable */}
@@ -111,7 +111,7 @@ export default function Header() {
               onClick={() => setIsMenuOpen(true)}
               title="Menú"
             >
-              <Menu size={24} color="#334155" className="header-icon-svg" />
+              <Menu size={22} color="#475569" strokeWidth={1.5} className="header-icon-svg" />
             </button>
           </div>
         </div>
